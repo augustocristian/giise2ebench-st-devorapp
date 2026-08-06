@@ -150,6 +150,7 @@ def main():
         with open(target, "a", encoding="utf-8") as handle:
             handle.write(markdown + "\n")
     else:
+        sys.stdout.reconfigure(encoding="utf-8")  # emoji in the tables: Windows consoles default to cp1252
         print(markdown)
 
 
