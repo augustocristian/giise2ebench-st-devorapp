@@ -1,0 +1,21 @@
+{
+  "name": "cypress-js",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Cypress + JavaScript E2E and API test suite for DevorApp",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:run:e2e": "cypress run --spec \"cypress/e2e/*.cy.js\"",
+    "cypress:run:api": "cypress run --spec \"cypress/e2e/api/*.cy.js\"",
+    "cypress:run:headed": "cypress run --headed",
+    "pretest:wait": "node scripts/wait-for-sut.js",
+    "test": "npm run pretest:wait && npm run cypress:run",
+    "test:e2e": "npm run pretest:wait && npm run cypress:run:e2e",
+    "test:api": "npm run pretest:wait && npm run cypress:run:api"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0",
+    "wait-on": "^7.2.0"
+  }
+}
