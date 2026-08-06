@@ -1,0 +1,7 @@
+node_modules/
+dist/
+android/
+playwright-report/
+test-results/
+.git/
+.gitignore

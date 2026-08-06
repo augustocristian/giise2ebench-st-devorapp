@@ -1,0 +1,72 @@
+RQ 1)	El usuario debe poder recibir recomendaciones de restaurantes basadas en la ubicación, el presupuesto y las preferencias.
+RQ 1.1)	El usuario podrá indicar su ubicación actual, una dirección o utilizar su ubicación almacenada en el sistema para realizar la búsqueda en diferentes formatos.
+RQ 1.1.1)	[Calle], [Ciudad], [País]
+RQ 1.1.2)	[Barrio], [Ciudad], [País]
+RQ 1.1.3)	[Código Postal], [Ciudad], [País]
+RQ 1.1.4)	[Ciudad], [País]
+RQ 1.1.5)	[País]
+RQ 1.2)	El usuario podrá especificar un rango de precios mediante un sistema de niveles cualitativos con símbolos de moneda.
+RQ 1.2.1)	La moneda en la que se indique el precio dependerá de la ubicación seleccionada para realizar la recomendación.
+RQ 1.3)	El usuario podrá indicar sus preferencias mediante una serie de palabras clave, provenientes de una serie de categorías disponibles.
+RQ 2)	El usuario podrá ordenar los resultados en función de diferentes aspectos:
+RQ 2.1)	Mejor valorados.
+RQ 2.2)	Más cercanos.
+RQ 2.3)	Más populares según el número de reseñas.
+RQ 3)	El usuario debe poder crear una cuenta, iniciar sesión y cerrar sesión.
+RQ 3.1)	El usuario debe poder registrarse de dos formas:
+RQ 3.1.1)	Usando Google. Además, deberá proporcionar:
+RQ 3.1.1.1)	Nombre de usuario único en la plataforma.
+RQ 3.1.1.2)	Ubicación preferida.
+RQ 3.1.2)	Proporcionando:
+RQ 3.1.2.1)	Nombre y apellidos.
+RQ 3.1.2.2)	Nombre de usuario único en la plataforma.
+RQ 3.1.2.3)	Correo electrónico.
+RQ 3.1.2.4)	Contraseña.
+RQ 3.1.2.5)	Ubicación preferida.
+RQ 3.2)	El usuario debe poder iniciar sesión en la plataforma:
+RQ 3.2.1)	Usando Google.
+RQ 3.2.2)	Especificando su nombre de usuario y su contraseña.
+RQ 3.2.3)	Especificando su correo electrónico y su contraseña.
+RQ 4)	El usuario debe poder acceder a su perfil para consultar y modificar sus datos.
+RQ 4.1)	Podrá actualizar el correo electrónico.
+RQ 4.2)	Podrá actualizar su contraseña.
+RQ 4.3)	Podrá actualizar su ubicación preferida.
+RQ 4.4)	Podrá actualizar su nombre y apellidos.
+RQ 5)	El usuario debe poder guardar restaurantes en una lista de favoritos.
+RQ 5.1)	El usuario podrá gestionar sus listas de favoritos.
+RQ 5.1.1)	Por defecto, habrá una lista principal llamada "Favoritos".
+RQ 5.1.2)	El usuario podrá crear, al mismo nivel que la lista por defecto, nuevas listas, eligiendo el nombre e icono de cada una.
+RQ 5.1.3)	Al añadir un restaurante, el usuario podrá seleccionar guardarlo en la lista que desee.
+RQ 5.1.4)	El usuario podrá eliminar restaurantes de las listas de favoritos.
+RQ 5.1.5)	El usuario podrá eliminar listas de favoritos y con ellas todos los restaurantes asociados a la misma.
+RQ 6)	El usuario debe poder visualizar su historial restaurantes visitados.
+RQ 6.1)	Se mostrarán en una lista ordenada por fecha descendente los restaurantes recomendados.
+RQ 6.2)	Aparecerán solamente los restaurantes que se han visitado en el último año.
+RQ 6.3)	El usuario debe poder eliminar del historial los restaurantes visitados.
+RQ 7)	El usuario podrá añadir restaurantes a una lista de "Guardar para más tarde".
+RQ 7.1)	Existirá una única lista en la que se almacenarán los restaurantes añadidos.
+RQ 7.2)	Para eliminar los restaurantes de la lista:
+RQ 7.2.1)	Se pueden eliminar manualmente.
+RQ 7.2.2)	Se eliminarán al seleccionarlos desde la propia lista.
+RQ 8)	El usuario podrá acceder a los datos del restaurante. La aplicación mostrará:
+RQ 8.1)	Nombre del restaurante.
+RQ 8.2)	Ubicación del restaurante.
+RQ 8.3)	Valoración del restaurante. Se mostrará:
+RQ 8.3.1)	Una puntuación de un máximo de 5 estrellas.
+RQ 8.3.2)	Al lado de la puntuación, el número de reseñas.
+RQ 8.4)	Número de teléfono (si dispone de él).
+RQ 8.4.1)	Se redirigirá al usuario a la aplicación de llamadas con el teléfono ya marcado.
+RQ 8.5)	Página web (si dispone de ella).
+RQ 9)	El usuario debe poder indicar su opinión de la recomendación del sistema utilizando un sistema de puntuación.
+RQ 9.1)	El usuario podrá indicar mediante un sistema de 1 a 5 estrellas diferentes aspectos del local: calidad, precio, trato e higiene.
+RQ 9.1.1)	El usuario deberá rellenar todos los campos obligatoriamente.
+RQ 9.2)	De forma opcional, el usuario podrá añadir un comentario sobre el restaurante para que el sistema lo tenga en cuenta en futuras recomendaciones.
+RQ 10)	El usuario debe poder visualizar una serie de sugerencias basadas en su ubicación.
+RQ 10.1)	Se mostrarán, del mismo modo que en la recomendación de restaurantes, los establecimientos más buscados por otros usuarios en la ubicación del usuario actual.
+RQ 11)	El usuario podrá visualizar las valoraciones de otros usuarios de la aplicación.
+RQ 11.1)	Al consultar información de un restaurante, habrá un apartado de "Reseñas de otros usuarios".
+RQ 11.1.1)	Estas reseñas no afectarán a la valoración mostrada, sino que serán información adicional.
+RQ 11.1.2)	Aparecerán a modo de lista las diferentes valoraciones de los usuarios.
+RQ 11.1.3)	Se mostrará la nota puesta a cada uno de los cuatro criterios seguido del comentario textual, en caso de que exista.
+RQ 11.1.4)	Los usuarios que vean la reseña podrán indicar si les ha resultado útil mediante un botón de "Me gusta".
+RQ 11.1.4.1)	Se mostrará el número de usuarios a los que le ha resultado útil la reseña.

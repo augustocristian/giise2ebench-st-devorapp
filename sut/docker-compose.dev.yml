@@ -1,0 +1,35 @@
+# Development override — hot reload, source volumes, exposed ports.
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#        or via the deploy scripts with --dev flag.
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      target: builder          # reuses the same Dockerfile
+    volumes:
+      - ./backend/app:/app/app # live-reload source
+    command: >
+      poetry run uvicorn app.main:app
+        --host 0.0.0.0 --port 8000 --reload
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/tfg_db
+
+  keras-api:
+    volumes:
+      - ./keras-api:/app
+    command: >
+      uvicorn main:app
+        --host 0.0.0.0 --port 8001 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules      # keep container node_modules separate
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host 0.0.0.0 --port 5173

@@ -1,0 +1,26 @@
+default_platform(:android)
+
+platform :android do
+  desc "Upload release APK to Google Play internal track"
+  lane :deploy do
+    upload_to_play_store(
+      track: 'internal',
+      apk: 'android/app/build/outputs/apk/release/app-release.apk',
+      json_key: 'google-play-key.json',
+      skip_upload_screenshots: true,
+      skip_upload_images: true,
+      skip_upload_metadata: true,
+    )
+  end
+
+  desc "Upload release APK to Google Play production track"
+  lane :deploy_production do
+    upload_to_play_store(
+      track: 'production',
+      apk: 'android/app/build/outputs/apk/release/app-release.apk',
+      json_key: 'google-play-key.json',
+      skip_upload_screenshots: true,
+      skip_upload_images: true,
+    )
+  end
+end

@@ -1,0 +1,1401 @@
+{
+  "ChIJJV5G7J3OBZERLzqb1yTYcfw": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.8,
+    "types": [
+      "restaurant",
+      "hamburger_restaurant",
+      "fast_food_restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "american_restaurant",
+      "supplier",
+      "park",
+      "service",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ]
+  },
+  "ChIJG3CuXL59Ng0RllrVfiMtKVU": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.8,
+    "types": [
+      "pizza_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJH5etukadeg0R1IqqNTQpgAY": {
+    "precio_nivel": 1,
+    "estrellas_google": 4,
+    "types": [
+      "spanish_restaurant",
+      "tapas_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ2XqkvF18Ng0RkZNWnKDyYyQ": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "pizza_delivery",
+      "pizza_restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "meal_takeaway",
+      "italian_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJhWjrMP-deg0RxMnmYgfnnZY": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.1,
+    "types": [
+      "chinese_restaurant",
+      "meal_takeaway",
+      "restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJzysnXZyNNg0R7yOITRnnCKc": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "spanish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJS4t9e699Ng0RttHFu9Tqz-Y": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.6,
+    "types": [
+      "turkish_restaurant",
+      "fast_food_restaurant",
+      "meal_takeaway",
+      "indian_restaurant",
+      "middle_eastern_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJfaedB2J8Ng0RWNDC1VxZ7Nk": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "hamburger_restaurant",
+      "coffee_shop",
+      "cafe",
+      "food_store",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "store",
+      "establishment"
+    ]
+  },
+  "ChIJq6r-YWR8Ng0Rvv1zYcwMVYo": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.7,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJtcgMp7F9Ng0Rl1gU6g--Ips": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "chinese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJdcv1OeGLNg0RwMLvfLuwGSY": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "restaurant",
+      "spanish_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJa3Fs0qV9Ng0RRDiZaQId6k4": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.1,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJU0hOSvF9Ng0RfaDxcrhSHVE": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "chicken_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJXypV8PJ8Ng0Rc2DapMFdQ78": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "restaurant",
+      "bar",
+      "spanish_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJXXlpcGB8Ng0RD1NVD2y7Hhc": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "seafood_restaurant",
+      "spanish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJnSpOxGl9Ng0RQOXlxoYdutI": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJLTQG2-B9Ng0RiwcG2NErLhA": {
+    "precio_nivel": 1,
+    "estrellas_google": 4,
+    "types": [
+      "spanish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ5fRHimF8Ng0RPWRljR_djZU": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "spanish_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ6TcxxGJ8Ng0RCZ1NmPwt89Q": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJzRHgO8B9Ng0RE0muwsWVPuI": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJodJ60ux9Ng0RmIUI2soSHZM": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "mexican_restaurant",
+      "taco_restaurant",
+      "coffee_shop",
+      "cafe",
+      "meal_delivery",
+      "food_delivery",
+      "bar",
+      "food_store",
+      "store",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJu-64sRV9Ng0RZjFzfxNTJJ4": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJS398HWJ9Ng0RxM8AgTC2F70": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJYx9zEGZ8Ng0RJh9_ADsFIoQ": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.3,
+    "types": [
+      "spanish_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJwY-6R4B9Ng0RDW7FNUxTpkI": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "tapas_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ3b0Sv5x8Ng0Rnlurkc85d4A": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.1,
+    "types": [
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJYcyVFuB9Ng0RMVdSp810gYg": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "wine_bar",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJPStasGh8Ng0R2dGdpu65OlI": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.2,
+    "types": [
+      "cocktail_bar",
+      "brewpub",
+      "pub",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJtTJl2ot8Ng0RG3po_AOvGg4": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.2,
+    "types": [
+      "cafeteria",
+      "coffee_shop",
+      "cafe",
+      "liquor_store",
+      "food_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJq6ra_ot8Ng0RNOIo3rcRQ0A": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "coffee_shop",
+      "cafe",
+      "food_store",
+      "food",
+      "store",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ4XM9iE19Ng0RoLyYudiCrzA": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.9,
+    "types": [
+      "cafe",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJc8HPimN8Ng0RRgmwUvPzhDE": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "cafe",
+      "coffee_shop",
+      "bar",
+      "food_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJzwJw4DF9Ng0RR3I_zaj-bR0": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.6,
+    "types": [
+      "coffee_shop",
+      "cafe",
+      "breakfast_restaurant",
+      "bakery",
+      "food_store",
+      "store",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJGVqvtYN8Ng0RqWpGhL612Bk": {
+    "precio_nivel": 0,
+    "estrellas_google": 4,
+    "types": [
+      "coffee_shop",
+      "cafe",
+      "food_store",
+      "food",
+      "point_of_interest",
+      "store",
+      "establishment"
+    ]
+  },
+  "ChIJSzG3yvR8Ng0RDCA63RREcmo": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "cafe",
+      "coffee_shop",
+      "food_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ2VXjuIx8Ng0RiRK2me2vVso": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "cafe",
+      "coffee_shop",
+      "food_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJs3L6-PJ8Ng0ROvXw0j0het4": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.1,
+    "types": [
+      "cafe",
+      "coffee_shop",
+      "food_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJq5NY-mJ8Ng0RBKfKCRAewgs": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.8,
+    "types": [
+      "cafe",
+      "breakfast_restaurant",
+      "coffee_shop",
+      "food_store",
+      "restaurant",
+      "food",
+      "store",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJtfGTamh8Ng0RKxwJ0Y6vGRM": {
+    "precio_nivel": 2,
+    "estrellas_google": 4.5,
+    "types": [
+      "fine_dining_restaurant",
+      "spanish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJkQs_fZN9Ng0RmmN0Or3kj6Y": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "fine_dining_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJOY2ivIp8Ng0R_MppbJSuJ14": {
+    "precio_nivel": 2,
+    "estrellas_google": 4.6,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJHT2u5aZ9Ng0RjPzRx8-Nes8": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "restaurant",
+      "fusion_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJuUj6Y4t8Ng0R0gg98Ka_GEg": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "mexican_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJzXYNUVZ9Ng0R72152OnNh6w": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.2,
+    "types": [
+      "japanese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJfWjYDsB9Ng0R3sD0XKzlguY": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.2,
+    "types": [
+      "asian_restaurant",
+      "sushi_restaurant",
+      "buffet_restaurant",
+      "japanese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJewBTXGd8Ng0RvEIf2nqbOaE": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.7,
+    "types": [
+      "pizza_restaurant",
+      "italian_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJN4znmmF8Ng0RbYsSsnoNwfg": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "restaurant",
+      "mediterranean_restaurant",
+      "spanish_restaurant",
+      "korean_restaurant",
+      "bar",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJdwovkKx9Ng0R82c-EAtQtI0": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.8,
+    "types": [
+      "turkish_restaurant",
+      "middle_eastern_restaurant",
+      "fast_food_restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "indian_restaurant",
+      "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJHUyHn5J8Ng0Ra0CQ1HMBivo": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "cafeteria",
+      "spanish_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJFy8uRoF9Ng0RWbj--A7PN6c": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "restaurant",
+      "mediterranean_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJv34B_ikmQg0RI0UF83ImxlM": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.6,
+    "types": [
+      "bar",
+      "spanish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJGwA-aWd8Ng0RLT9SS6OeQzw": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.7,
+    "types": [
+      "restaurant",
+      "spanish_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJqzAg5ON9Ng0R0soUuTjjlto": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "fast_food_restaurant",
+      "tex_mex_restaurant",
+      "mexican_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "service",
+      "establishment"
+    ]
+  },
+  "ChIJgZ6_L4x9Ng0RBeSy0BLGg20": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "bar",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJq6o6ul18Ng0RNa66x4u_M6w": {
+    "precio_nivel": 0,
+    "estrellas_google": 3.7,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJKc81tjZ9Ng0R0HNXwgZm74U": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.6,
+    "types": [
+      "bar",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJvxIHZYF9Ng0Re-uDSqVg7wM": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJt8sD24t8Ng0R35B8XzMaXMU": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJY8KtS1p8Ng0RLeaDJMGlDVw": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "spanish_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJzSt04Yd8Ng0RjW3eJbH2WlM": {
+    "precio_nivel": 1,
+    "estrellas_google": 3.5,
+    "types": [
+      "restaurant"
+    ]
+  },
+  "ChIJP-gJusx9Ng0RL2QO3cCqKHU": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "bar",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJWX3srHx8Ng0RmCVcTzsnmug": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJA9mI62F8Ng0RHzyL2bgUMNo": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.6,
+    "types": [
+      "barbecue_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJL5d-dwB9Ng0RUizfGcmwkog": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "buffet_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJx3y05Xx8Ng0RYGwmZk1v6VQ": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "japanese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJKWS5oFt9Ng0RrZRw4qlwuRs": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "japanese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJZX6-e6l9Ng0Rddd2PRloDTk": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "asian_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJxzAWSrp7Ng0Rp-jitvr6u8I": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "sushi_restaurant",
+      "japanese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJSYJrYmR8Ng0RJDWO9lYBd98": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "japanese_restaurant",
+      "asian_restaurant",
+      "yakitori_restaurant",
+      "sushi_restaurant",
+      "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ3RE1PWeNNg0RPJCERzLghCw": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "japanese_restaurant",
+      "ramen_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJH0qTI2d8Ng0RLBHbJovsGAw": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "japanese_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJpVe-aDp9Ng0Rz4y1tJsSjWE": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJo0NrgAB9Ng0RVU-63-LTb-A": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJi0d5ZIB8Ng0R90udxVhX1Bk": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJJSjDBSp9Ng0RK1vpkGfNiM0": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "hamburger_restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "meal_takeaway",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJk6ubwqp9Ng0R8A2Mke74nTU": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "hamburger_restaurant",
+      "pizza_delivery",
+      "pizza_restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "american_restaurant",
+      "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJYy4M_dV9Ng0Rx-hiOPX7f-U": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.6,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJpZ_LVwB9Ng0RboyPUsvK798": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "hamburger_restaurant",
+      "fast_food_restaurant",
+      "meal_takeaway",
+      "meal_delivery",
+      "food_delivery",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJpYfKkAp9Ng0RKPZOkGRWsWI": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJKaOh9ol8Ng0RCU5Xq3Lg2YQ": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.8,
+    "types": [
+      "vegan_restaurant",
+      "bar_and_grill",
+      "vegetarian_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJeRWcE8R9Ng0RUT6QQmBPcmQ": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.7,
+    "types": [
+      "restaurant",
+      "cafeteria",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJkTSjSpZ9Ng0R7vGo_LPWaEk": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.9,
+    "types": [
+      "vegan_restaurant",
+      "vegetarian_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJeYylh2N8Ng0RfzPdUqr7_CA": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.7,
+    "types": [
+      "vegetarian_restaurant",
+      "tea_house",
+      "tea_store",
+      "restaurant",
+      "food_store",
+      "store",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJT3Zv6mB8Ng0RZsDDxDARJQA": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "hamburger_restaurant",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ9dJIT2N8Ng0RvBgBJ91BkC4": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "vegetarian_restaurant",
+      "brunch_restaurant",
+      "coffee_shop",
+      "cafe",
+      "food_store",
+      "restaurant",
+      "food",
+      "store",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJbWhlZGh8Ng0RjatP4nFFosM": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.6,
+    "types": [
+      "bar",
+      "vegetarian_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJjZxmVAB9Ng0RgRTT1fJgNRk": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJA5BOn319Ng0RgFgKYH2vlz8": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "restaurant",
+      "mediterranean_restaurant",
+      "spanish_restaurant",
+      "bar",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ59pIrpF9Ng0RbNblN2JueWg": {
+    "precio_nivel": 1,
+    "estrellas_google": 5,
+    "types": [
+      "pizza_restaurant",
+      "restaurant",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ]
+  },
+  "ChIJCTljLi59Ng0RPrtkKXjvaXE": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.3,
+    "types": [
+      "pizza_restaurant",
+      "pizza_delivery",
+      "meal_delivery",
+      "food_delivery",
+      "italian_restaurant",
+      "meal_takeaway",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJpdICxGJ8Ng0RbwAICWEeFc0": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.1,
+    "types": [
+      "italian_restaurant",
+      "pizza_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJYQVpe2N8Ng0RTPsbdkECu0c": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "pizza_delivery",
+      "pizza_restaurant",
+      "meal_delivery",
+      "food_delivery",
+      "meal_takeaway",
+      "italian_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ_U-CXTV9Ng0R8fqkiAgZVIM": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.5,
+    "types": [
+      "restaurant",
+      "italian_restaurant",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ]
+  },
+  "ChIJu599bAB9Ng0RiZ5sinYq1mM": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "italian_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJq4MSxn18Ng0RF_NaHyqcjaI": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.3,
+    "types": [
+      "pizza_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJP-U458x9Ng0RhRppTkTqgYQ": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.8,
+    "types": [
+      "turkish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJByWDOwB9Ng0RO8bX_wj8TDQ": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.9,
+    "types": [
+      "turkish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJqfo29Yt8Ng0RNMdYNo4hDHo": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "turkish_restaurant",
+      "kebab_shop",
+      "meal_delivery",
+      "food_delivery",
+      "meal_takeaway",
+      "fast_food_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJezj3l118Ng0R7TXv2XMuBU0": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.6,
+    "types": [
+      "kebab_shop",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJD6MuH-18Ng0Rq1Jhomc9YDk": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.4,
+    "types": [
+      "turkish_restaurant",
+      "fast_food_restaurant",
+      "meal_delivery",
+      "chinese_restaurant",
+      "food_delivery",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJo_34yKR9Ng0RgWqRs-KGX3k": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.2,
+    "types": [
+      "fast_food_restaurant",
+      "turkish_restaurant",
+      "pizza_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJfx0y2YV8Ng0RyMAWq-Ld-oA": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "turkish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJx1SrnxJ9Ng0RtiPHXteb-Sg": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "turkish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJjQfQHYh8Ng0R4vPGxg11g_o": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.1,
+    "types": [
+      "turkish_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJBeMTrHx8Ng0Re7DpfLoC-zQ": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "restaurant",
+      "spanish_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJ1Viqv2Z8Ng0Rr7GykT8qRTM": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.3,
+    "types": [
+      "restaurant",
+      "wine_bar",
+      "bistro",
+      "bar_and_grill",
+      "meal_takeaway",
+      "bar",
+      "meal_delivery",
+      "food_delivery",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJHUgVTs99Ng0RQVap8Lz1gWw": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "bar_and_grill",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJd9RTX158Ng0RyiM0b6wq264": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.1,
+    "types": [
+      "spanish_restaurant",
+      "bar",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJGVos2Dd9Ng0Rlfl7tkT1SZw": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.7,
+    "types": [
+      "restaurant",
+      "fusion_restaurant",
+      "vegetarian_restaurant",
+      "mediterranean_restaurant",
+      "point_of_interest",
+      "food",
+      "establishment"
+    ]
+  },
+  "ChIJxd_t2mJ8Ng0RTYYmS45Ngpg": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.8,
+    "types": [
+      "restaurant",
+      "spanish_restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJJ7kZHgt7Ng0RBuAVx73Vwy8": {
+    "precio_nivel": 2,
+    "estrellas_google": 4.5,
+    "types": [
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJDetO_VvIBZERk5gzkoTPqEA": {
+    "precio_nivel": 1,
+    "estrellas_google": 4.4,
+    "types": [
+      "italian_restaurant",
+      "pizza_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  },
+  "ChIJD4rhtHx8Ng0R5gDGN5U5d44": {
+    "precio_nivel": 0,
+    "estrellas_google": 4.5,
+    "types": [
+      "hamburger_restaurant",
+      "bar",
+      "american_restaurant",
+      "restaurant",
+      "food",
+      "point_of_interest",
+      "establishment"
+    ]
+  }
+}

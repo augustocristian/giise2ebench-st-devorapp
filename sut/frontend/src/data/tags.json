@@ -1,0 +1,827 @@
+[
+    {
+        "id": "restaurant",
+        "label": "Restaurante Clásico",
+        "category": "General"
+    },
+    {
+        "id": "fast_food_restaurant",
+        "label": "Comida Rápida",
+        "category": "General"
+    },
+    {
+        "id": "family_restaurant",
+        "label": "Familiar",
+        "category": "General"
+    },
+    {
+        "id": "fine_dining_restaurant",
+        "label": "Alta Cocina",
+        "category": "General"
+    },
+    {
+        "id": "buffet_restaurant",
+        "label": "Buffet",
+        "category": "General"
+    },
+    {
+        "id": "food_court",
+        "label": "Zona de Restauración",
+        "category": "General"
+    },
+    {
+        "id": "cafeteria",
+        "label": "Comedor / Autoservicio",
+        "category": "General"
+    },
+    {
+        "id": "breakfast_restaurant",
+        "label": "Desayunos",
+        "category": "General"
+    },
+    {
+        "id": "brunch_restaurant",
+        "label": "Brunch",
+        "category": "General"
+    },
+    {
+        "id": "meal_delivery",
+        "label": "A Domicilio",
+        "category": "General"
+    },
+    {
+        "id": "meal_takeaway",
+        "label": "Para Llevar",
+        "category": "General"
+    },
+    {
+        "id": "cafe",
+        "label": "Cafetería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "coffee_shop",
+        "label": "Café de Especialidad",
+        "category": "Ambiente"
+    },
+    {
+        "id": "coffee_roastery",
+        "label": "Tostador de Café",
+        "category": "Ambiente"
+    },
+    {
+        "id": "coffee_stand",
+        "label": "Puesto de Café",
+        "category": "Ambiente"
+    },
+    {
+        "id": "cat_cafe",
+        "label": "Café de Gatos",
+        "category": "Ambiente"
+    },
+    {
+        "id": "dog_cafe",
+        "label": "Café de Perros",
+        "category": "Ambiente"
+    },
+    {
+        "id": "tea_house",
+        "label": "Casa de Té",
+        "category": "Ambiente"
+    },
+    {
+        "id": "bar",
+        "label": "Bar / Pub",
+        "category": "Ambiente"
+    },
+    {
+        "id": "pub",
+        "label": "Pub",
+        "category": "Ambiente"
+    },
+    {
+        "id": "irish_pub",
+        "label": "Pub Irlandés",
+        "category": "Ambiente"
+    },
+    {
+        "id": "bar_and_grill",
+        "label": "Bar y Parrilla",
+        "category": "Ambiente"
+    },
+    {
+        "id": "sports_bar",
+        "label": "Bar Deportivo",
+        "category": "Ambiente"
+    },
+    {
+        "id": "cocktail_bar",
+        "label": "Coctelería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "wine_bar",
+        "label": "Bar de Vinos",
+        "category": "Ambiente"
+    },
+    {
+        "id": "winery",
+        "label": "Bodega",
+        "category": "Ambiente"
+    },
+    {
+        "id": "lounge_bar",
+        "label": "Lounge Bar",
+        "category": "Ambiente"
+    },
+    {
+        "id": "hookah_bar",
+        "label": "Tetería / Cachimbas",
+        "category": "Ambiente"
+    },
+    {
+        "id": "brewery",
+        "label": "Cervecería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "brewpub",
+        "label": "Pub Cervecero",
+        "category": "Ambiente"
+    },
+    {
+        "id": "beer_garden",
+        "label": "Terraza Cervecera",
+        "category": "Ambiente"
+    },
+    {
+        "id": "gastropub",
+        "label": "Gastropub",
+        "category": "Ambiente"
+    },
+    {
+        "id": "bistro",
+        "label": "Bistró",
+        "category": "Ambiente"
+    },
+    {
+        "id": "diner",
+        "label": "Diner Americano",
+        "category": "Ambiente"
+    },
+    {
+        "id": "japanese_izakaya_restaurant",
+        "label": "Izakaya",
+        "category": "Ambiente"
+    },
+    {
+        "id": "oyster_bar_restaurant",
+        "label": "Ostrería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "bakery",
+        "label": "Panadería / Pastelería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "cake_shop",
+        "label": "Pastelería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "pastry_shop",
+        "label": "Repostería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "dessert_restaurant",
+        "label": "Restaurante de Postres",
+        "category": "Ambiente"
+    },
+    {
+        "id": "dessert_shop",
+        "label": "Tienda de Postres",
+        "category": "Ambiente"
+    },
+    {
+        "id": "confectionery",
+        "label": "Confitería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "candy_store",
+        "label": "Golosinas",
+        "category": "Ambiente"
+    },
+    {
+        "id": "chocolate_shop",
+        "label": "Chocolatería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "chocolate_factory",
+        "label": "Fábrica de Chocolate",
+        "category": "Ambiente"
+    },
+    {
+        "id": "ice_cream_shop",
+        "label": "Heladería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "acai_shop",
+        "label": "Açaí",
+        "category": "Ambiente"
+    },
+    {
+        "id": "juice_shop",
+        "label": "Zumería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "deli",
+        "label": "Delicatessen",
+        "category": "Ambiente"
+    },
+    {
+        "id": "snack_bar",
+        "label": "Snack Bar",
+        "category": "Ambiente"
+    },
+    {
+        "id": "liquor_store",
+        "label": "Licorería",
+        "category": "Ambiente"
+    },
+    {
+        "id": "mexican_restaurant",
+        "label": "Mexicano",
+        "category": "Cocina"
+    },
+    {
+        "id": "tex_mex_restaurant",
+        "label": "Tex-Mex",
+        "category": "Cocina"
+    },
+    {
+        "id": "taco_restaurant",
+        "label": "Tacos",
+        "category": "Cocina"
+    },
+    {
+        "id": "burrito_restaurant",
+        "label": "Burritos",
+        "category": "Cocina"
+    },
+    {
+        "id": "italian_restaurant",
+        "label": "Italiano",
+        "category": "Cocina"
+    },
+    {
+        "id": "pizza_restaurant",
+        "label": "Pizza",
+        "category": "Cocina"
+    },
+    {
+        "id": "pizza_delivery",
+        "label": "Pizzas a Domicilio",
+        "category": "Cocina"
+    },
+    {
+        "id": "chinese_restaurant",
+        "label": "Chino",
+        "category": "Cocina"
+    },
+    {
+        "id": "cantonese_restaurant",
+        "label": "Cantonés",
+        "category": "Cocina"
+    },
+    {
+        "id": "dim_sum_restaurant",
+        "label": "Dim Sum",
+        "category": "Cocina"
+    },
+    {
+        "id": "dumpling_restaurant",
+        "label": "Dumplings",
+        "category": "Cocina"
+    },
+    {
+        "id": "hot_pot_restaurant",
+        "label": "Hot Pot",
+        "category": "Cocina"
+    },
+    {
+        "id": "japanese_restaurant",
+        "label": "Japonés",
+        "category": "Cocina"
+    },
+    {
+        "id": "sushi_restaurant",
+        "label": "Sushi",
+        "category": "Cocina"
+    },
+    {
+        "id": "ramen_restaurant",
+        "label": "Ramen",
+        "category": "Cocina"
+    },
+    {
+        "id": "japanese_curry_restaurant",
+        "label": "Curry Japonés",
+        "category": "Cocina"
+    },
+    {
+        "id": "tonkatsu_restaurant",
+        "label": "Tonkatsu",
+        "category": "Cocina"
+    },
+    {
+        "id": "yakiniku_restaurant",
+        "label": "Yakiniku",
+        "category": "Cocina"
+    },
+    {
+        "id": "yakitori_restaurant",
+        "label": "Yakitori",
+        "category": "Cocina"
+    },
+    {
+        "id": "korean_restaurant",
+        "label": "Coreano",
+        "category": "Cocina"
+    },
+    {
+        "id": "korean_barbecue_restaurant",
+        "label": "Barbacoa Coreana",
+        "category": "Cocina"
+    },
+    {
+        "id": "asian_restaurant",
+        "label": "Asiático",
+        "category": "Cocina"
+    },
+    {
+        "id": "asian_fusion_restaurant",
+        "label": "Fusión Asiática",
+        "category": "Cocina"
+    },
+    {
+        "id": "thai_restaurant",
+        "label": "Tailandés",
+        "category": "Cocina"
+    },
+    {
+        "id": "vietnamese_restaurant",
+        "label": "Vietnamita",
+        "category": "Cocina"
+    },
+    {
+        "id": "indian_restaurant",
+        "label": "Indio",
+        "category": "Cocina"
+    },
+    {
+        "id": "north_indian_restaurant",
+        "label": "Norte de India",
+        "category": "Cocina"
+    },
+    {
+        "id": "south_indian_restaurant",
+        "label": "Sur de India",
+        "category": "Cocina"
+    },
+    {
+        "id": "hamburger_restaurant",
+        "label": "Hamburguesas",
+        "category": "Cocina"
+    },
+    {
+        "id": "hot_dog_restaurant",
+        "label": "Perritos Calientes",
+        "category": "Cocina"
+    },
+    {
+        "id": "hot_dog_stand",
+        "label": "Puesto de Perritos Calientes",
+        "category": "Cocina"
+    },
+    {
+        "id": "sandwich_shop",
+        "label": "Bocadillos / Sandwiches",
+        "category": "Cocina"
+    },
+    {
+        "id": "bagel_shop",
+        "label": "Bagels",
+        "category": "Cocina"
+    },
+    {
+        "id": "kebab_shop",
+        "label": "Kebab",
+        "category": "Cocina"
+    },
+    {
+        "id": "shawarma_restaurant",
+        "label": "Shawarma",
+        "category": "Cocina"
+    },
+    {
+        "id": "falafel_restaurant",
+        "label": "Falafel",
+        "category": "Cocina"
+    },
+    {
+        "id": "gyro_restaurant",
+        "label": "Gyros",
+        "category": "Cocina"
+    },
+    {
+        "id": "seafood_restaurant",
+        "label": "Mariscos",
+        "category": "Cocina"
+    },
+    {
+        "id": "fish_and_chips_restaurant",
+        "label": "Fish & Chips",
+        "category": "Cocina"
+    },
+    {
+        "id": "spanish_restaurant",
+        "label": "Español",
+        "category": "Cocina"
+    },
+    {
+        "id": "tapas_restaurant",
+        "label": "Tapas",
+        "category": "Cocina"
+    },
+    {
+        "id": "basque_restaurant",
+        "label": "Vasco",
+        "category": "Cocina"
+    },
+    {
+        "id": "mediterranean_restaurant",
+        "label": "Mediterráneo",
+        "category": "Cocina"
+    },
+    {
+        "id": "greek_restaurant",
+        "label": "Griego",
+        "category": "Cocina"
+    },
+    {
+        "id": "french_restaurant",
+        "label": "Francés",
+        "category": "Cocina"
+    },
+    {
+        "id": "fondue_restaurant",
+        "label": "Fondue",
+        "category": "Cocina"
+    },
+    {
+        "id": "european_restaurant",
+        "label": "Europeo",
+        "category": "Cocina"
+    },
+    {
+        "id": "eastern_european_restaurant",
+        "label": "Europa del Este",
+        "category": "Cocina"
+    },
+    {
+        "id": "british_restaurant",
+        "label": "Británico",
+        "category": "Cocina"
+    },
+    {
+        "id": "german_restaurant",
+        "label": "Alemán",
+        "category": "Cocina"
+    },
+    {
+        "id": "bavarian_restaurant",
+        "label": "Bávaro",
+        "category": "Cocina"
+    },
+    {
+        "id": "austrian_restaurant",
+        "label": "Austriaco",
+        "category": "Cocina"
+    },
+    {
+        "id": "swiss_restaurant",
+        "label": "Suizo",
+        "category": "Cocina"
+    },
+    {
+        "id": "belgian_restaurant",
+        "label": "Belga",
+        "category": "Cocina"
+    },
+    {
+        "id": "dutch_restaurant",
+        "label": "Holandés",
+        "category": "Cocina"
+    },
+    {
+        "id": "polish_restaurant",
+        "label": "Polaco",
+        "category": "Cocina"
+    },
+    {
+        "id": "czech_restaurant",
+        "label": "Checo",
+        "category": "Cocina"
+    },
+    {
+        "id": "hungarian_restaurant",
+        "label": "Húngaro",
+        "category": "Cocina"
+    },
+    {
+        "id": "romanian_restaurant",
+        "label": "Rumano",
+        "category": "Cocina"
+    },
+    {
+        "id": "russian_restaurant",
+        "label": "Ruso",
+        "category": "Cocina"
+    },
+    {
+        "id": "ukrainian_restaurant",
+        "label": "Ucraniano",
+        "category": "Cocina"
+    },
+    {
+        "id": "croatian_restaurant",
+        "label": "Croata",
+        "category": "Cocina"
+    },
+    {
+        "id": "portuguese_restaurant",
+        "label": "Portugués",
+        "category": "Cocina"
+    },
+    {
+        "id": "scandinavian_restaurant",
+        "label": "Escandinavo",
+        "category": "Cocina"
+    },
+    {
+        "id": "danish_restaurant",
+        "label": "Danés",
+        "category": "Cocina"
+    },
+    {
+        "id": "american_restaurant",
+        "label": "Americano",
+        "category": "Cocina"
+    },
+    {
+        "id": "soul_food_restaurant",
+        "label": "Soul Food",
+        "category": "Cocina"
+    },
+    {
+        "id": "cajun_restaurant",
+        "label": "Cajún",
+        "category": "Cocina"
+    },
+    {
+        "id": "californian_restaurant",
+        "label": "Californiano",
+        "category": "Cocina"
+    },
+    {
+        "id": "southwestern_us_restaurant",
+        "label": "Suroeste de EE. UU.",
+        "category": "Cocina"
+    },
+    {
+        "id": "latin_american_restaurant",
+        "label": "Latinoamericano",
+        "category": "Cocina"
+    },
+    {
+        "id": "south_american_restaurant",
+        "label": "Sudamericano",
+        "category": "Cocina"
+    },
+    {
+        "id": "argentinian_restaurant",
+        "label": "Argentino",
+        "category": "Cocina"
+    },
+    {
+        "id": "brazilian_restaurant",
+        "label": "Brasileño",
+        "category": "Cocina"
+    },
+    {
+        "id": "chilean_restaurant",
+        "label": "Chileno",
+        "category": "Cocina"
+    },
+    {
+        "id": "colombian_restaurant",
+        "label": "Colombiano",
+        "category": "Cocina"
+    },
+    {
+        "id": "peruvian_restaurant",
+        "label": "Peruano",
+        "category": "Cocina"
+    },
+    {
+        "id": "cuban_restaurant",
+        "label": "Cubano",
+        "category": "Cocina"
+    },
+    {
+        "id": "caribbean_restaurant",
+        "label": "Caribeño",
+        "category": "Cocina"
+    },
+    {
+        "id": "middle_eastern_restaurant",
+        "label": "Oriente Medio",
+        "category": "Cocina"
+    },
+    {
+        "id": "lebanese_restaurant",
+        "label": "Libanés",
+        "category": "Cocina"
+    },
+    {
+        "id": "israeli_restaurant",
+        "label": "Israelí",
+        "category": "Cocina"
+    },
+    {
+        "id": "turkish_restaurant",
+        "label": "Turco",
+        "category": "Cocina"
+    },
+    {
+        "id": "persian_restaurant",
+        "label": "Persa",
+        "category": "Cocina"
+    },
+    {
+        "id": "afghani_restaurant",
+        "label": "Afgano",
+        "category": "Cocina"
+    },
+    {
+        "id": "pakistani_restaurant",
+        "label": "Pakistaní",
+        "category": "Cocina"
+    },
+    {
+        "id": "bangladeshi_restaurant",
+        "label": "Bangladesí",
+        "category": "Cocina"
+    },
+    {
+        "id": "sri_lankan_restaurant",
+        "label": "Sri Lanka",
+        "category": "Cocina"
+    },
+    {
+        "id": "african_restaurant",
+        "label": "Africano",
+        "category": "Cocina"
+    },
+    {
+        "id": "moroccan_restaurant",
+        "label": "Marroquí",
+        "category": "Cocina"
+    },
+    {
+        "id": "ethiopian_restaurant",
+        "label": "Etíope",
+        "category": "Cocina"
+    },
+    {
+        "id": "australian_restaurant",
+        "label": "Australiano",
+        "category": "Cocina"
+    },
+    {
+        "id": "hawaiian_restaurant",
+        "label": "Hawaiano",
+        "category": "Cocina"
+    },
+    {
+        "id": "filipino_restaurant",
+        "label": "Filipino",
+        "category": "Cocina"
+    },
+    {
+        "id": "indonesian_restaurant",
+        "label": "Indonesio",
+        "category": "Cocina"
+    },
+    {
+        "id": "malaysian_restaurant",
+        "label": "Malasio",
+        "category": "Cocina"
+    },
+    {
+        "id": "burmese_restaurant",
+        "label": "Birmano",
+        "category": "Cocina"
+    },
+    {
+        "id": "cambodian_restaurant",
+        "label": "Camboyano",
+        "category": "Cocina"
+    },
+    {
+        "id": "taiwanese_restaurant",
+        "label": "Taiwanés",
+        "category": "Cocina"
+    },
+    {
+        "id": "tibetan_restaurant",
+        "label": "Tibetano",
+        "category": "Cocina"
+    },
+    {
+        "id": "mongolian_barbecue_restaurant",
+        "label": "Barbacoa Mongola",
+        "category": "Cocina"
+    },
+    {
+        "id": "barbecue_restaurant",
+        "label": "Barbacoa",
+        "category": "Cocina"
+    },
+    {
+        "id": "steak_house",
+        "label": "Carnes / Asador",
+        "category": "Cocina"
+    },
+    {
+        "id": "chicken_restaurant",
+        "label": "Pollo",
+        "category": "Cocina"
+    },
+    {
+        "id": "chicken_wings_restaurant",
+        "label": "Alitas de Pollo",
+        "category": "Cocina"
+    },
+    {
+        "id": "noodle_shop",
+        "label": "Fideos",
+        "category": "Cocina"
+    },
+    {
+        "id": "chinese_noodle_restaurant",
+        "label": "Fideos Chinos",
+        "category": "Cocina"
+    },
+    {
+        "id": "soup_restaurant",
+        "label": "Sopas",
+        "category": "Cocina"
+    },
+    {
+        "id": "salad_shop",
+        "label": "Ensaladas",
+        "category": "Cocina"
+    },
+    {
+        "id": "fusion_restaurant",
+        "label": "Fusión",
+        "category": "Cocina"
+    },
+    {
+        "id": "western_restaurant",
+        "label": "Occidental",
+        "category": "Cocina"
+    },
+    {
+        "id": "vegetarian_restaurant",
+        "label": "Vegetariano",
+        "category": "Dietas Especiales"
+    },
+    {
+        "id": "vegan_restaurant",
+        "label": "Vegano",
+        "category": "Dietas Especiales"
+    },
+    {
+        "id": "halal_restaurant",
+        "label": "Halal",
+        "category": "Dietas Especiales"
+    }
+]

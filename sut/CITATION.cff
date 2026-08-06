@@ -1,0 +1,52 @@
+# This CITATION.cff file was generated for the EPI-DevorApp repository
+# Visit https://citation-file-format.github.io/ for more information
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "DevorApp"
+type: software
+abstract: >-
+  DevorApp: recomendandor de  restaurantes según tu ubicación,
+  gustos y momento. A personalized restaurant discovery
+  ecosystem that recommends restaurants based on the
+  user's location, preferences, and eating habits. Developed
+  as a Bachelor's Degree Thesis (Trabajo Fin de Grado) at the
+  University of Oviedo.
+authors:
+  - family-names: "Torre Llorente"
+    given-names: "Alejandro"
+    affiliation: "Universidad de Oviedo"
+  - family-names: "Augusto"
+    given-names: "Cristian"
+    affiliation: "Universidad de Oviedo"
+  - family-names: "Rodríguez Fernández"
+    given-names: "Ana"
+    affiliation: "HP SDCS"
+  - family-names: "García Ullán"
+    given-names: "Pablo"
+    affiliation: "HP SDCS"
+repository-code: "https://github.com/UO294431/EPI-DevorApp"
+url: "https://github.com/UO294431/EPI-DevorApp"
+license: MIT
+version: 1.0.0
+date-released: 2026-07-04
+keywords:
+  - restaurant recommendation
+  - degree thesis
+  - Trabajo Fin de Grado
+  - University of Oviedo
+  - machine learning
+  - React
+  - FastAPI
+preferred-citation:
+  type: thesis
+  title: "DevorApp: recomendando restaurantes según tu ubicación, gustos y momento"
+  authors:
+    - family-names: "Torre Llorente"
+      given-names: "Alejandro"
+      affiliation: "Universidad de Oviedo"
+  institution:
+    name: "Universidad de Oviedo"
+  thesis-type: "Bachelor's Thesis (Trabajo Fin de Grado)"
+  year: 2026
+
+ 

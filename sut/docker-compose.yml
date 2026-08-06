@@ -1,0 +1,72 @@
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    container_name: devorapp-db
+    environment:
+      POSTGRES_DB: tfg_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - devorapp-net
+
+  # ── Keras recommendation microservice ────────────────────────────────────────
+  keras-api:
+    build: ./keras-api
+    container_name: devorapp-keras-api
+    env_file:
+      - ./keras-api/.env
+    ports:
+      - "8001:8001"
+    networks:
+      - devorapp-net
+
+  # ── FastAPI backend ─────────────────────────────────────────────────────────
+  backend:
+    build: ./backend
+    container_name: devorapp-backend
+    env_file:
+      - ./backend/.env
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/tfg_db
+      KERAS_API_URL: http://keras-api:8001/predict
+    depends_on:
+      db:
+        condition: service_healthy
+      keras-api:
+        condition: service_started
+    volumes:
+      - ./backend/firebase-service-account.json:/app/firebase-service-account.json
+    networks:
+      - devorapp-net
+
+  # ── React frontend (nginx) ──────────────────────────────────────────────────
+  frontend:
+    build: ./frontend
+    container_name: devorapp-frontend
+    ports:
+      - "80:8080"
+      - "443:8443"
+    depends_on:
+      - backend
+    networks:
+      - devorapp-net
+
+volumes:
+  postgres_data:
+
+networks:
+  devorapp-net:
+    driver: bridge

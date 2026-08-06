@@ -1,0 +1,44 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.2'
+        classpath 'com.google.gms:google-services:4.4.2'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+    // Fix: kotlin-stdlib-jdk7 and kotlin-stdlib-jdk8 were merged into kotlin-stdlib since 1.8.
+    // Capacitor Android pulls in old versions causing duplicate class errors.
+    configurations.configureEach {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.jetbrains.kotlin'
+                    && (details.requested.name == 'kotlin-stdlib-jdk7'
+                        || details.requested.name == 'kotlin-stdlib-jdk8')) {
+                details.useVersion '1.8.22'
+                details.because 'kotlin-stdlib-jdk7/jdk8 merged into kotlin-stdlib since 1.8'
+            }
+        }
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
