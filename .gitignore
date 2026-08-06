@@ -1,0 +1,50 @@
+# Root .gitignore — cross-cutting IDE/OS clutter only.
+# Build artifacts, dependencies, and language-specific ignores live in each
+# subproject's own .gitignore (sut/, selenium-java/, cypress-js/) since git
+# applies nested .gitignore files cumulatively.
+
+# ── IntelliJ IDEA ──────────────────────────────────────────────────────────
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# ── Eclipse ────────────────────────────────────────────────────────────────
+.project
+.classpath
+.settings/
+.metadata/
+bin/
+tmp/
+*.launch
+.factorypath
+.buildpath
+.target/
+
+# ── PyCharm ────────────────────────────────────────────────────────────────
+# (shares .idea/ with IntelliJ, covered above)
+*.iml
+
+# ── VS Code ────────────────────────────────────────────────────────────────
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+# ── OS clutter ─────────────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ── Editor swap/backup files ───────────────────────────────────────────────
+*.swp
+*.swo
+*~
+*.bak
