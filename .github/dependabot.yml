@@ -414,35 +414,42 @@ updates:
       - dependency-name: "org.seleniumhq.selenium:*"
         update-types: ["version-update:semver-major"]
 
-  # ─── Test suite · cypress-js (npm) ─────────────────────────────────────────
-  # Same slot as selenium-java: the two suites cover the same scenarios and are
-  # kept on comparable tooling generations.
-  - package-ecosystem: npm
-    directory: "/cypress-js"
-    schedule:
-      interval: weekly
-      day: "friday"
-      time: "00:40"
-      timezone: "Europe/Madrid"
-    assignees:
-      - "augustocristian"
-    labels:
-      - "dependencies"
-      - "tests"
-    commit-message:
-      prefix: "deps(cypress-js)"
-    versioning-strategy: "increase"
-    rebase-strategy: "disabled"
-    open-pull-requests-limit: 20
-    groups:
-      cypress:
-        patterns:
-          - "cypress"
-          - "cypress-*"
-          - "@cypress/*"
-      cypress-js-misc:
-        patterns:
-          - "*"
+  # ─── Test suite · cypress-js (npm) — DISABLED until the suite reaches main ──
+  # Dependabot reads this file from the DEFAULT branch and resolves every
+  # `directory` against it. cypress-js/ currently lives only on
+  # `1-create-the-devorapp-cypressjavascript-test-suite`, so on main this entry
+  # has no manifest to read and the npm job errors with
+  # "Dependabot couldn't find a package.json" (it aborts the whole npm run
+  # without opening PRs). Re-enable it in the same commit that merges the
+  # Cypress suite into main; it belongs in the selenium-java slot, so the two
+  # sibling suites stay on comparable tooling generations.
+  #
+  # - package-ecosystem: npm
+  #   directory: "/cypress-js"
+  #   schedule:
+  #     interval: weekly
+  #     day: "friday"
+  #     time: "00:40"
+  #     timezone: "Europe/Madrid"
+  #   assignees:
+  #     - "augustocristian"
+  #   labels:
+  #     - "dependencies"
+  #     - "tests"
+  #   commit-message:
+  #     prefix: "deps(cypress-js)"
+  #   versioning-strategy: "increase"
+  #   rebase-strategy: "disabled"
+  #   open-pull-requests-limit: 20
+  #   groups:
+  #     cypress:
+  #       patterns:
+  #         - "cypress"
+  #         - "cypress-*"
+  #         - "@cypress/*"
+  #     cypress-js-misc:
+  #       patterns:
+  #         - "*"
 
   # ─── Reserved · E2E suites not yet in the repository ───────────────────────
   # Uncomment each block together with its (currently empty) CI stage.
