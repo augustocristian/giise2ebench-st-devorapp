@@ -49,13 +49,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Poetry
         run: pipx install poetry
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'poetry'
@@ -75,7 +75,7 @@ jobs:
         run: poetry run pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
 
       - name: Upload Backend Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: backend-coverage
@@ -87,10 +87,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
@@ -105,7 +105,7 @@ jobs:
         run: pytest test_main.py -v --cov=. --cov-report=xml:coverage.xml
 
       - name: Upload Keras Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: keras-coverage
@@ -117,10 +117,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -139,7 +139,7 @@ jobs:
         run: npm run test -- --coverage
 
       - name: Upload Frontend Coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: frontend-coverage
@@ -163,24 +163,24 @@ jobs:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Download Backend Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: backend-coverage
           path: sut/backend
 
       - name: Download Keras Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: keras-coverage
           path: sut/keras-api
 
       - name: Download Frontend Coverage
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: frontend-coverage
           path: sut/frontend/coverage/
@@ -188,7 +188,7 @@ jobs:
       - name: SonarQube Scan
         # sonar-project.properties lives in sut/ and its paths are relative to it.
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarqube-scan-action@v7.1.0
+        uses: SonarSource/sonarqube-scan-action@v8.2.1
         with:
           projectBaseDir: sut
           args: >
@@ -224,14 +224,14 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to the Container registry
         if: ${{ github.event_name != 'pull_request' }}
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -292,13 +292,13 @@ jobs:
     needs: [build-docker-images]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Start DevorApp (SUT)
       #   uses: ./.github/actions/start-sut
       #
       # - name: Set up JDK 17
-      #   uses: actions/setup-java@v4
+      #   uses: actions/setup-java@v6
       #   with:
       #     java-version: '17'
       #     distribution: 'temurin'
@@ -309,7 +309,7 @@ jobs:
       #   run: mvn -B clean test -Dheadless=true
       #
       # - name: Upload surefire reports
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@v7
       #   if: always()
       #   with:
       #     name: selenium-java-reports
@@ -325,7 +325,7 @@ jobs:
     needs: [build-docker-images]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Start DevorApp (SUT)
       #   uses: ./.github/actions/start-sut
@@ -346,7 +346,7 @@ jobs:
       #   run: dotnet test --logger "trx;LogFileName=results.trx"
       #
       # - name: Upload test results
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@v7
       #   if: always()
       #   with:
       #     name: playwright-csharp-reports
@@ -362,13 +362,13 @@ jobs:
     needs: [build-docker-images]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Start DevorApp (SUT)
       #   uses: ./.github/actions/start-sut
       #
       # - name: Set up Node.js
-      #   uses: actions/setup-node@v4
+      #   uses: actions/setup-node@v7
       #   with:
       #     node-version: ${{ env.NODE_VERSION }}
       #     cache: 'npm'
@@ -383,7 +383,7 @@ jobs:
       #   run: npm test
       #
       # - name: Upload screenshots and videos
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@v7
       #   if: always()
       #   with:
       #     name: cypress-js-reports
@@ -401,13 +401,13 @@ jobs:
     needs: [build-docker-images]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # - name: Start DevorApp (SUT)
       #   uses: ./.github/actions/start-sut
       #
       # - name: Set up Python
-      #   uses: actions/setup-python@v5
+      #   uses: actions/setup-python@v7
       #   with:
       #     python-version: ${{ env.PYTHON_VERSION }}
       #     cache: 'pip'
@@ -422,7 +422,7 @@ jobs:
       #   run: pytest tests/ -v --junitxml=reports/junit.xml
       #
       # - name: Upload test reports
-      #   uses: actions/upload-artifact@v4
+      #   uses: actions/upload-artifact@v7
       #   if: always()
       #   with:
       #     name: puppeteer-python-reports
@@ -443,17 +443,17 @@ jobs:
       contents: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: 'gradle'
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
@@ -502,14 +502,14 @@ jobs:
           fi
 
       - name: Upload APK Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: devorapp-release-apk
           path: sut/frontend/android/app/build/outputs/apk/release/app-release.apk
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: sut/frontend/android/app/build/outputs/apk/release/app-release.apk
         env:
