@@ -1,0 +1,18 @@
+# Only pyproject.toml, poetry.lock, README.md and gplaces_mock/ are needed to build.
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+coverage.xml
+logs/
+tests/
+.flake8
+.git/
+.gitignore
+.env
+Dockerfile
+.dockerignore

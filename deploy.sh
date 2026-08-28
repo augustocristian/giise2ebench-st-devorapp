@@ -176,7 +176,7 @@ fi
 if [[ "$MODE" == "docker" ]]; then
     COMPOSE_CMD="docker compose"
     if $DEV; then
-        COMPOSE_CMD="docker compose -f docker-compose.yml -f docker-compose.dev.yml"
+        COMPOSE_CMD="docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.hotreload.yml"
     fi
 
     SERVICES=""

@@ -280,7 +280,8 @@ class RecommendationService:
 
     def _get_photo_url(self, photos: List[Dict[str, Any]]) -> str:
         if not photos or not photos[0].get("name"): return ""
-        return f"https://places.googleapis.com/v1/{photos[0]['name']}/media?maxHeightPx=400&maxWidthPx=400&key={settings.GOOGLE_API_KEY}"
+        places_root = (settings.GOOGLE_PLACES_PHOTO_BASE_URL or settings.GOOGLE_PLACES_BASE_URL).rstrip("/")
+        return f"{places_root}/{photos[0]['name']}/media?maxHeightPx=400&maxWidthPx=400&key={settings.GOOGLE_API_KEY}"
 
     async def _geocode_location(self, location: str):
         """Geocodifica una cadena de texto a coordenadas (lat, lng).

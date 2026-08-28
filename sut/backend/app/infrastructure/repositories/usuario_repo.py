@@ -23,7 +23,7 @@ def verify_password_and_get_uid(email: str, password: str) -> Optional[str]:
     """
     get_firebase_app()
     url = (
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
+        f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:signInWithPassword"
         f"?key={settings.FIREBASE_API_KEY}"
     )
     try:
@@ -46,7 +46,7 @@ def send_verification_email(email: str, password: str) -> bool:
     get_firebase_app()
     # 1. Obtener el idToken iniciando sesión
     login_url = (
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
+        f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:signInWithPassword"
         f"?key={settings.FIREBASE_API_KEY}"
     )
     try:
@@ -69,7 +69,7 @@ def send_verification_email(email: str, password: str) -> bool:
         # 2. Solicitar el correo de verificación
         print("DEBUG: Requesting verification email...")
         verify_url = (
-            "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode"
+            f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:sendOobCode"
             f"?key={settings.FIREBASE_API_KEY}"
         )
         verify_resp = httpx.post(
@@ -92,7 +92,7 @@ def send_email_change_verification(email: str, password: str, new_email: str) ->
     """
     get_firebase_app()
     login_url = (
-        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword"
+        f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:signInWithPassword"
         f"?key={settings.FIREBASE_API_KEY}"
     )
     try:
@@ -109,7 +109,7 @@ def send_email_change_verification(email: str, password: str, new_email: str) ->
             return False
 
         verify_url = (
-            "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode"
+            f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:sendOobCode"
             f"?key={settings.FIREBASE_API_KEY}"
         )
         verify_resp = httpx.post(
@@ -132,7 +132,7 @@ def send_password_reset_email(email: str) -> bool:
     """
     get_firebase_app()
     url = (
-        "https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode"
+        f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:sendOobCode"
         f"?key={settings.FIREBASE_API_KEY}"
     )
     try:

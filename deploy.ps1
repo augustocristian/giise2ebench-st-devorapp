@@ -16,7 +16,8 @@
     frontend  - frontend only (assumes backend is already running)
 
 .PARAMETER Dev
-    Use docker-compose.dev.yml overlay (hot reload, source volumes).
+    Use the dev stack (Firebase emulator + gplaces-mock, docker-compose.dev.yml) with the
+    hot-reload overlay (docker-compose.hotreload.yml, source volumes).
     Only applies to docker mode.
 
 .PARAMETER SkipTests
@@ -204,7 +205,7 @@ if ($Apk) {
 
 if ($Mode -eq "docker") {
     $composeArgs = @("compose")
-    if ($Dev) { $composeArgs += @("-f", "docker-compose.yml", "-f", "docker-compose.dev.yml") }
+    if ($Dev) { $composeArgs += @("-f", "docker-compose.yml", "-f", "docker-compose.dev.yml", "-f", "docker-compose.hotreload.yml") }
     $composeArgs += "up", "--build"
 
     # Select which services to start

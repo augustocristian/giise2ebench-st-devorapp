@@ -130,9 +130,70 @@ Dado el coste computacional y las dependencias específicas necesarias para el m
 
 ---
 
+## Modos de despliegue: `dev` y `prod`
+
+El sistema se despliega de dos formas con los mismos servicios (PostgreSQL, Backend, Frontend y Keras API). Lo único que cambia es **a qué servicios externos** habla el backend:
+
+| | **dev** | **prod** |
+|---|---|---|
+| Autenticación y perfiles (Firebase Auth + Firestore) | `firebase-emulator` (contenedor local) | Proyecto real de Firebase |
+| Restaurantes y geocodificación (Google Places + Geocoding) | `gplaces-mock` (contenedor local, dataset fijo) | API real de Google |
+| Credenciales necesarias | **Ninguna** | `firebase-service-account.json`, `FIREBASE_API_KEY`, `GOOGLE_API_KEY`... |
+| Ficheros `.env` | No son necesarios | Necesarios (ver más abajo) |
+| Compose | `docker-compose.yml` + `docker-compose.dev.yml` | `docker-compose.yml` |
+| Datos | Efímeros: se pierden al parar el emulador | Persistentes (Firebase real) |
+| Coste / cuota | Ninguno | Cuota y facturación de Google y Firebase |
+
+### Modo dev (emulador + mock, sin credenciales)
+
+```bash
+# Desde la carpeta sut/
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+
+# Parar y borrar los datos (base de datos y emulador)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+```
+
+[`docker-compose.dev.yml`](docker-compose.dev.yml) añade dos servicios y reconfigura el backend para usarlos:
+
+- **[`firebase-emulator`](firebase-emulator)**: *Firebase Local Emulator Suite* (Authentication en el puerto `9099` y Firestore en el `8080`, solo dentro de la red de Docker). El backend lo usa mediante `FIREBASE_AUTH_EMULATOR_HOST`, `FIRESTORE_EMULATOR_HOST` y `FIREBASE_AUTH_BASE_URL`. Con estas variables el Firebase Admin SDK arranca **sin clave de cuenta de servicio**.
+- **[`gplaces-mock`](gplaces-mock)**: sustituto de Google Places (New) y Geocoding en el puerto `8002`, con 12 restaurantes fijos en Gijón, Oviedo y Avilés y una superficie de control `/__admin` (ver su [README](gplaces-mock/README.md)). El backend lo usa mediante `GOOGLE_PLACES_BASE_URL` y `GOOGLE_GEOCODE_URL`.
+
+Además, en dev el backend arranca con `SKIP_EMAIL_VERIFICATION=true` (no hay bandeja de entrada donde leer el correo de verificación) y `COOKIE_SECURE=false` (la cookie de sesión no es `Secure`, para que los clientes HTTP que no son navegadores puedan usarla sobre `http://`). El propio fichero aporta valores ficticios para el resto de variables, por lo que **no hace falta crear `backend/.env`, `keras-api/.env` ni `backend/firebase-service-account.json`**.
+
+Para desarrollar con recarga en vivo, añade la capa de *hot reload* (sigue usando el emulador y el mock):
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.hotreload.yml up --build
+```
+
+> **Limitaciones de dev**: el inicio de sesión con Google no funciona con el emulador, y el autocompletado de ubicación del navegador usa el SDK de Google Maps JavaScript (configurado con `VITE_GOOGLE_API_KEY` en el frontend), que no está sustituido. Este modo es el que usan el pipeline de CI y las pruebas E2E.
+>
+> Requiere Docker Compose **2.24 o superior** (`docker-compose.dev.yml` usa la etiqueta `!reset` para anular los `env_file` y el montaje de credenciales del compose base).
+
+### Modo prod (Firebase y Google Places reales)
+
+```bash
+# Desde la carpeta sut/, tras crear los ficheros de configuración
+docker compose up -d --build
+```
+
+Sin `docker-compose.dev.yml` el backend habla con los servicios reales, por lo que hay que configurarlos:
+
+1. **Firebase** (Authentication + Firestore): crea un proyecto, activa *Email/Password* en Authentication y crea una base de datos Firestore. Descarga la clave de la cuenta de servicio en `backend/firebase-service-account.json` y copia `FIREBASE_PROJECT_ID` y la *Web API Key* (`FIREBASE_API_KEY`) en `backend/.env`.
+2. **Google Places y Geocoding**: habilita *Places API (New)* y *Geocoding API* en Google Cloud y pon la clave en `GOOGLE_API_KEY` (`backend/.env` y `keras-api/.env`) y en `VITE_GOOGLE_API_KEY` (`frontend/.env`).
+3. **Google Sign-In** (opcional): ver [1.1](#11-configuración-de-google-sign-in-inicio-de-sesión-con-google).
+4. Define un `SECRET_KEY` propio y seguro para los JWT.
+
+El detalle de cada variable está en el apartado siguiente. Si no defines `GOOGLE_PLACES_BASE_URL`, `GOOGLE_GEOCODE_URL`, `FIREBASE_AUTH_BASE_URL` ni las variables `*_EMULATOR_HOST`, el backend usa los endpoints oficiales de Google y Firebase.
+
+---
+
 ## Despliegue Local
 
 ### 1. Variables de entorno (`.env`)
+> Solo en **modo prod**. En modo dev no son necesarias (ver [Modos de despliegue](#modos-de-despliegue-dev-y-prod)).
+
 Debes crear un archivo `.env` en cada uno de los directorios (`frontend/`, `backend/` y `keras-api/`) basándote en las variables de configuración reales del proyecto:
 
 #### Frontend (`frontend/.env`):
@@ -209,11 +270,14 @@ Para que el inicio de sesión con Google funcione tanto en el entorno web como e
 
 Construir y arrancar todo el ecosistema (PostgreSQL, Backend, Frontend y Keras API):
 ```bash
-# Modo Producción
+# Modo prod (Firebase y Google reales; requiere los .env y las credenciales)
 docker compose up --build
 
-# Modo Desarrollo (con recarga en vivo de backend y frontend mediante volúmenes montados)
+# Modo dev (emulador de Firebase + mock de Google Places; sin credenciales)
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+
+# Modo dev con recarga en vivo de backend y frontend (volúmenes montados)
+docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.hotreload.yml up --build
 ```
 
 - **Frontend**: Acceso en [http://localhost](http://localhost) (o [http://localhost:5173](http://localhost:5173) en desarrollo)
@@ -265,7 +329,7 @@ cd ..
 # Levantar únicamente el frontend
 .\deploy.ps1 -Component frontend
 
-# Levantar con recarga en caliente overlay (modo desarrollo)
+# Levantar en modo dev: emulador de Firebase + mock de Google Places + recarga en caliente
 .\deploy.ps1 -Dev
 
 # Ejecutar el stack en modo nativo en lugar de Docker
@@ -290,7 +354,7 @@ chmod +x deploy.sh
 ./deploy.sh                          # Todo el stack, Docker
 ./deploy.sh --component backend      # Backend + DB únicamente
 ./deploy.sh --component frontend     # Frontend únicamente
-./deploy.sh --dev                    # Docker con hot-reload para desarrollo
+./deploy.sh --dev                    # Docker en modo dev: emulador + mock + hot-reload
 ./deploy.sh --mode native            # Procesos nativos locales
 ./deploy.sh --skip-tests             # Omitir ejecución de tests
 ./deploy.sh --apk                    # Compilar la APK de depuración Android

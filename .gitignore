@@ -275,9 +275,9 @@ gradle-app.setting
 
 # Eclipse Gradle plugin generated files
 # Eclipse Core
-.project
+/sut/**/.project
 # JDT-specific (Eclipse Java Development Tools)
-.classpath
+/sut/**/.classpath
 
 ### ReactNative.Xcode Stack ###
 ## User settings
@@ -457,5 +457,72 @@ buck-out/
 # Firebase Service Account (credenciales privadas — NUNCA subir a git)
 firebase-service-account.json
 **/firebase-service-account.json
+
+### IDEs ###
+# JetBrains: ignored everywhere, including the repository root
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+### Frontend (sut/frontend) ###
+dist-ssr
+/sut/frontend/*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Playwright
+playwright-report/
+test-results/
+playwright/.cache/
+
+### Android (sut/frontend/android) ###
+*.aar
+*.ap_
+*.aab
+*.dex
+*.class
+bin/
+gen/
+proguard/
+.navigation/
+vcs.xml
+freeline.py
+freeline/
+freeline_project_description.json
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+capacitor-cordova-android-plugins
+# Capacitor copied web assets and generated config
+/sut/frontend/android/app/src/main/assets/public
+/sut/frontend/android/app/src/main/assets/capacitor.config.json
+/sut/frontend/android/app/src/main/assets/capacitor.plugins.json
+/sut/frontend/android/app/src/main/res/xml/config.xml
+/sut/frontend/android/app/build/*
+!/sut/frontend/android/app/build/.npmkeep
+
+### selenium-java ###
+target
+/selenium-java/reports
+pom.xml.versionsBackup
+TESTS-TestSuites.xml
+/selenium-java/**/*.db
+/selenium-java/*/dat/out
+/selenium-java/local.env
+# to allow each developer customize sonarlint
+org.sonarlint.eclipse.core.prefs
+# Cloned sut
+/selenium-java/devorapp
+
+### Tooling ###
+/.github/modernize/java-upgrade/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,react,visualstudiocode,reactnative

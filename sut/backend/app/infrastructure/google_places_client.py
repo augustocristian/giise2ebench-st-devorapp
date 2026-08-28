@@ -5,9 +5,10 @@ from app.core.config import settings
 class GooglePlacesClient:
     def __init__(self):
         self.api_key = settings.GOOGLE_API_KEY
-        self.base_url = "https://places.googleapis.com/v1/places:searchText"
-        self.details_url = "https://places.googleapis.com/v1/places/"
-        self.geocode_url = "https://maps.googleapis.com/maps/api/geocode/json"
+        places_root = settings.GOOGLE_PLACES_BASE_URL.rstrip("/")
+        self.base_url = f"{places_root}/places:searchText"
+        self.details_url = f"{places_root}/places/"
+        self.geocode_url = settings.GOOGLE_GEOCODE_URL
 
     async def geocode(self, location: str) -> Optional[Dict[str, float]]:
         try:

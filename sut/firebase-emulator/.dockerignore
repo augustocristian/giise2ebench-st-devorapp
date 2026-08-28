@@ -1,0 +1,7 @@
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+node_modules/
+firebase-debug.log
+*-debug.log
