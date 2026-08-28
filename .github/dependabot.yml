@@ -1,0 +1,484 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Dependabot configuration — giise2ebench-st-devorapp
+#
+# This repository holds three mostly-independent projects sharing one Git
+# history (`sut/`, `selenium-java/`, `cypress-js/`). Several dependencies are
+# *siblings*: the same library is declared in more than one manifest, or two
+# packages are released as a single train, and they must advance TOGETHER —
+# otherwise the SUT and the test suites drift and the E2E stages fail for
+# reasons unrelated to the code under test.
+#
+# Two mechanisms keep siblings in step:
+#   1. `directories:` (plural) — one entry spanning several manifests, so a
+#      shared dependency is bumped everywhere in a SINGLE pull request:
+#        · npm    → /sut/frontend + /sut  (react-router-dom, react-google-autocomplete)
+#        · docker → backend + frontend + keras-api base images (python:3.12-slim, node:22-alpine)
+#   2. `groups:` — packages that break when bumped apart (react/react-dom/@types/react,
+#      vite/@vitejs/*, vitest/@vitest/coverage-v8, selenium/selema, fastapi/pydantic).
+#
+# Everything runs in the same weekly slot (Friday 00:40 Europe/Madrid) so the
+# entries that cannot be merged into one PR — the two Python services, which
+# carry different labels — still land in the same window.
+#
+# NOTE: SonarQube is NOT run on Dependabot pull requests. That cannot be
+# expressed here; it is enforced in .github/workflows/ci.yml, where the
+# `sonar-analysis` job is guarded with `github.actor != 'dependabot[bot]'`
+# (Dependabot PRs have no access to SONAR_TOKEN, so the scan would always fail).
+# ─────────────────────────────────────────────────────────────────────────────
+version: 2
+
+updates:
+
+  # ─── GitHub Actions (CI/CD workflows) ──────────────────────────────────────
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "actions"
+    commit-message:
+      prefix: "ci"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # The pipeline is validated as a whole, so every action moves in one PR.
+      github-actions:
+        patterns:
+          - "*"
+
+  # ─── SUT · frontend (React/Vite) + sut root manifest ───────────────────────
+  # Both manifests declare react-router-dom and react-google-autocomplete; a
+  # single entry with two directories keeps them on the same version.
+  - package-ecosystem: npm
+    directories:
+      - "/sut/frontend"
+      - "/sut"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "frontend"
+    commit-message:
+      prefix: "deps(frontend)"
+      prefix-development: "deps(frontend-dev)"
+    versioning-strategy: "increase"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # react and react-dom must be the exact same version (react-dom declares
+      # a peer on the installed react), and the @types/* packages track that
+      # same major line. A partial bump produces ERESOLVE on `npm ci`.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+          - "react-router-dom"
+          - "react-google-autocomplete"
+          - "@react-oauth/google"
+      # @capacitor/core, /android and /cli are released together at the same
+      # version. Bumping one alone breaks `npx cap sync android`, and with it
+      # the APK stage of the pipeline.
+      capacitor:
+        patterns:
+          - "@capacitor/*"
+      # @vitejs/plugin-react-swc and plugin-basic-ssl declare a peer on the
+      # installed vite major; they ship as one train.
+      vite:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+      # typescript-eslint pins a supported typescript range and peers on the
+      # installed eslint; the plugins peer on both. All four move together.
+      linting:
+        patterns:
+          - "eslint"
+          - "@eslint/*"
+          - "eslint-plugin-*"
+          - "typescript-eslint"
+          - "typescript"
+          - "globals"
+      # @vitest/coverage-v8 is version-locked to vitest (it refuses to load on
+      # a mismatched major/minor), and the coverage report feeds Sonar.
+      testing:
+        patterns:
+          - "vitest"
+          - "@vitest/*"
+          - "@testing-library/*"
+          - "@playwright/test"
+          - "jsdom"
+      frontend-misc:
+        patterns:
+          - "*"
+    ignore:
+      # @capacitor/* majors require an Android Gradle Plugin / Gradle upgrade
+      # inside the committed sut/frontend/android project, which Dependabot
+      # cannot do. Bump these by hand together with android/variables.gradle.
+      - dependency-name: "@capacitor/*"
+        update-types: ["version-update:semver-major"]
+      # typescript is pinned to ~5.9 because typescript-eslint and
+      # @vitejs/plugin-react-swc only support that line; a major would break
+      # `tsc -b` in the build stage.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      # React 19 is the target of the whole view layer (sut/frontend/src/views).
+      # A major bump is a migration, not a dependency update.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  # ─── SUT · backend (FastAPI + Poetry) ──────────────────────────────────────
+  - package-ecosystem: pip
+    directory: "/sut/backend"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "backend"
+    commit-message:
+      prefix: "deps(backend)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # fastapi[standard] drags starlette, uvicorn and pydantic along; FastAPI
+      # pins a starlette range, so bumping starlette alone is unresolvable.
+      # Sibling of the `fastapi-stack` group in /sut/keras-api (same slot).
+      fastapi-stack:
+        patterns:
+          - "fastapi"
+          - "fastapi-*"
+          - "starlette"
+          - "uvicorn*"
+          - "pydantic*"
+          - "python-multipart"
+          - "httpx"
+      # alembic peers on the installed SQLAlchemy major; the migrations in
+      # sut/backend/alembic are generated against it.
+      database:
+        patterns:
+          - "sqlalchemy"
+          - "alembic"
+          - "psycopg2*"
+      # firebase-admin pulls the google-* stack; a split bump yields
+      # incompatible google-api-core / google-auth versions.
+      auth:
+        patterns:
+          - "pyjwt"
+          - "firebase-admin"
+          - "google-*"
+      # pytest-asyncio and pytest-cov peer on the pytest major.
+      testing:
+        patterns:
+          - "pytest"
+          - "pytest-*"
+          - "coverage*"
+      backend-misc:
+        patterns:
+          - "*"
+    ignore:
+      # SQLAlchemy 2.x is the API the entities/repositories are written against
+      # (sut/backend/app/models/entities); a 3.x bump is a rewrite. Same for
+      # psycopg2, whose 3.x line is a different package (psycopg).
+      - dependency-name: "sqlalchemy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "psycopg2*"
+        update-types: ["version-update:semver-major"]
+      # pydantic v2 is required by pydantic-settings 2.x (app/core/config.py).
+      - dependency-name: "pydantic*"
+        update-types: ["version-update:semver-major"]
+
+  # ─── SUT · keras-api (recommendation microservice) ─────────────────────────
+  # Same slot as the backend on purpose: the two services share the FastAPI /
+  # SQLAlchemy / pytest stack and must not drift apart between releases.
+  - package-ecosystem: pip
+    directory: "/sut/keras-api"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "backend-ai"
+    commit-message:
+      prefix: "deps(keras-api)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # tensorflow bundles its own keras and pins numpy/protobuf ranges;
+      # updating numpy or keras on its own breaks model loading at import time.
+      ml-stack:
+        patterns:
+          - "tensorflow*"
+          - "keras*"
+          - "numpy"
+          - "pandas"
+          - "scikit-learn"
+      # Mirror of the backend `fastapi-stack` group — keep both in sync.
+      fastapi-stack:
+        patterns:
+          - "fastapi"
+          - "fastapi-*"
+          - "starlette"
+          - "uvicorn*"
+          - "pydantic*"
+          - "httpx"
+          - "requests"
+          - "aiofiles"
+          - "python-dotenv"
+      database:
+        patterns:
+          - "sqlalchemy"
+          - "psycopg2*"
+      testing:
+        patterns:
+          - "pytest"
+          - "pytest-*"
+      keras-api-misc:
+        patterns:
+          - "*"
+    ignore:
+      # TensorFlow 3.x ships Keras 3, which cannot load the committed .h5
+      # model (keras-api/models/modelo_prod.h5) without a conversion step.
+      - dependency-name: "tensorflow*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "keras*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "sqlalchemy"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "psycopg2*"
+        update-types: ["version-update:semver-major"]
+
+  # ─── SUT · container base images ───────────────────────────────────────────
+  # backend/ and keras-api/ both sit on python:3.12-slim, and frontend/ has two
+  # Dockerfiles on node:22-alpine — one entry, one grouped PR, no drift between
+  # the production image and the dev (hot-reload) image.
+  - package-ecosystem: docker
+    directories:
+      - "/sut/backend"
+      - "/sut/frontend"
+      - "/sut/keras-api"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "deps(docker)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # sut/backend/Dockerfile and sut/keras-api/Dockerfile are both on
+      # python:3.12-slim: one PR, both services, no split runtime.
+      python-images:
+        patterns:
+          - "python"
+      # sut/frontend has TWO Dockerfiles (production build stage + Dockerfile.dev
+      # for hot reload) on node:22-alpine. If only one moves, `docker compose
+      # -f docker-compose.dev.yml` builds against a different Node than the
+      # image the pipeline publishes.
+      node-images:
+        patterns:
+          - "node"
+      # The nginx serving stage is unrelated to the Node build stage — its own
+      # PR, so a web-server bump never blocks a runtime bump.
+      nginx-images:
+        patterns:
+          - "nginx"
+      docker-images-misc:
+        patterns:
+          - "*"
+    ignore:
+      # The base-image majors are siblings of the toolchain versions hardcoded
+      # in .github/workflows/ci.yml (setup-python 3.12, setup-node 22). Moving
+      # one without the other means CI tests a runtime the images do not use,
+      # so these majors are bumped by hand, together with the workflow.
+      - dependency-name: "python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "node"
+        update-types: ["version-update:semver-major"]
+
+  # ─── SUT · docker compose service images (postgres) ────────────────────────
+  # Delete this entry if your Dependabot deployment does not expose the
+  # `docker-compose` ecosystem (older GitHub Enterprise Server releases).
+  - package-ecosystem: docker-compose
+    directory: "/sut"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "docker"
+    commit-message:
+      prefix: "deps(compose)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      compose-images:
+        patterns:
+          - "*"
+    ignore:
+      # A postgres major is a data migration for the persisted volume, not a
+      # dependency bump.
+      - dependency-name: "postgres"
+        update-types: ["version-update:semver-major"]
+
+  # ─── Test suite · selenium-java (Maven) ────────────────────────────────────
+  - package-ecosystem: maven
+    directory: "/selenium-java"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(selenium-java)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # selema drives the WebDriver lifecycle through the Selenium 4 API; the
+      # two are only compatible within the same Selenium major.
+      selenium:
+        patterns:
+          - "org.seleniumhq.selenium:*"
+          - "io.github.javiertuya:selema"
+      # junit-jupiter-api and junit-jupiter-engine are both wired to the single
+      # ${junit-jupiter-api.version} property in pom.xml — a PR touching only
+      # one of them cannot even be expressed there.
+      junit:
+        patterns:
+          - "org.junit.jupiter:*"
+          - "org.junit.platform:*"
+      # Same story: maven-surefire-plugin and maven-surefire-report-plugin
+      # share the single ${surefire.version} property.
+      surefire:
+        patterns:
+          - "org.apache.maven.plugins:maven-surefire-plugin"
+          - "org.apache.maven.plugins:maven-surefire-report-plugin"
+      # log4j-slf4j2-impl is the binding for slf4j-api and must match its major.
+      logging:
+        patterns:
+          - "org.slf4j:*"
+          - "org.apache.logging.log4j:*"
+      # Report/coverage tooling used by the antrun junitreport target and JaCoCo.
+      build-tooling:
+        patterns:
+          - "org.apache.maven.plugins:*"
+          - "org.jacoco:*"
+          - "org.apache.ant:*"
+      # The REST layer of the API tests (BaseApiClass) uses both together.
+      api-client:
+        patterns:
+          - "org.apache.httpcomponents:*"
+          - "com.google.code.gson:gson"
+      selenium-java-misc:
+        patterns:
+          - "*"
+    ignore:
+      # Selenium 5 removes APIs used by the page objects and by selema; that is
+      # a port of the whole suite, not an update.
+      - dependency-name: "org.seleniumhq.selenium:*"
+        update-types: ["version-update:semver-major"]
+
+  # ─── Test suite · cypress-js (npm) ─────────────────────────────────────────
+  # Same slot as selenium-java: the two suites cover the same scenarios and are
+  # kept on comparable tooling generations.
+  - package-ecosystem: npm
+    directory: "/cypress-js"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(cypress-js)"
+    versioning-strategy: "increase"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      cypress:
+        patterns:
+          - "cypress"
+          - "cypress-*"
+          - "@cypress/*"
+      cypress-js-misc:
+        patterns:
+          - "*"
+
+  # ─── Reserved · E2E suites not yet in the repository ───────────────────────
+  # Uncomment each block together with its (currently empty) CI stage.
+  #
+  # - package-ecosystem: nuget            # playwright-csharp/
+  #   directory: "/playwright-csharp"
+  #   schedule:
+  #     interval: weekly
+  #     day: "friday"
+  #     time: "00:40"
+  #     timezone: "Europe/Madrid"
+  #   assignees: ["augustocristian"]
+  #   labels: ["dependencies", "tests"]
+  #   rebase-strategy: "disabled"
+  #   open-pull-requests-limit: 20
+  #   groups:
+  #     # Microsoft.Playwright and .NUnit/.MSTest ship as one train and the
+  #     # browser download task is version-bound to the driver.
+  #     playwright:
+  #       patterns: ["Microsoft.Playwright*"]
+  #     playwright-csharp-misc:
+  #       patterns: ["*"]
+  #
+  # - package-ecosystem: pip              # puppeteer-python/
+  #   directory: "/puppeteer-python"
+  #   schedule:
+  #     interval: weekly
+  #     day: "friday"
+  #     time: "00:40"
+  #     timezone: "Europe/Madrid"
+  #   assignees: ["augustocristian"]
+  #   labels: ["dependencies", "tests"]
+  #   rebase-strategy: "disabled"
+  #   open-pull-requests-limit: 20
+  #   groups:
+  #     puppeteer:
+  #       patterns: ["pyppeteer*", "puppeteer*"]
+  #     puppeteer-python-misc:
+  #       patterns: ["*"]

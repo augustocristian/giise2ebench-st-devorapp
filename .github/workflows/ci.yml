@@ -1,0 +1,516 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI/CD Pipeline — giise2ebench-st-devorapp
+#
+# The pipeline is organised in stages; each stage only starts once the previous
+# one is green (expressed with `needs:`):
+#
+#   STAGE 1  BUILD & UNIT TEST   backend-ci · keras-api-ci · frontend-ci
+#   STAGE 2  STATIC ANALYSIS     sonar-analysis          (skipped for Dependabot)
+#   STAGE 3  PACKAGE             build-docker-images
+#   STAGE 4  SYSTEM E2E TESTS    one stage per test-technology combination
+#   STAGE 5  MOBILE DELIVERY     build-android-apk
+#
+# Stage 4 holds one stage per E2E technology combination of the benchmark.
+# They are intentionally EMPTY for now — the scaffolding (SUT startup through
+# .github/actions/start-sut, toolchain setup, invocation) is left commented in
+# each job so wiring a suite is a matter of uncommenting it.
+# ─────────────────────────────────────────────────────────────────────────────
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, desarrollo ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  REGISTRY: ghcr.io
+  PYTHON_VERSION: '3.12'
+  NODE_VERSION: '22'
+
+jobs:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 1 — BUILD & UNIT TEST
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ─── BACKEND TEST & COVERAGE ────────────────────────────────────────────────
+  backend-ci:
+    name: Backend Test & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'poetry'
+          cache-dependency-path: sut/backend/poetry.lock
+
+      - name: Install postgres dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev gcc
+
+      - name: Install backend dependencies
+        working-directory: sut/backend
+        run: poetry install --with dev
+
+      - name: Run backend unit and integration tests
+        working-directory: sut/backend
+        run: poetry run pytest tests/ -v --cov=app --cov-report=xml:coverage.xml
+
+      - name: Upload Backend Coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: sut/backend/coverage.xml
+
+  # ─── KERAS API (RECOMMENDATION MODEL) TEST & COVERAGE ───────────────────────
+  keras-api-ci:
+    name: Keras API Test & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: sut/keras-api/requirements.txt
+
+      - name: Install Keras API dependencies
+        working-directory: sut/keras-api
+        run: pip install -r requirements.txt
+
+      - name: Run Keras API tests
+        working-directory: sut/keras-api
+        run: pytest test_main.py -v --cov=. --cov-report=xml:coverage.xml
+
+      - name: Upload Keras Coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: keras-coverage
+          path: sut/keras-api/coverage.xml
+
+  # ─── FRONTEND LINT & TEST ───────────────────────────────────────────────────
+  frontend-ci:
+    name: Frontend Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: sut/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: sut/frontend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: sut/frontend
+        run: npm run lint
+
+      - name: Run frontend unit tests
+        working-directory: sut/frontend
+        run: npm run test -- --coverage
+
+      - name: Upload Frontend Coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: sut/frontend/coverage/
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 2 — STATIC ANALYSIS
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ─── STATIC ANALYSIS (SONAR) ────────────────────────────────────────────────
+  # Not run for Dependabot: its pull requests get a read-only token with no
+  # access to SONAR_TOKEN, so the scan could only ever fail. Stage 3 explicitly
+  # tolerates this job being skipped (see its `if:`), so dependency-update PRs
+  # still go through packaging and the E2E stages.
+  sonar-analysis:
+    name: SonarQube static analysis
+    runs-on: ubuntu-latest
+    needs: [backend-ci, keras-api-ci, frontend-ci]
+    if: ${{ github.actor != 'dependabot[bot]' }}
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Download Backend Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: sut/backend
+
+      - name: Download Keras Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: keras-coverage
+          path: sut/keras-api
+
+      - name: Download Frontend Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: sut/frontend/coverage/
+
+      - name: SonarQube Scan
+        # sonar-project.properties lives in sut/ and its paths are relative to it.
+        if: ${{ env.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v7.1.0
+        with:
+          projectBaseDir: sut
+          args: >
+            -Dsonar.jasmin.internal.disabled=true
+            -Dsonar.jasmin.internal.js.ts.disabled=true
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report missing Sonar token
+        if: ${{ env.SONAR_TOKEN == '' }}
+        run: echo "::warning title=SonarQube::SONAR_TOKEN is not configured - static analysis was skipped."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 3 — PACKAGE
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ─── DOCKER PACKAGING ───────────────────────────────────────────────────────
+  # Images are always built (so a broken Dockerfile fails the PR) but only
+  # pushed to GHCR outside pull requests, where the token is writable.
+  build-docker-images:
+    name: Build & Publish Docker Images
+    runs-on: ubuntu-latest
+    needs: [backend-ci, keras-api-ci, frontend-ci, sonar-analysis]
+    if: >-
+      ${{ !cancelled()
+      && needs.backend-ci.result == 'success'
+      && needs.keras-api-ci.result == 'success'
+      && needs.frontend-ci.result == 'success'
+      && needs.sonar-analysis.result != 'failure' }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to the Container registry
+        if: ${{ github.event_name != 'pull_request' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Firebase service account file
+        working-directory: sut
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            echo "$FIREBASE_SERVICE_ACCOUNT" | base64 --decode > backend/firebase-service-account.json
+          else
+            echo '{}' > backend/firebase-service-account.json
+          fi
+
+      - name: Build and push Docker images
+        working-directory: sut
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          PUSH=${{ github.event_name != 'pull_request' }}
+
+          push_image() {
+            if [ "$PUSH" = "true" ]; then
+              docker push "$1"
+            else
+              echo "Pull request build - skipping push of $1"
+            fi
+          }
+
+          for SERVICE in backend frontend keras-api; do
+            IMAGE=${{ env.REGISTRY }}/$REPO_LOWER/$SERVICE
+            docker build -t "$IMAGE:$SHORT_SHA" -t "$IMAGE:latest" ./$SERVICE
+            push_image "$IMAGE:$SHORT_SHA"
+            push_image "$IMAGE:latest"
+
+            # If running on a tag, also push the version tag
+            if [ "${{ github.ref_type }}" = "tag" ]; then
+              docker tag "$IMAGE:$SHORT_SHA" "$IMAGE:${{ github.ref_name }}"
+              push_image "$IMAGE:${{ github.ref_name }}"
+            fi
+          done
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 4 — SYSTEM E2E TESTS (one stage per technology combination)
+  #
+  # All four stages are placeholders for now. To wire one up:
+  #   1. uncomment its steps,
+  #   2. point the suite at the SUT started by ./.github/actions/start-sut
+  #      (backend http://localhost:8000, frontend http://localhost).
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  # ─── E2E · SELENIUM + JAVA ──────────────────────────────────────────────────
+  e2e-selenium-java:
+    name: "E2E: Selenium + Java"
+    runs-on: ubuntu-latest
+    needs: [build-docker-images]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Start DevorApp (SUT)
+      #   uses: ./.github/actions/start-sut
+      #
+      # - name: Set up JDK 17
+      #   uses: actions/setup-java@v4
+      #   with:
+      #     java-version: '17'
+      #     distribution: 'temurin'
+      #     cache: 'maven'
+      #
+      # - name: Run E2E & API Maven tests headless
+      #   working-directory: selenium-java
+      #   run: mvn -B clean test -Dheadless=true
+      #
+      # - name: Upload surefire reports
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: selenium-java-reports
+      #     path: selenium-java/target/**/surefire-reports/
+
+      - name: Stage reserved
+        run: echo "::notice title=Selenium + Java::E2E stage reserved - no tests wired yet."
+
+  # ─── E2E · PLAYWRIGHT + C# ──────────────────────────────────────────────────
+  e2e-playwright-csharp:
+    name: "E2E: Playwright + C#"
+    runs-on: ubuntu-latest
+    needs: [build-docker-images]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Start DevorApp (SUT)
+      #   uses: ./.github/actions/start-sut
+      #
+      # - name: Set up .NET
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #     dotnet-version: '8.0.x'
+      #
+      # - name: Install Playwright browsers
+      #   working-directory: playwright-csharp
+      #   run: |
+      #     dotnet build
+      #     pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+      #
+      # - name: Run E2E & API tests
+      #   working-directory: playwright-csharp
+      #   run: dotnet test --logger "trx;LogFileName=results.trx"
+      #
+      # - name: Upload test results
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: playwright-csharp-reports
+      #     path: playwright-csharp/**/TestResults/
+
+      - name: Stage reserved
+        run: echo "::notice title=Playwright + C#::E2E stage reserved - no tests wired yet."
+
+  # ─── E2E · CYPRESS + JAVASCRIPT ─────────────────────────────────────────────
+  e2e-cypress-javascript:
+    name: "E2E: Cypress + JavaScript"
+    runs-on: ubuntu-latest
+    needs: [build-docker-images]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Start DevorApp (SUT)
+      #   uses: ./.github/actions/start-sut
+      #
+      # - name: Set up Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: ${{ env.NODE_VERSION }}
+      #     cache: 'npm'
+      #     cache-dependency-path: cypress-js/package-lock.json
+      #
+      # - name: Install suite dependencies
+      #   working-directory: cypress-js
+      #   run: npm ci
+      #
+      # - name: Run E2E & API specs
+      #   working-directory: cypress-js
+      #   run: npm test
+      #
+      # - name: Upload screenshots and videos
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: cypress-js-reports
+      #     path: |
+      #       cypress-js/cypress/screenshots/
+      #       cypress-js/cypress/videos/
+
+      - name: Stage reserved
+        run: echo "::notice title=Cypress + JavaScript::E2E stage reserved - no tests wired yet."
+
+  # ─── E2E · PUPPETEER + PYTHON ───────────────────────────────────────────────
+  e2e-puppeteer-python:
+    name: "E2E: Puppeteer + Python"
+    runs-on: ubuntu-latest
+    needs: [build-docker-images]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Start DevorApp (SUT)
+      #   uses: ./.github/actions/start-sut
+      #
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: ${{ env.PYTHON_VERSION }}
+      #     cache: 'pip'
+      #     cache-dependency-path: puppeteer-python/requirements.txt
+      #
+      # - name: Install suite dependencies
+      #   working-directory: puppeteer-python
+      #   run: pip install -r requirements.txt
+      #
+      # - name: Run E2E & API tests
+      #   working-directory: puppeteer-python
+      #   run: pytest tests/ -v --junitxml=reports/junit.xml
+      #
+      # - name: Upload test reports
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: puppeteer-python-reports
+      #     path: puppeteer-python/reports/
+
+      - name: Stage reserved
+        run: echo "::notice title=Puppeteer + Python::E2E stage reserved - no tests wired yet."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # STAGE 5 — MOBILE DELIVERY
+  # ═══════════════════════════════════════════════════════════════════════════
+
+  build-android-apk:
+    name: Build & Sign Android APK
+    runs-on: ubuntu-latest
+    needs: [frontend-ci]
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: sut/frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: sut/frontend
+        run: npm ci
+
+      - name: Build frontend assets
+        working-directory: sut/frontend
+        run: npm run build
+
+      - name: Sync Capacitor Android
+        working-directory: sut/frontend
+        run: npx cap sync android
+
+      - name: Build & Sign APK
+        id: build_apk
+        working-directory: sut/frontend/android
+        env:
+          KEYSTORE_FILE: ${{ secrets.KEYSTORE_FILE }}
+          KEYSTORE_STORE_PASSWORD: ${{ secrets.KEYSTORE_STORE_PASSWORD }}
+          KEYSTORE_KEY_ALIAS: ${{ secrets.KEYSTORE_KEY_ALIAS }}
+          KEYSTORE_KEY_PASSWORD: ${{ secrets.KEYSTORE_KEY_PASSWORD }}
+        run: |
+          # Fix Windows CRLF line endings in gradlew (committed from Windows)
+          sed -i 's/\r$//' gradlew
+          chmod +x gradlew
+          if [ -z "$KEYSTORE_FILE" ]; then
+            echo "KEYSTORE_FILE secret is not set. Building auto-signed debug APK."
+            ./gradlew assembleDebug
+            # Copy debug apk to a standard location so we can still upload it as artifact
+            mkdir -p app/build/outputs/apk/release
+            cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/release/app-release.apk
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Building and signing Release APK using configured Keystore."
+            echo "$KEYSTORE_FILE" | base64 --decode > keystore.jks
+            ./gradlew assembleRelease \
+              -Pandroid.injected.signing.store.file=keystore.jks \
+              -Pandroid.injected.signing.store.password="$KEYSTORE_STORE_PASSWORD" \
+              -Pandroid.injected.signing.key.alias="$KEYSTORE_KEY_ALIAS" \
+              -Pandroid.injected.signing.key.password="$KEYSTORE_KEY_PASSWORD"
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: devorapp-release-apk
+          path: sut/frontend/android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: sut/frontend/android/app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
