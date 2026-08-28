@@ -3,17 +3,26 @@ description: >-
   Boots the DevorApp System Under Test (db + keras-api + backend + frontend)
   with Docker Compose using dummy credentials, and waits until the backend
   health endpoint answers. Shared by every E2E stage of the pipeline so all the
-  test-technology combinations exercise an identically configured SUT.
+  test-technology combinations exercise an identically configured SUT. By
+  default it also starts gplaces-mock and points the backend at it, so no stage
+  ever calls the real Google Places API.
 
 inputs:
   services:
     description: "Space-separated docker compose services to start."
     required: false
-    default: "db keras-api backend frontend"
+    default: "db gplaces-mock keras-api backend frontend"
   health-timeout:
     description: "Seconds to wait for GET /health before giving up."
     required: false
     default: "180"
+  use-places-mock:
+    description: >-
+      Layer docker-compose.e2e.yml on top, replacing Google Places and Geocoding
+      with the local gplaces-mock container. Set to "false" only for a stage that
+      deliberately exercises the real Google API.
+    required: false
+    default: "true"
 
 outputs:
   backend-url:
@@ -22,6 +31,9 @@ outputs:
   frontend-url:
     description: "Base URL of the React frontend (FRONTEND_URL / baseUrl)."
     value: "http://localhost"
+  places-mock-url:
+    description: "Base URL of gplaces-mock, including its /__admin control surface."
+    value: "http://localhost:8002"
 
 runs:
   using: "composite"
@@ -53,15 +65,38 @@ runs:
         GOOGLE_API_KEY=dummy_google_key
         EOF
 
+    - name: Resolve the compose file set
+      shell: bash
+      working-directory: sut
+      run: |
+        if [ "${{ inputs.use-places-mock }}" = "true" ]; then
+          echo "COMPOSE_FILES=-f docker-compose.yml -f docker-compose.e2e.yml" >> "$GITHUB_ENV"
+          echo "Google Places and Geocoding are served by gplaces-mock."
+        else
+          echo "COMPOSE_FILES=-f docker-compose.yml" >> "$GITHUB_ENV"
+          echo "::warning title=Google Places::This stage will call the real Google API."
+        fi
+
     - name: Start DevorApp via Docker Compose
       shell: bash
       working-directory: sut
-      run: docker compose up -d --build ${{ inputs.services }}
+      run: docker compose $COMPOSE_FILES up -d --build ${{ inputs.services }}
 
     - name: Wait for the SUT to become ready
       shell: bash
       working-directory: sut
       run: |
+        if [ "${{ inputs.use-places-mock }}" = "true" ]; then
+          echo "Waiting for http://localhost:8002/health (gplaces-mock) ..."
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8002/health > /dev/null 2>&1; then
+              echo "gplaces-mock is healthy after ${i}s."
+              break
+            fi
+            sleep 1
+          done
+        fi
+
         echo "Waiting up to ${{ inputs.health-timeout }}s for http://localhost:8000/health ..."
         for i in $(seq 1 ${{ inputs.health-timeout }}); do
           if curl -fsS http://localhost:8000/health > /dev/null 2>&1; then
@@ -73,6 +108,6 @@ runs:
           sleep 1
         done
         echo "::error title=SUT startup::/health did not answer within ${{ inputs.health-timeout }}s."
-        docker compose ps
-        docker compose logs --no-color --tail 120
+        docker compose $COMPOSE_FILES ps
+        docker compose $COMPOSE_FILES logs --no-color --tail 120
         exit 1

@@ -1,0 +1,28 @@
+# E2E override — swaps Google Places/Geocoding for the local gplaces-mock, so the
+# system under test answers restaurant searches without ever reaching Google.
+#
+# Usage: docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d
+#        (this is what .github/actions/start-sut does for every E2E stage).
+
+services:
+
+  gplaces-mock:
+    build: ./gplaces-mock
+    container_name: devorapp-gplaces-mock
+    ports:
+      # Exposed on the host as well: the browser loads restaurant photos from it,
+      # and a test suite drives its /__admin surface from outside the network.
+      - "8002:8002"
+    networks:
+      - devorapp-net
+
+  backend:
+    environment:
+      # Server-side calls travel over the compose network...
+      GOOGLE_PLACES_BASE_URL: http://gplaces-mock:8002/v1
+      GOOGLE_GEOCODE_URL: http://gplaces-mock:8002/maps/api/geocode/json
+      # ...while photo URLs end up in the browser, which only knows localhost.
+      GOOGLE_PLACES_PHOTO_BASE_URL: http://localhost:8002/v1
+    depends_on:
+      gplaces-mock:
+        condition: service_healthy
