@@ -14,6 +14,19 @@ class Settings(BaseSettings):
     GOOGLE_API_KEY: str = ""
     GOOGLE_CLIENT_ID: str = ""
 
+    # Google Places / Geocoding endpoints. Defaults hit Google; the E2E stack
+    # points them at the gplaces-mock container (see docker-compose.e2e.yml).
+    GOOGLE_PLACES_BASE_URL: str = os.getenv(
+        "GOOGLE_PLACES_BASE_URL", "https://places.googleapis.com/v1"
+    )
+    GOOGLE_GEOCODE_URL: str = os.getenv(
+        "GOOGLE_GEOCODE_URL", "https://maps.googleapis.com/maps/api/geocode/json"
+    )
+    # Photo URLs are resolved by the browser, not by the backend, so under the
+    # E2E stack they need the host-reachable address of the mock rather than its
+    # compose-network name. Empty means "same as GOOGLE_PLACES_BASE_URL".
+    GOOGLE_PLACES_PHOTO_BASE_URL: str = os.getenv("GOOGLE_PLACES_PHOTO_BASE_URL", "")
+
     # PostgreSQL (SQLAlchemy) - Override via DATABASE_URL env var
     DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres:password@localhost:5432/tfg_db")
 

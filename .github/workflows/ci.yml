@@ -111,6 +111,45 @@ jobs:
           name: keras-coverage
           path: sut/keras-api/coverage.xml
 
+  # ─── GOOGLE PLACES MOCK TEST & COVERAGE ─────────────────────────────────────
+  # Test infrastructure, not a shipped service: it is never published to GHCR,
+  # but the E2E stages depend on its wire contract, so it is tested like the rest.
+  gplaces-mock-ci:
+    name: Places Mock Test & Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'poetry'
+          cache-dependency-path: sut/gplaces-mock/poetry.lock
+
+      - name: Install gplaces-mock dependencies
+        working-directory: sut/gplaces-mock
+        run: poetry install
+
+      - name: Run gplaces-mock tests
+        working-directory: sut/gplaces-mock
+        run: poetry run pytest
+
+      - name: Run flake8
+        working-directory: sut/gplaces-mock
+        run: poetry run flake8 gplaces_mock tests
+
+      - name: Upload Places Mock Coverage
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: gplaces-mock-coverage
+          path: sut/gplaces-mock/coverage.xml
+
   # ─── FRONTEND LINT & TEST ───────────────────────────────────────────────────
   frontend-ci:
     name: Frontend Lint & Test
@@ -157,7 +196,7 @@ jobs:
   sonar-analysis:
     name: SonarQube static analysis
     runs-on: ubuntu-latest
-    needs: [backend-ci, keras-api-ci, frontend-ci]
+    needs: [backend-ci, keras-api-ci, gplaces-mock-ci, frontend-ci]
     if: ${{ github.actor != 'dependabot[bot]' }}
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -212,11 +251,12 @@ jobs:
   build-docker-images:
     name: Build & Publish Docker Images
     runs-on: ubuntu-latest
-    needs: [backend-ci, keras-api-ci, frontend-ci, sonar-analysis]
+    needs: [backend-ci, keras-api-ci, gplaces-mock-ci, frontend-ci, sonar-analysis]
     if: >-
       ${{ !cancelled()
       && needs.backend-ci.result == 'success'
       && needs.keras-api-ci.result == 'success'
+      && needs.gplaces-mock-ci.result == 'success'
       && needs.frontend-ci.result == 'success'
       && needs.sonar-analysis.result != 'failure' }}
     permissions:

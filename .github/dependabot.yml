@@ -269,6 +269,46 @@ updates:
       - dependency-name: "psycopg2*"
         update-types: ["version-update:semver-major"]
 
+  # ─── SUT · gplaces-mock (Google Places stand-in for the E2E phase) ─────────
+  # Labelled `tests`, not `backend`: it is test infrastructure that the E2E
+  # stages depend on, never a shipped service.
+  - package-ecosystem: pip
+    directory: "/sut/gplaces-mock"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(gplaces-mock)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # The mock answers with FastAPI and is exercised through its TestClient,
+      # so its web stack must move as one, mirroring the two real services.
+      fastapi-stack:
+        patterns:
+          - "fastapi"
+          - "fastapi-*"
+          - "starlette"
+          - "uvicorn*"
+          - "pydantic*"
+          - "httpx"
+      testing:
+        patterns:
+          - "pytest"
+          - "pytest-*"
+          - "coverage*"
+          - "flake8"
+      gplaces-mock-misc:
+        patterns:
+          - "*"
+
   # ─── SUT · container base images ───────────────────────────────────────────
   # backend/ and keras-api/ both sit on python:3.12-slim, and frontend/ has two
   # Dockerfiles on node:22-alpine — one entry, one grouped PR, no drift between
@@ -278,6 +318,7 @@ updates:
       - "/sut/backend"
       - "/sut/frontend"
       - "/sut/keras-api"
+      - "/sut/gplaces-mock"
     schedule:
       interval: weekly
       day: "friday"

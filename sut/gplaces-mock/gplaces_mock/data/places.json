@@ -1,0 +1,335 @@
+[
+  {
+    "id": "MOCK_GIJON_SIDRERIA_001",
+    "displayName": { "text": "Sidrería El Llagar de Cimavilla", "languageCode": "es" },
+    "formattedAddress": "C. Recoletas 12, 33201 Gijón, Asturias, España",
+    "nationalPhoneNumber": "984 19 22 01",
+    "priceLevel": "PRICE_LEVEL_MODERATE",
+    "rating": 4.5,
+    "userRatingCount": 1284,
+    "types": ["spanish_restaurant", "tapas_restaurant", "bar", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_SIDRERIA_001/photos/photo-1", "widthPx": 4032, "heightPx": 3024 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_SIDRERIA_001",
+    "websiteUri": "https://llagar-cimavilla.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: 12:00–16:00, 20:00–23:30",
+        "martes: 12:00–16:00, 20:00–23:30",
+        "miércoles: 12:00–16:00, 20:00–23:30",
+        "jueves: 12:00–16:00, 20:00–23:30",
+        "viernes: 12:00–16:00, 20:00–00:30",
+        "sábado: 12:00–00:30",
+        "domingo: 12:00–17:00"
+      ]
+    },
+    "location": { "latitude": 43.5453, "longitude": -5.6619 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["sidreria", "asturiana", "tapas", "bar", "pub", "espanola", "clasico", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_PIZZERIA_002",
+    "displayName": { "text": "Pizzería Bella Napoli", "languageCode": "es" },
+    "formattedAddress": "Av. de la Costa 45, 33205 Gijón, Asturias, España",
+    "nationalPhoneNumber": "985 33 71 44",
+    "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+    "rating": 4.3,
+    "userRatingCount": 842,
+    "types": ["pizza_restaurant", "italian_restaurant", "restaurant", "meal_delivery", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_PIZZERIA_002/photos/photo-1", "widthPx": 3000, "heightPx": 2000 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_PIZZERIA_002",
+    "websiteUri": "https://bellanapoli-gijon.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: Cerrado",
+        "martes: 13:00–16:00, 20:00–23:30",
+        "miércoles: 13:00–16:00, 20:00–23:30",
+        "jueves: 13:00–16:00, 20:00–23:30",
+        "viernes: 13:00–16:00, 20:00–00:00",
+        "sábado: 13:00–00:00",
+        "domingo: 13:00–23:00"
+      ]
+    },
+    "location": { "latitude": 43.5271, "longitude": -5.6503 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["pizzeria", "pizza", "italiana", "domicilio", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_BURGER_003",
+    "displayName": { "text": "Burger Factory Gijón", "languageCode": "es" },
+    "formattedAddress": "C. Corrida 3, 33206 Gijón, Asturias, España",
+    "nationalPhoneNumber": "984 05 66 90",
+    "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+    "rating": 4.1,
+    "userRatingCount": 2130,
+    "types": ["hamburger_restaurant", "fast_food_restaurant", "american_restaurant", "restaurant", "meal_takeaway", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_BURGER_003/photos/photo-1", "widthPx": 2400, "heightPx": 1600 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_BURGER_003",
+    "websiteUri": "https://burgerfactory-gijon.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: 12:00–23:30",
+        "martes: 12:00–23:30",
+        "miércoles: 12:00–23:30",
+        "jueves: 12:00–23:30",
+        "viernes: 12:00–01:00",
+        "sábado: 12:00–01:00",
+        "domingo: 12:00–23:30"
+      ]
+    },
+    "location": { "latitude": 43.5411, "longitude": -5.6644 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["hamburguesas", "hamburgueseria", "comida rapida", "americana", "para llevar", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_AUGA_004",
+    "displayName": { "text": "Restaurante Auga", "languageCode": "es" },
+    "formattedAddress": "Claudio Alvargonzález s/n, 33201 Gijón, Asturias, España",
+    "nationalPhoneNumber": "985 16 81 86",
+    "priceLevel": "PRICE_LEVEL_VERY_EXPENSIVE",
+    "rating": 4.7,
+    "userRatingCount": 613,
+    "types": ["seafood_restaurant", "fine_dining_restaurant", "spanish_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_AUGA_004/photos/photo-1", "widthPx": 5000, "heightPx": 3333 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_AUGA_004",
+    "websiteUri": "https://restaurante-auga.example.invalid",
+    "regularOpeningHours": {
+      "openNow": false,
+      "weekdayDescriptions": [
+        "lunes: Cerrado",
+        "martes: Cerrado",
+        "miércoles: 13:30–15:30, 21:00–23:00",
+        "jueves: 13:30–15:30, 21:00–23:00",
+        "viernes: 13:30–15:30, 21:00–23:00",
+        "sábado: 13:30–15:30, 21:00–23:00",
+        "domingo: 13:30–15:30"
+      ]
+    },
+    "location": { "latitude": 43.5442, "longitude": -5.6688 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["marisqueria", "pescado", "alta cocina", "gourmet", "espanola", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_SUSHI_005",
+    "displayName": { "text": "Sakura Sushi Bar", "languageCode": "es" },
+    "formattedAddress": "C. Menéndez Valdés 8, 33202 Gijón, Asturias, España",
+    "nationalPhoneNumber": "984 39 12 77",
+    "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+    "rating": 4.4,
+    "userRatingCount": 498,
+    "types": ["japanese_restaurant", "sushi_restaurant", "asian_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_SUSHI_005/photos/photo-1", "widthPx": 3200, "heightPx": 2133 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_SUSHI_005",
+    "websiteUri": "https://sakura-gijon.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: Cerrado",
+        "martes: 13:30–16:00, 20:30–23:30",
+        "miércoles: 13:30–16:00, 20:30–23:30",
+        "jueves: 13:30–16:00, 20:30–23:30",
+        "viernes: 13:30–16:00, 20:30–00:00",
+        "sábado: 13:30–16:00, 20:30–00:00",
+        "domingo: Cerrado"
+      ]
+    },
+    "location": { "latitude": 43.5395, "longitude": -5.6578 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["japonesa", "sushi", "asiatica", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_CAFE_006",
+    "displayName": { "text": "La Cafetería del Muro", "languageCode": "es" },
+    "formattedAddress": "Muro de San Lorenzo 21, 33203 Gijón, Asturias, España",
+    "nationalPhoneNumber": "985 34 55 12",
+    "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+    "rating": 4.2,
+    "userRatingCount": 356,
+    "types": ["cafe", "coffee_shop", "bakery", "breakfast_restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_CAFE_006/photos/photo-1", "widthPx": 1920, "heightPx": 1280 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_CAFE_006",
+    "websiteUri": "https://cafeteria-del-muro.example.invalid",
+    "regularOpeningHours": {
+      "openNow": false,
+      "weekdayDescriptions": [
+        "lunes: 08:00–20:00",
+        "martes: 08:00–20:00",
+        "miércoles: 08:00–20:00",
+        "jueves: 08:00–20:00",
+        "viernes: 08:00–21:00",
+        "sábado: 09:00–21:00",
+        "domingo: 09:00–15:00"
+      ]
+    },
+    "location": { "latitude": 43.5468, "longitude": -5.6520 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["cafeteria", "cafe", "desayunos", "panaderia", "brunch"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_VEGAN_007",
+    "displayName": { "text": "Green Point Vegano", "languageCode": "es" },
+    "formattedAddress": "C. Cabrales 62, 33201 Gijón, Asturias, España",
+    "priceLevel": "PRICE_LEVEL_MODERATE",
+    "rating": 4.5,
+    "userRatingCount": 274,
+    "types": ["vegan_restaurant", "vegetarian_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_VEGAN_007",
+    "location": { "latitude": 43.5429, "longitude": -5.6702 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["vegano", "vegetariano", "saludable", "restaurante"],
+      "note": "No phone, no website and no photos: exercises the optional-field paths of _format_results."
+    }
+  },
+  {
+    "id": "MOCK_GIJON_KEBAB_008",
+    "displayName": { "text": "Kebab Estambul", "languageCode": "es" },
+    "formattedAddress": "C. Ezcurdia 104, 33202 Gijón, Asturias, España",
+    "nationalPhoneNumber": "984 77 03 18",
+    "rating": 3.8,
+    "userRatingCount": 1102,
+    "types": ["middle_eastern_restaurant", "meal_takeaway", "fast_food_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_GIJON_KEBAB_008/photos/photo-1", "widthPx": 1600, "heightPx": 1200 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_KEBAB_008",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: 12:00–01:00",
+        "martes: 12:00–01:00",
+        "miércoles: 12:00–01:00",
+        "jueves: 12:00–01:00",
+        "viernes: 12:00–03:00",
+        "sábado: 12:00–03:00",
+        "domingo: 12:00–01:00"
+      ]
+    },
+    "location": { "latitude": 43.5341, "longitude": -5.6553 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["kebab", "turca", "comida rapida", "para llevar", "restaurante"],
+      "note": "No priceLevel at all: only returned when PRICE_LEVEL_UNSPECIFIED is in priceLevels."
+    }
+  },
+  {
+    "id": "MOCK_OVIEDO_FERMIN_009",
+    "displayName": { "text": "Restaurante Casa Fermín", "languageCode": "es" },
+    "formattedAddress": "C. San Francisco 8, 33003 Oviedo, Asturias, España",
+    "nationalPhoneNumber": "985 21 64 52",
+    "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+    "rating": 4.6,
+    "userRatingCount": 921,
+    "types": ["spanish_restaurant", "fine_dining_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_OVIEDO_FERMIN_009/photos/photo-1", "widthPx": 3600, "heightPx": 2400 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_OVIEDO_FERMIN_009",
+    "websiteUri": "https://casafermin-oviedo.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: 13:00–16:00, 20:30–23:30",
+        "martes: 13:00–16:00, 20:30–23:30",
+        "miércoles: 13:00–16:00, 20:30–23:30",
+        "jueves: 13:00–16:00, 20:30–23:30",
+        "viernes: 13:00–16:00, 20:30–23:30",
+        "sábado: 13:00–16:00, 20:30–23:30",
+        "domingo: Cerrado"
+      ]
+    },
+    "location": { "latitude": 43.3631, "longitude": -5.8508 },
+    "_mock": {
+      "city": "oviedo",
+      "keywords": ["espanola", "alta cocina", "gourmet", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_OVIEDO_TAPAS_010",
+    "displayName": { "text": "Taberna El Vasco", "languageCode": "es" },
+    "formattedAddress": "C. Gascona 15, 33001 Oviedo, Asturias, España",
+    "nationalPhoneNumber": "985 22 34 09",
+    "priceLevel": "PRICE_LEVEL_MODERATE",
+    "rating": 4.0,
+    "userRatingCount": 512,
+    "types": ["tapas_restaurant", "bar", "spanish_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_OVIEDO_TAPAS_010/photos/photo-1", "widthPx": 2048, "heightPx": 1365 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_OVIEDO_TAPAS_010",
+    "websiteUri": "https://taberna-elvasco.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: 11:00–23:00",
+        "martes: 11:00–23:00",
+        "miércoles: 11:00–23:00",
+        "jueves: 11:00–23:00",
+        "viernes: 11:00–00:30",
+        "sábado: 11:00–00:30",
+        "domingo: 11:00–17:00"
+      ]
+    },
+    "location": { "latitude": 43.3654, "longitude": -5.8443 },
+    "_mock": {
+      "city": "oviedo",
+      "keywords": ["tapas", "sidreria", "bar", "pub", "espanola", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_AVILES_ASADOR_011",
+    "displayName": { "text": "Asador La Fragua", "languageCode": "es" },
+    "formattedAddress": "C. La Cámara 30, 33402 Avilés, Asturias, España",
+    "nationalPhoneNumber": "985 56 41 20",
+    "priceLevel": "PRICE_LEVEL_MODERATE",
+    "rating": 4.2,
+    "userRatingCount": 388,
+    "types": ["barbecue_restaurant", "steak_house", "spanish_restaurant", "restaurant", "food", "point_of_interest", "establishment"],
+    "photos": [{ "name": "places/MOCK_AVILES_ASADOR_011/photos/photo-1", "widthPx": 2560, "heightPx": 1707 }],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_AVILES_ASADOR_011",
+    "websiteUri": "https://asador-lafragua.example.invalid",
+    "regularOpeningHours": {
+      "openNow": true,
+      "weekdayDescriptions": [
+        "lunes: Cerrado",
+        "martes: 13:00–16:30, 20:00–23:30",
+        "miércoles: 13:00–16:30, 20:00–23:30",
+        "jueves: 13:00–16:30, 20:00–23:30",
+        "viernes: 13:00–16:30, 20:00–00:00",
+        "sábado: 13:00–16:30, 20:00–00:00",
+        "domingo: 13:00–16:30"
+      ]
+    },
+    "location": { "latitude": 43.5560, "longitude": -5.9245 },
+    "_mock": {
+      "city": "aviles",
+      "keywords": ["asador", "parrilla", "carne", "espanola", "restaurante"]
+    }
+  },
+  {
+    "id": "MOCK_GIJON_FARMACIA_012",
+    "displayName": { "text": "Farmacia Central Gijón", "languageCode": "es" },
+    "formattedAddress": "C. Corrida 41, 33206 Gijón, Asturias, España",
+    "nationalPhoneNumber": "985 34 12 00",
+    "rating": 4.4,
+    "userRatingCount": 96,
+    "types": ["pharmacy", "store", "health", "point_of_interest", "establishment"],
+    "photos": [],
+    "googleMapsUri": "https://maps.example.invalid/place/MOCK_GIJON_FARMACIA_012",
+    "location": { "latitude": 43.5405, "longitude": -5.6631 },
+    "_mock": {
+      "city": "gijon",
+      "keywords": ["farmacia", "tienda"],
+      "note": "Non-food result: the backend must drop it in _format_results (EXCLUDED_TYPES)."
+    }
+  }
+]
