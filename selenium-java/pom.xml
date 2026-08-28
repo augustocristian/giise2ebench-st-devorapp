@@ -20,15 +20,15 @@
 
 		<slf4j-api.version>2.0.18</slf4j-api.version>
 
-		<log4j-slf4j2.version>2.26.0</log4j-slf4j2.version>
+		<log4j-slf4j2.version>2.26.1</log4j-slf4j2.version>
 
-		<surefire.version>3.5.5</surefire.version>
+		<surefire.version>3.5.6</surefire.version>
 
-		<junit-jupiter-api.version>6.0.3</junit-jupiter-api.version>
+		<junit-jupiter-api.version>6.1.3</junit-jupiter-api.version>
 
-		<selenium-java.version>4.44.0</selenium-java.version>
+		<selenium-java.version>4.47.0</selenium-java.version>
 
-		<selema.version>4.0.2</selema.version>
+		<selema.version>4.1.0</selema.version>
 
 		<!-- Prevents "undefined property" warning when JaCoCo is not active -->
 		<surefireArgLine></surefireArgLine>
@@ -119,7 +119,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>0.8.14</version>
+					<version>0.8.15</version>
 					<executions>
 						<execution>
 							<id>pre-unit-test</id>
@@ -278,7 +278,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>0.10.0</version>
+						<version>0.11.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<publishingServerId>central</publishingServerId>
