@@ -20,7 +20,7 @@
 
 		<slf4j-api.version>2.0.18</slf4j-api.version>
 
-		<log4j-slf4j2.version>2.26.0</log4j-slf4j2.version>
+		<log4j-slf4j2.version>2.26.1</log4j-slf4j2.version>
 
 		<surefire.version>3.5.5</surefire.version>
 
