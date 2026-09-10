@@ -15,7 +15,7 @@
   "dependencies": {
     "@capacitor/core": "^8.5.1",
     "@react-oauth/google": "^0.13.5",
-    "lucide-react": "^1.38.0",
+    "lucide-react": "^1.42.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-google-autocomplete": "^2.7.5",
@@ -28,7 +28,7 @@
     "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
-    "@types/node": "^26.4.0",
+    "@types/node": "^26.5.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
     "@vitejs/plugin-basic-ssl": "^2.3.0",
