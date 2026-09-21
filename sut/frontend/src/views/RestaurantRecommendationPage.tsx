@@ -319,6 +319,55 @@ const RestaurantRecommendationPage: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [selectedEntryForDetail, setSelectedEntryForDetail] = useState<any>(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const ITEMS_PER_PAGE = 10;
+
+    // Reseñas por restaurante: { [place_id]: ValoracionPublica[] }
+    const [resenasPorRestaurante, setResenasPorRestaurante] = useState<Record<string, ValoracionPublica[]>>({});
+    const [loadingResenas, setLoadingResenas] = useState<Record<string, boolean>>({});
+
+    const fetchResenas = async (placeId: string) => {
+        if (!resenasPorRestaurante[placeId]) {
+            setLoadingResenas(prev => ({ ...prev, [placeId]: true }));
+            try {
+                const resenas = await valoracionesService.obtenerResenasRestaurante(placeId);
+                setResenasPorRestaurante(prev => ({ ...prev, [placeId]: resenas }));
+            } catch (err) {
+                console.error('Error fetching reviews:', err);
+                setResenasPorRestaurante(prev => ({ ...prev, [placeId]: [] }));
+            } finally {
+                setLoadingResenas(prev => ({ ...prev, [placeId]: false }));
+            }
+        }
+    };
+
+    const handlePreferredLocationCurrency = async () => {
+        try {
+            const userData = await authService.getMe();
+            const ubicacion = userData.ubicacion;
+
+            if (ubicacion) {
+                const countryCode = await fetchCountryCodeFromLocation(ubicacion);
+                const symbol = countryCode ? getCurrencyForCountry(countryCode) : '€';
+                setCurrencySymbol(symbol);
+                setPreferredLocation(ubicacion);
+            } else {
+                setCurrencySymbol('€');
+                setPreferredLocation('');
+            }
+        } catch (error) {
+            console.error("Error al conectar con FastAPI para obtener el perfil:", error);
+            setCurrencySymbol('€');
+            // Intentar recuperar la ubicación aunque falle la geocodificación
+            try {
+                const userData = await authService.getMe();
+                if (userData.ubicacion) setPreferredLocation(userData.ubicacion);
+            } catch (e) {
+                console.error("Error definitivo al obtener ubicación:", e);
+            }
+        }
+    };
+
     // Sync selected entry with URL parameter 'detail'
     useEffect(() => {
         const detailId = searchParams.get('detail');
@@ -337,14 +386,6 @@ const RestaurantRecommendationPage: React.FC = () => {
             setSelectedEntryForDetail(null);
         }
     }, [searchParams, results]);
-
-    const [currentPage, setCurrentPage] = useState(1);
-    const ITEMS_PER_PAGE = 10;
-
-    // Reseñas por restaurante: { [place_id]: ValoracionPublica[] }
-    const [resenasPorRestaurante, setResenasPorRestaurante] = useState<Record<string, ValoracionPublica[]>>({});
-    const [loadingResenas, setLoadingResenas] = useState<Record<string, boolean>>({});
-
 
     useEffect(() => {
         if (!tagInput.trim()) {
@@ -474,21 +515,6 @@ const RestaurantRecommendationPage: React.FC = () => {
         }
     };
 
-    const fetchResenas = async (placeId: string) => {
-        if (!resenasPorRestaurante[placeId]) {
-            setLoadingResenas(prev => ({ ...prev, [placeId]: true }));
-            try {
-                const resenas = await valoracionesService.obtenerResenasRestaurante(placeId);
-                setResenasPorRestaurante(prev => ({ ...prev, [placeId]: resenas }));
-            } catch (err) {
-                console.error('Error fetching reviews:', err);
-                setResenasPorRestaurante(prev => ({ ...prev, [placeId]: [] }));
-            } finally {
-                setLoadingResenas(prev => ({ ...prev, [placeId]: false }));
-            }
-        }
-    };
-
     const handleMeGusta = async (placeId: string, valoracionId: number) => {
         // Encontrar la reseña actual para saber su estado previo
         const resenaActual = (resenasPorRestaurante[placeId] || []).find(r => r.id === valoracionId);
@@ -532,33 +558,6 @@ const RestaurantRecommendationPage: React.FC = () => {
                         : r
                 )
             }));
-        }
-    };
-
-    const handlePreferredLocationCurrency = async () => {
-        try {
-            const userData = await authService.getMe();
-            const ubicacion = userData.ubicacion;
-
-            if (ubicacion) {
-                const countryCode = await fetchCountryCodeFromLocation(ubicacion);
-                const symbol = countryCode ? getCurrencyForCountry(countryCode) : '€';
-                setCurrencySymbol(symbol);
-                setPreferredLocation(ubicacion);
-            } else {
-                setCurrencySymbol('€');
-                setPreferredLocation('');
-            }
-        } catch (error) {
-            console.error("Error al conectar con FastAPI para obtener el perfil:", error);
-            setCurrencySymbol('€');
-            // Intentar recuperar la ubicación aunque falle la geocodificación
-            try {
-                const userData = await authService.getMe();
-                if (userData.ubicacion) setPreferredLocation(userData.ubicacion);
-            } catch (e) {
-                console.error("Error definitivo al obtener ubicación:", e);
-            }
         }
     };
 
