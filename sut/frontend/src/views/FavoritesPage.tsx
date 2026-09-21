@@ -396,29 +396,29 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {lists.map(list => (
-                        <button
-                            key={list.id}
-                            className="fav-list-card"
-                            onClick={() => setSearchParams({ list: list.id.toString() })}
-                            aria-label={`Ver lista ${list.nombre}`}
-                            style={{ width: '100%', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
-                        >
-                            <div className="fav-icon-box" style={{ background: getIconColor(list.icono || 'Heart') }}>
-                                {renderIcon(list.icono || 'Heart', 22)}
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {list.nombre}
+                        <div key={list.id} className="fav-list-card">
+                            <button
+                                onClick={() => setSearchParams({ list: list.id.toString() })}
+                                aria-label={`Ver lista ${list.nombre}`}
+                                style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '1rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
+                            >
+                                <div className="fav-icon-box" style={{ background: getIconColor(list.icono || 'Heart') }}>
+                                    {renderIcon(list.icono || 'Heart', 22)}
                                 </div>
-                                <div style={{ fontSize: 'var(--font-xs)', color: 'var(--muted)', marginTop: 2 }}>
-                                    Toca para ver restaurantes
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {list.nombre}
+                                    </div>
+                                    <div style={{ fontSize: 'var(--font-xs)', color: 'var(--muted)', marginTop: 2 }}>
+                                        Toca para ver restaurantes
+                                    </div>
                                 </div>
-                            </div>
+                            </button>
                             <ListMenu
                                 onRename={() => handleRename(list)}
                                 onDelete={() => handleDelete(list)}
                             />
-                        </button>
+                        </div>
                     ))}
                 </div>
             )}
