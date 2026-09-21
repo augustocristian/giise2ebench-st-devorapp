@@ -89,20 +89,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
+      - name: Install Poetry
+        run: pipx install poetry
+
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
           python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: sut/keras-api/requirements.txt
+          cache: 'poetry'
+          cache-dependency-path: sut/keras-api/poetry.lock
 
       - name: Install Keras API dependencies
         working-directory: sut/keras-api
-        run: pip install -r requirements.txt
+        run: poetry install --with dev
 
       - name: Run Keras API tests
         working-directory: sut/keras-api
-        run: pytest test_main.py -v --cov=. --cov-report=xml:coverage.xml
+        run: poetry run pytest test_main.py -v --cov=. --cov-report=xml:coverage.xml
 
       - name: Upload Keras Coverage
         uses: actions/upload-artifact@v7

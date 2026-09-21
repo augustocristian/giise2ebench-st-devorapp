@@ -1,0 +1,29 @@
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
+
+[project]
+name = "keras-api"
+version = "0.1.0"
+description = "Recommendation model API (Keras/TensorFlow)"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi[standard]>=0.141.1",
+    "tensorflow-cpu>=2.21.0",
+    "python-dotenv>=1.2.3",
+    "pandas>=3.0.6",
+    "requests>=2.34.2",
+    "sqlalchemy>=2.0.54",
+    "psycopg2-binary>=2.9.13",
+    "httpx>=0.28.1",
+    "aiofiles>=25.1.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "pytest-cov>=7.1.0",
+]

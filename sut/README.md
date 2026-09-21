@@ -241,8 +241,8 @@ npm run dev
 #### Keras API:
 ```bash
 cd keras-api
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8001
+poetry install --with dev
+poetry run uvicorn main:app --reload --port 8001
 ```
 
 ### 4. Scripts de Automatización de Despliegue (`deploy.ps1` / `deploy.sh`)
@@ -326,7 +326,7 @@ npm run test
 ### Tests del Motor Keras API:
 ```bash
 cd keras-api
-pytest test_main.py -v
+poetry run pytest test_main.py -v
 ```
 
 ### Pruebas de Sistema (E2E y API)
