@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
 
 vi.stubEnv('VITE_GOOGLE_API_KEY', 'test_api_key');
