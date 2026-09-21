@@ -139,6 +139,16 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "react-dom"
         update-types: ["version-update:semver-major"]
+      # vitest 5 silently dropped the ambient type augmentation the bare
+      # `@testing-library/jest-dom` import relied on, so every test file using
+      # a matcher like toBeInTheDocument() failed `tsc -b` in the Docker and
+      # APK build stages with no functional test change to point at (fixed by
+      # hand in #44/#56 by switching to the `/vitest` subpath import). Bump
+      # this major by hand, together with that import.
+      - dependency-name: "vitest"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@vitest/*"
+        update-types: ["version-update:semver-major"]
 
   # ─── SUT · backend (FastAPI + Poetry) ──────────────────────────────────────
   - package-ecosystem: pip
