@@ -19,7 +19,7 @@
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-google-autocomplete": "^2.7.5",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.4"
   },
   "devDependencies": {
     "@capacitor/android": "^8.5.2",
