@@ -11,7 +11,7 @@ version = "0.1.0"
 description = "Recommendation model API (Keras/TensorFlow)"
 requires-python = ">=3.11,<3.13"
 dependencies = [
-    "fastapi[standard]>=0.161.1",
+    "fastapi[standard]>=0.162.0",
     "tensorflow-cpu>=2.21.0",
     "python-dotenv>=1.2.4",
     "pandas>=3.0.6",
