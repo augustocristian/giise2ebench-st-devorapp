@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Autocomplete from "react-google-autocomplete";
+import Autocomplete from "../components/GoogleAutocomplete";
 import { Star, MapPin, SlidersHorizontal, Heart, Bookmark, UtensilsCrossed } from 'lucide-react';
 import TopBar from '../components/TopBar';
 import { authService } from '../models/api/authService';
@@ -12,6 +12,7 @@ import type { ValoracionPublica } from '../models/api/valoracionesService';
 import tagsData from '../data/tags.json';
 import RestaurantDetailView from '../components/RestaurantDetailView';
 import { useNotification } from '../components/NotificationSystem';
+import { env } from '../config/env';
 
 interface Tag {
     id: string;
@@ -38,7 +39,7 @@ const getCurrencyForCountry = (countryCode: string): string => {
 };
 
 const fetchCountryCodeFromLocation = async (ubicacion: string): Promise<string | null> => {
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    const apiKey = env.googleApiKey;
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(ubicacion)}&key=${apiKey}`;
     const parsedUrl = new URL(url);
     if (parsedUrl.hostname !== 'maps.googleapis.com') {
@@ -707,7 +708,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                     />
                 )}
 
-                <form onSubmit={handleSubmit} noValidate>
+                <form onSubmit={handleSubmit} noValidate data-testid="recommend-form">
 
 
                     {!isPanelCollapsed && (
@@ -724,7 +725,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 {selectedTags.length > 0 && (
                                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.8rem' }}>
                                         {selectedTags.map(tag => (
-                                            <span key={tag.id} style={{
+                                            <span key={tag.id} data-testid="recommend-cuisine-tag" style={{
                                                 background: 'rgba(124, 109, 250, 0.15)', color: 'var(--accent-light)',
                                                 padding: '6px 12px', borderRadius: '99px', border: '1px solid rgba(124, 109, 250, 0.3)',
                                                 fontSize: 'var(--font-sm)', display: 'inline-flex', alignItems: 'center', gap: '6px'
@@ -738,6 +739,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 <div style={{ position: 'relative' }}>
                                     <input
                                         id="tags-input-field"
+                                        data-testid="recommend-cuisine-input"
                                         type="text"
                                         placeholder="+ Añadir tipo de cocina..."
                                         value={tagInput}
@@ -754,6 +756,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                         }}>
                                             {filteredTags.map(tag => (
                                                 <button key={tag.id}
+                                                    data-testid={`cuisine-option-${tag.id}`}
                                                     onClick={() => handleAddTag(tag)}
                                                     style={{ width: '100%', display: 'block', padding: '0.8rem 1rem', cursor: 'pointer', borderBottom: '1px solid var(--border)', background: 'none', border: 'none', borderBottomColor: 'var(--border)', textAlign: 'left' }}
                                                 >
@@ -773,6 +776,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     {PRICE_LEVELS.map(price => (
                                         <button
                                             key={price.id}
+                                            data-testid={`price-${price.level}`}
                                             type="button"
                                             onClick={() => handlePriceToggle(price.id)}
                                             style={{
@@ -801,6 +805,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 <label style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                                     <input
                                         type="checkbox"
+                                        data-testid="recommend-include-no-price"
                                         checked={includeUnconfirmedPrice}
                                         onChange={() => setIncludeUnconfirmedPrice(!includeUnconfirmedPrice)}
                                         style={{ accentColor: 'var(--accent)', transform: 'scale(1.2)', cursor: 'pointer' }}
@@ -810,6 +815,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 <label style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                                     <input
                                         type="checkbox"
+                                        data-testid="recommend-open-now"
                                         checked={openNow}
                                         onChange={() => setOpenNow(!openNow)}
                                         style={{ accentColor: 'var(--accent)', transform: 'scale(1.2)', cursor: 'pointer' }}
@@ -824,6 +830,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     <input
                                         type="radio"
                                         name="locationMode"
+                                        data-testid="recommend-location-preferred"
                                         checked={locationMode === 'preferred'}
                                         onChange={() => {
                                             setLocationMode('preferred');
@@ -833,7 +840,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     />
                                     <span style={{ display: 'block' }}>
                                         <span style={{ fontSize: 'var(--font-sm)', color: 'var(--text)', display: 'block', fontWeight: locationMode === 'preferred' ? 600 : 400 }}>Usar ubicación preferida</span>
-                                        <span style={{ fontSize: 'var(--font-xs)', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>{preferredLocation || "Desconocida"}</span>
+                                        <span data-testid="recommend-preferred-location-name" style={{ fontSize: 'var(--font-xs)', color: 'var(--muted)', display: 'block', marginTop: '2px' }}>{preferredLocation || "Desconocida"}</span>
                                     </span>
                                 </label>
 
@@ -842,6 +849,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                         <input
                                             type="radio"
                                             name="locationMode"
+                                            data-testid="recommend-location-custom"
                                             checked={locationMode === 'custom'}
                                             onChange={() => setLocationMode('custom')}
                                             style={{ accentColor: 'var(--accent)', transform: 'scale(1.2)', cursor: 'pointer' }}
@@ -852,7 +860,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     {locationMode === 'custom' && (
                                         <div style={{ paddingLeft: '32px' }}>
                                             <Autocomplete
-                                                apiKey={import.meta.env.VITE_GOOGLE_API_KEY}
+                                                apiKey={env.googleApiKey}
                                                 onChange={() => setCustomLocation('')}
                                                 onPlaceSelected={(place) => {
                                                     if (place?.formatted_address) {
@@ -879,6 +887,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                                     padding: '12px 14px',
                                                     width: '100%'
                                                 }}
+                                                data-testid="recommend-location-input"
                                                 placeholder="Ej. Madrid, Barcelona..."
                                                 defaultValue={customLocation}
                                             />
@@ -889,6 +898,7 @@ const RestaurantRecommendationPage: React.FC = () => {
 
                             {/* Submit Button */}
                             <button
+                                data-testid="recommend-submit"
                                 type="submit"
                                 disabled={loading}
                                 style={{
@@ -909,7 +919,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                     )}
 
                     {error && (
-                        <div className="message error" style={{ marginTop: '1.5rem', background: 'var(--error-bg)', color: 'var(--error)', padding: '12px', border: '1px solid var(--error-border)', borderRadius: 'var(--radius-sm)' }}>
+                        <div data-testid="recommend-error" className="message error" style={{ marginTop: '1.5rem', background: 'var(--error-bg)', color: 'var(--error)', padding: '12px', border: '1px solid var(--error-border)', borderRadius: 'var(--radius-sm)' }}>
                             {error}
                         </div>
                     )}
@@ -919,12 +929,12 @@ const RestaurantRecommendationPage: React.FC = () => {
                     <div className="filter-chips-row">
                         <div style={{ display: 'flex', gap: 'var(--space-2)', flex: 1, overflowX: 'auto', scrollbarWidth: 'none' }}>
                             {selectedTags.map(tag => (
-                                <div key={tag.id} className="filter-chip chip-tag read-only">
+                                <div key={tag.id} data-testid="recommend-chip-tag" className="filter-chip chip-tag read-only">
                                     {tag.label}
                                 </div>
                             ))}
                             {selectedPrices.map(p => (
-                                <div key={p} className="filter-chip chip-price read-only">
+                                <div key={p} data-testid="recommend-chip-price" className="filter-chip chip-price read-only">
                                     {currencySymbol.repeat(PRICE_LEVELS.find(pl => pl.id === p)?.level || 1)}
                                 </div>
                             ))}
@@ -937,7 +947,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 <MapPin size={14} /> {locationMode === 'preferred' ? preferredLocation || 'Ubicación' : customLocation || 'Ubicación'}
                             </div>
                         </div>
-                        <button type="button" className="filter-chip chip-edit" onClick={() => setIsPanelCollapsed(false)}>
+                        <button type="button" data-testid="recommend-edit-filters" className="filter-chip chip-edit" onClick={() => setIsPanelCollapsed(false)}>
                             <SlidersHorizontal size={14} /> Editar
                         </button>
                     </div>
@@ -948,7 +958,7 @@ const RestaurantRecommendationPage: React.FC = () => {
 
                         <div className="results-header-info">
                             <div className="results-title-row">
-                                <h2 className="results-title">Sugerencias para ti</h2>
+                                <h2 data-testid="recommend-results-title" className="results-title">Sugerencias para ti</h2>
                                 <div className="sort-select-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                     <select
                                         aria-label="Ordenar resultados"
@@ -971,12 +981,13 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     </select>
                                 </div>
                             </div>
-                            <div className="results-count">{results.length} resultados encontrados</div>
+                            <div data-testid="recommend-results-count" className="results-count">{results.length} resultados encontrados</div>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             {results.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).map((place: any, index: number) => (
                                 <button key={place.id}
+                                    data-testid="recommend-result-card"
                                     className={`suggestion-card ${index === 0 && currentPage === 1 ? 'best-match' : ''}`}
                                     onClick={() => handleExpandRestaurant(place)}
                                     style={{ width: '100%', display: 'block', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}>
@@ -1029,6 +1040,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                         <div style={{ marginTop: '2.5rem', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.5rem' }}>
                             <button
                                 type="button"
+                                data-testid="recommend-prev-page"
                                 onClick={handlePrevPage}
                                 disabled={currentPage === 1 || loadingMore}
                                 className="btn-secondary"
@@ -1050,6 +1062,7 @@ const RestaurantRecommendationPage: React.FC = () => {
 
                             <button
                                 type="button"
+                                data-testid="recommend-next-page"
                                 onClick={handleNextPage}
                                 disabled={loadingMore || (currentPage >= Math.ceil(results.length / ITEMS_PER_PAGE) && !nextPageToken)}
                                 className={`btn-secondary${loadingMore ? ' loading' : ''}`}

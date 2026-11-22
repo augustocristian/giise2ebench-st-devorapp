@@ -36,7 +36,7 @@ public class BaseApiClass {
     protected static final Logger log = LoggerFactory.getLogger(BaseApiClass.class);
 
     /** A stable Google Places ID used as a test restaurant in all test classes. */
-    protected static final String TEST_PLACE_ID = "ChIJN1t_tDeuEmsRUsoyG83frY4";
+    protected static final String TEST_PLACE_ID = "MOCK_PLACE_101";
 
     protected static CloseableHttpClient httpClient;
     protected static BasicCookieStore cookieStore;

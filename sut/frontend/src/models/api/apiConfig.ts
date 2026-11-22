@@ -1,3 +1,4 @@
+import { env } from '../../config/env';
 // Intercept global fetch to skip Ngrok browser warning page automatically
 const originalFetch = window.fetch;
 window.fetch = async (input, init) => {
@@ -40,7 +41,7 @@ const getBaseUrl = (): string => {
   if (customUrl) {
     return customUrl;
   }
-  return import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
+  return env.apiUrl || `${window.location.origin}/api`;
 };
 
 export const getApiUrl = (): string => {

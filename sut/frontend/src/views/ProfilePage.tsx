@@ -5,9 +5,10 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
-import Autocomplete from 'react-google-autocomplete';
+import Autocomplete from '../components/GoogleAutocomplete';
 import { authService } from '../models/api/authService';
 import { useNotification } from '../components/NotificationSystem';
+import { env } from '../config/env';
 
 // ── Sub-component: PersonalInfoSection ───────────────────────────────────────
 interface PersonalInfoSectionProps {
@@ -33,7 +34,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
 }) => {
   const isEditing = editSection === 'personal';
   return (
-    <div className={`location-info-card`} style={{
+    <div data-testid="profile-card-personal" className={`location-info-card`} style={{
       flexDirection: 'column', gap: '1rem', alignItems: 'stretch',
       border: isEditing ? '1px solid var(--accent)' : '1px solid var(--border)',
       background: isEditing ? 'var(--surface-3)' : 'var(--surface-2)'
@@ -46,7 +47,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Información Personal</span>
         </div>
         {!isEditing && (
-          <button className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+          <button data-testid="profile-personal-edit" className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Edit3 size={14} /> Editar
           </button>
         )}
@@ -59,6 +60,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
               <label htmlFor="profile-nombre-input" className="form-label">Nombre</label>
               <input
                 id="profile-nombre-input"
+                data-testid="profile-personal-nombre"
                 type="text"
                 className="form-input"
                 value={formData.nombre}
@@ -70,6 +72,7 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
               <label htmlFor="profile-apellidos-input" className="form-label">Apellidos</label>
               <input
                 id="profile-apellidos-input"
+                data-testid="profile-personal-apellidos"
                 type="text"
                 className="form-input"
                 value={formData.apellidos}
@@ -78,10 +81,10 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
             </div>
           </div>
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <button type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
+            <button data-testid="profile-personal-cancel" type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
               Cancelar
             </button>
-            <button type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
+            <button data-testid="profile-personal-save" type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
               Guardar cambios
             </button>
           </div>
@@ -132,7 +135,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({
 }) => {
   const isEditing = editSection === 'location';
   return (
-    <div className={`location-info-card`} style={{
+    <div data-testid="profile-card-location" className={`location-info-card`} style={{
       flexDirection: 'column', gap: '1rem', alignItems: 'stretch',
       border: isEditing ? '1px solid var(--accent)' : '1px solid var(--border)',
       background: isEditing ? 'var(--surface-3)' : 'var(--surface-2)'
@@ -145,7 +148,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Ubicación Preferida</span>
         </div>
         {!isEditing && (
-          <button className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+          <button data-testid="profile-location-edit" className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Edit3 size={14} /> Cambiar
           </button>
         )}
@@ -157,7 +160,8 @@ const LocationSection: React.FC<LocationSectionProps> = ({
             <label className="form-label" htmlFor="profile-location-input">Ubicación</label>
             <Autocomplete
               id="profile-location-input"
-              apiKey={import.meta.env.VITE_GOOGLE_API_KEY}
+              data-testid="profile-location-input"
+              apiKey={env.googleApiKey}
               onPlaceSelected={(place) => {
                 if (place?.formatted_address) {
                   setFormData((prev: any) => ({ ...prev, ubicacion: place.formatted_address }));
@@ -183,10 +187,10 @@ const LocationSection: React.FC<LocationSectionProps> = ({
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <button type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
+            <button data-testid="profile-location-cancel" type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
               Cancelar
             </button>
-            <button type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
+            <button data-testid="profile-location-save" type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
               Guardar cambios
             </button>
           </div>
@@ -225,7 +229,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({
 }) => {
   const isEditing = editSection === 'email';
   return (
-    <div className={`location-info-card`} style={{
+    <div data-testid="profile-card-email" className={`location-info-card`} style={{
       flexDirection: 'column', gap: '1rem', alignItems: 'stretch',
       border: isEditing ? '1px solid var(--accent)' : '1px solid var(--border)',
       background: isEditing ? 'var(--surface-3)' : 'var(--surface-2)'
@@ -238,7 +242,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Correo Electrónico</span>
         </div>
         {!isEditing && !user?.is_google && (
-          <button className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+          <button data-testid="profile-email-edit" className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Edit3 size={14} /> Cambiar
           </button>
         )}
@@ -250,6 +254,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({
             <label htmlFor="profile-email-input" className="form-label">Nuevo Correo</label>
             <input
               id="profile-email-input"
+              data-testid="profile-email-input"
               type="email"
               className="form-input"
               value={formData.email}
@@ -262,6 +267,7 @@ const EmailSection: React.FC<EmailSectionProps> = ({
             <label className="form-label" htmlFor="email-password-input">Contraseña de confirmación</label>
             <input
               id="email-password-input"
+              data-testid="profile-email-password"
               type="password"
               className="form-input"
               placeholder="Introduce tu contraseña"
@@ -272,10 +278,10 @@ const EmailSection: React.FC<EmailSectionProps> = ({
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <button type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
+            <button data-testid="profile-email-cancel" type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
               Cancelar
             </button>
-            <button type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
+            <button data-testid="profile-email-submit" type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
               Cambiar correo
             </button>
           </div>
@@ -331,7 +337,7 @@ const PasswordSection: React.FC<PasswordSectionProps> = ({
 }) => {
   const isEditing = editSection === 'password';
   return (
-    <div className={`location-info-card`} style={{
+    <div data-testid="profile-card-security" className={`location-info-card`} style={{
       flexDirection: 'column', gap: '1rem', alignItems: 'stretch',
       border: isEditing ? '1px solid var(--accent)' : '1px solid var(--border)',
       background: isEditing ? 'var(--surface-3)' : 'var(--surface-2)'
@@ -344,7 +350,7 @@ const PasswordSection: React.FC<PasswordSectionProps> = ({
           <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>Seguridad</span>
         </div>
         {!isEditing && !user?.is_google && (
-          <button className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
+          <button data-testid="profile-security-edit" className="btn-ghost" onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem' }}>
             <Edit3 size={14} /> Cambiar contraseña
           </button>
         )}
@@ -356,6 +362,7 @@ const PasswordSection: React.FC<PasswordSectionProps> = ({
             <label className="form-label" htmlFor="current-password-input">Contraseña Actual</label>
             <input
               id="current-password-input"
+              data-testid="profile-security-current"
               type="password"
               className="form-input"
               value={formData.currentPassword}
@@ -369,6 +376,7 @@ const PasswordSection: React.FC<PasswordSectionProps> = ({
               <label className="form-label" htmlFor="new-password-input">Nueva Contraseña</label>
               <input
                 id="new-password-input"
+                data-testid="profile-security-new"
                 type="password"
                 className="form-input"
                 value={formData.newPassword}
@@ -380,6 +388,7 @@ const PasswordSection: React.FC<PasswordSectionProps> = ({
               <label className="form-label" htmlFor="confirm-password-input">Repetir Nueva Contraseña</label>
               <input
                 id="confirm-password-input"
+                data-testid="profile-security-confirm"
                 type="password"
                 className="form-input"
                 value={formData.confirmPassword}
@@ -390,10 +399,10 @@ const PasswordSection: React.FC<PasswordSectionProps> = ({
           </div>
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-            <button type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
+            <button data-testid="profile-security-cancel" type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '44px' }}>
               Cancelar
             </button>
-            <button type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
+            <button data-testid="profile-security-submit" type="submit" className={`btn-primary ${isSaving ? 'loading' : ''}`} style={{ flex: 2, minHeight: '44px', marginTop: 0 }} disabled={isSaving}>
               Actualizar contraseña
             </button>
           </div>
@@ -438,7 +447,7 @@ const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
 }) => {
   const isDeleting = editSection === 'delete';
   return (
-    <div className={`location-info-card`} style={{
+    <div data-testid="profile-card-danger" className={`location-info-card`} style={{
       flexDirection: 'column', gap: '1rem', alignItems: 'stretch',
       border: editSection === 'none' ? '1px solid var(--error-border)' : '1px solid var(--border)',
       background: 'var(--error-bg)', opacity: 0.9
@@ -460,6 +469,7 @@ const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
               </label>
               <input
                 id="delete-confirm-input"
+                data-testid="profile-danger-confirm-input"
                 type="text"
                 className="form-input"
                 style={{ borderColor: 'var(--error-border)' }}
@@ -470,10 +480,10 @@ const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
               />
             </div>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <button type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '40px' }}>
+              <button data-testid="profile-danger-cancel" type="button" className="btn-social" onClick={onCancel} style={{ flex: 1, minHeight: '40px' }}>
                 Cancelar
               </button>
-              <button type="submit" className="btn-primary" style={{ flex: 1, minHeight: '40px', marginTop: 0, background: 'var(--error)', boxShadow: 'none' }} disabled={isSaving || deleteConfirmText !== 'CONFIRMAR'}>
+              <button data-testid="profile-danger-submit" type="submit" className="btn-primary" style={{ flex: 1, minHeight: '40px', marginTop: 0, background: 'var(--error)', boxShadow: 'none' }} disabled={isSaving || deleteConfirmText !== 'CONFIRMAR'}>
                 {isSaving ? 'Eliminando...' : 'Eliminar permanentemente'}
               </button>
             </div>
@@ -485,6 +495,7 @@ const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
             </p>
             <button
               className="btn-primary"
+              data-testid="profile-danger-open"
               onClick={onEdit}
               style={{
                 background: 'transparent',
@@ -697,8 +708,8 @@ const ProfilePage: React.FC = () => {
                 {getInitials(user?.nombre, user?.username)}
               </div>
             </div>
-            <h1>{user?.nombre ? `${user.nombre} ${user.apellidos || ''}` : user?.username}</h1>
-            <p>{user?.email}</p>
+            <h1 data-testid="profile-header-name">{user?.nombre ? `${user.nombre} ${user.apellidos || ''}` : user?.username}</h1>
+            <p data-testid="profile-header-email">{user?.email}</p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>

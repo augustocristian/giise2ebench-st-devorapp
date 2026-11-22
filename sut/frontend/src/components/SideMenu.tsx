@@ -89,10 +89,10 @@ const SideMenu: React.FC = () => {
   const menuContent = (
     <div className={`sidemenu-overlay ${isOpen ? 'open' : ''}`}>
       <div className="sidemenu-backdrop" onClick={closeMenu} aria-hidden="true" />
-      <aside className="sidemenu-drawer">
+      <aside className="sidemenu-drawer" data-testid="side-menu-drawer">
          <div className="sidemenu-header">
            <span className="sidemenu-brand">DevorApp</span>
-           <button className="sidemenu-close" onClick={closeMenu} aria-label="Cerrar menú">
+           <button data-testid="side-menu-close" className="sidemenu-close" onClick={closeMenu} aria-label="Cerrar menú">
              <X size={22} />
            </button>
          </div>
@@ -100,6 +100,7 @@ const SideMenu: React.FC = () => {
          {user && (
            <button
              className="sidemenu-user"
+             data-testid="side-menu-profile"
              onClick={() => goTo('/profile')}
              onKeyDown={(e) => e.key === 'Enter' && goTo('/profile')}
              style={{ cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left', padding: 0 }}
@@ -117,22 +118,22 @@ const SideMenu: React.FC = () => {
          )}
 
          <nav className="sidemenu-nav">
-           <button className={`sidemenu-item ${location.pathname==='/home'?'active':''}`} onClick={()=>goTo('/home')} style={{ '--idx': 0 } as React.CSSProperties}>
+           <button data-testid="side-menu-home" className={`sidemenu-item ${location.pathname==='/home'?'active':''}`} onClick={()=>goTo('/home')} style={{ '--idx': 0 } as React.CSSProperties}>
              <Home size={18} /> Inicio
            </button>
-           <button className={`sidemenu-item ${location.pathname==='/recommend-restaurants'?'active':''}`} onClick={()=>goTo('/recommend-restaurants')} style={{ '--idx': 1 } as React.CSSProperties}>
+           <button data-testid="side-menu-recommend" className={`sidemenu-item ${location.pathname==='/recommend-restaurants'?'active':''}`} onClick={()=>goTo('/recommend-restaurants')} style={{ '--idx': 1 } as React.CSSProperties}>
              <Search size={18} /> Buscador
            </button>
-           <button className={`sidemenu-item ${location.pathname==='/favorites'?'active':''}`} onClick={()=>goTo('/favorites')} style={{ '--idx': 2 } as React.CSSProperties}>
+           <button data-testid="side-menu-favorites" className={`sidemenu-item ${location.pathname==='/favorites'?'active':''}`} onClick={()=>goTo('/favorites')} style={{ '--idx': 2 } as React.CSSProperties}>
              <Heart size={18} /> Favoritos
            </button>
-           <button className={`sidemenu-item ${location.pathname==='/saved-for-later'?'active':''}`} onClick={()=>goTo('/saved-for-later')} style={{ '--idx': 3 } as React.CSSProperties}>
+           <button data-testid="side-menu-saved" className={`sidemenu-item ${location.pathname==='/saved-for-later'?'active':''}`} onClick={()=>goTo('/saved-for-later')} style={{ '--idx': 3 } as React.CSSProperties}>
              <Bookmark size={18} /> Para más tarde
            </button>
-           <button className={`sidemenu-item ${location.pathname==='/history'?'active':''}`} onClick={()=>goTo('/history')} style={{ '--idx': 4 } as React.CSSProperties}>
+           <button data-testid="side-menu-history" className={`sidemenu-item ${location.pathname==='/history'?'active':''}`} onClick={()=>goTo('/history')} style={{ '--idx': 4 } as React.CSSProperties}>
              <Clock size={18} /> Historial
            </button>
-           <button className={`sidemenu-item ${location.pathname==='/mis-valoraciones'?'active':''}`} onClick={()=>goTo('/mis-valoraciones')} style={{ '--idx': 5 } as React.CSSProperties}>
+           <button data-testid="side-menu-ratings" className={`sidemenu-item ${location.pathname==='/mis-valoraciones'?'active':''}`} onClick={()=>goTo('/mis-valoraciones')} style={{ '--idx': 5 } as React.CSSProperties}>
              <MessageSquare size={18} /> Valoraciones
            </button>
          </nav>
@@ -141,11 +142,11 @@ const SideMenu: React.FC = () => {
          <div className="sidemenu-settings">
            <div className="sidemenu-setting">
              <span className="sidemenu-setting-label">Tema</span>
-             <div className="sidemenu-toggle-group">
-               <button className={theme==='light'?'active':''} onClick={()=>setTheme('light')}>
+             <div className="sidemenu-toggle-group" data-testid="side-menu-theme">
+               <button data-testid="theme-light" className={theme==='light'?'active':''} onClick={()=>setTheme('light')}>
                  <Sun size={14}/> Claro
                </button>
-               <button className={theme==='dark'?'active':''} onClick={()=>setTheme('dark')}>
+               <button data-testid="theme-dark" className={theme==='dark'?'active':''} onClick={()=>setTheme('dark')}>
                  <Moon size={14}/> Oscuro
                </button>
              </div>
@@ -153,16 +154,16 @@ const SideMenu: React.FC = () => {
            
            <div className="sidemenu-setting">
              <span className="sidemenu-setting-label">Letra <Type size={14} style={{marginLeft: 4, verticalAlign: 'middle', opacity: 0.5}}/></span>
-             <div className="sidemenu-toggle-group">
-               <button className={fontSize==='S'?'active':''} onClick={()=>setFontSize('S')}>S</button>
-               <button className={fontSize==='M'?'active':''} onClick={()=>setFontSize('M')}>M</button>
-               <button className={fontSize==='L'?'active':''} onClick={()=>setFontSize('L')}>L</button>
+             <div className="sidemenu-toggle-group" data-testid="side-menu-fontsize">
+               <button data-testid="font-size-s" className={fontSize==='S'?'active':''} onClick={()=>setFontSize('S')}>S</button>
+               <button data-testid="font-size-m" className={fontSize==='M'?'active':''} onClick={()=>setFontSize('M')}>M</button>
+               <button data-testid="font-size-l" className={fontSize==='L'?'active':''} onClick={()=>setFontSize('L')}>L</button>
              </div>
            </div>
          </div>
 
          <div className="sidemenu-footer">
-           <button className="sidemenu-logout" onClick={submitLogout}>
+           <button data-testid="side-menu-logout" className="sidemenu-logout" onClick={submitLogout}>
              <LogOut size={18} /> Cerrar sesión
            </button>
          </div>
@@ -172,7 +173,7 @@ const SideMenu: React.FC = () => {
 
   return (
     <>
-      <button className="topbar-menu-btn" onClick={() => setIsOpen(true)} aria-label="Abrir menú">
+      <button data-testid="side-menu-open" className="topbar-menu-btn" onClick={() => setIsOpen(true)} aria-label="Abrir menú">
         <Menu size={24} />
       </button>
       {/* Mapea el menú al final del body para no ser clip-eado por contadores */}

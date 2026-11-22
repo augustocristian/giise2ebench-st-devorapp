@@ -148,6 +148,7 @@ const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
                     {/* Name input */}
                     <input
                         ref={inputRef}
+                        data-testid="favorites-new-list-name"
                         type="text"
                         placeholder="Nombre de la lista..."
                         value={nombre}
@@ -173,6 +174,7 @@ const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
                         {ICONS.map(({ name }) => (
                             <button
                                 key={name}
+                                data-testid={`favorites-icon-${name}`}
                                 type="button"
                                 onClick={() => setSelectedIcon(name)}
                                 style={{
@@ -192,6 +194,7 @@ const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
                     </div>
 
                     <button
+                        data-testid="favorites-new-list-submit"
                         type="submit"
                         disabled={!nombre.trim() || saving}
                         style={{
@@ -232,6 +235,7 @@ const ListMenu: React.FC<ListMenuProps> = ({ onRename, onDelete }) => {
     return (
         <div ref={ref} style={{ position: 'relative' }}>
             <button
+                data-testid="favorites-list-menu"
                 onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
                 style={{
                     background: 'none', border: 'none', cursor: 'pointer',
@@ -253,10 +257,10 @@ const ListMenu: React.FC<ListMenuProps> = ({ onRename, onDelete }) => {
                     animation: 'fadeSlideIn 0.15s ease',
                     overflow: 'hidden',
                 }}>
-                    <button onClick={() => { setOpen(false); onRename(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: 'var(--font-sm)' }}>
+                    <button data-testid="favorites-list-rename" onClick={() => { setOpen(false); onRename(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: 'var(--font-sm)' }}>
                         <Clock size={14} /> Cambiar nombre
                     </button>
-                    <button onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: 'var(--font-sm)' }}>
+                    <button data-testid="favorites-list-delete" onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: 'var(--font-sm)' }}>
                         <X size={14} /> Eliminar lista
                     </button>
                 </div>
@@ -287,6 +291,7 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ onDelete, onHistory, onDetails }) =
     return (
         <div ref={ref} style={{ position: 'relative' }}>
             <button
+                data-testid="favorites-card-menu"
                 onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '6px' }}
             >
@@ -300,13 +305,13 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ onDelete, onHistory, onDetails }) =
                     boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
                     overflow: 'hidden',
                 }}>
-                    <button onClick={() => { setOpen(false); onDetails(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.85rem' }}>
+                    <button data-testid="favorites-menu-details" onClick={() => { setOpen(false); onDetails(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.85rem' }}>
                         <Map size={14} /> Ver detalles
                     </button>
-                    <button onClick={() => { setOpen(false); onHistory(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-light)', fontSize: '0.85rem' }}>
+                    <button data-testid="favorites-menu-history" onClick={() => { setOpen(false); onHistory(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-light)', fontSize: '0.85rem' }}>
                         <Clock size={14} /> Volver a seleccionar
                     </button>
-                    <button onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: '0.85rem' }}>
+                    <button data-testid="favorites-menu-delete" onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: '0.85rem' }}>
                         <X size={14} /> Quitar de favoritos
                     </button>
                 </div>
@@ -338,7 +343,7 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
     if (loading) {
         return (
             <div style={{ textAlign: 'center', padding: '3rem' }}>
-                <div className="loading-spinner" style={{ border: '4px solid var(--border)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: 30, height: 30, animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
+                <div data-testid="favorites-loading" className="loading-spinner" style={{ border: '4px solid var(--border)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: 30, height: 30, animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
                 <p style={{ color: 'var(--muted)' }}>Cargando tus listas...</p>
             </div>
         );
@@ -371,6 +376,7 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
                     {lists.length} {lists.length === 1 ? 'lista' : 'listas'}
                 </span>
                 <button
+                    data-testid="favorites-new-list"
                     onClick={() => setShowNewModal(true)}
                     style={{
                         display: 'flex', alignItems: 'center', gap: 6,
@@ -390,14 +396,15 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
             {lists.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--muted)' }}>
                     <Heart size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
-                    <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Aún no tienes listas</p>
+                    <p data-testid="favorites-empty" style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Aún no tienes listas</p>
                     <p style={{ fontSize: 'var(--font-sm)' }}>Crea tu primera lista para guardar restaurantes favoritos</p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                     {lists.map(list => (
-                        <div key={list.id} className="fav-list-card">
+                        <div key={list.id} data-testid="favorites-list-card" className="fav-list-card">
                             <button
+                                data-testid="favorites-list-open"
                                 onClick={() => setSearchParams({ list: list.id.toString() })}
                                 aria-label={`Ver lista ${list.nombre}`}
                                 style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '1rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
@@ -406,7 +413,7 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
                                     {renderIcon(list.icono || 'Heart', 22)}
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    <div data-testid="favorites-list-name" style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                         {list.nombre}
                                     </div>
                                     <div style={{ fontSize: 'var(--font-xs)', color: 'var(--muted)', marginTop: 2 }}>
@@ -454,7 +461,7 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
         if (modalLoading) {
             return (
                 <div style={{ textAlign: 'center', padding: '3rem' }}>
-                    <div className="loading-spinner" style={{ border: '4px solid var(--border)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: 24, height: 24, animation: 'spin 1s linear infinite', margin: '0 auto' }} />
+                    <div data-testid="favorites-detail-loading" className="loading-spinner" style={{ border: '4px solid var(--border)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: 24, height: 24, animation: 'spin 1s linear infinite', margin: '0 auto' }} />
                 </div>
             );
         }
@@ -463,7 +470,7 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
             return (
                 <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>
                     {searchTerm ? <Search size={40} style={{ opacity: 0.1, marginBottom: '1rem' }} /> : <Heart size={40} style={{ opacity: 0.1, marginBottom: '1rem' }} />}
-                    <p>{searchTerm ? 'No hay resultados para tu búsqueda' : 'Esta lista está vacía'}</p>
+                    <p data-testid="favorites-detail-empty">{searchTerm ? 'No hay resultados para tu búsqueda' : 'Esta lista está vacía'}</p>
                 </div>
             );
         }
@@ -497,7 +504,7 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
     };
 
     return (
-        <div className="fav-detail-view">
+        <div className="fav-detail-view" data-testid="favorites-detail">
             <div className="fav-detail-title-row">
                 <div className="fav-large-icon" style={{ background: getIconColor(selectedList.icono || 'Heart') }}>
                     {renderIcon(selectedList.icono || 'Heart', 28)}
@@ -511,6 +518,7 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
             <div className="internal-search-box">
                 <Search className="search-icon" size={18} />
                 <input
+                    data-testid="favorites-search"
                     type="text"
                     placeholder="Buscar en esta lista..."
                     value={searchTerm}

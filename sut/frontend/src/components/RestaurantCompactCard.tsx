@@ -33,10 +33,12 @@ const RestaurantCompactCard: React.FC<RestaurantCompactCardProps> = ({
 
     return (
         <div
+            data-testid="restaurant-card"
             className="restaurant-compact-card"
             style={{ width: '100%', display: 'flex', alignItems: 'center', position: 'relative', textAlign: 'left', padding: 0 }}
         >
             <button
+                data-testid="restaurant-card-open"
                 onClick={onClick}
                 aria-label={`Ver detalles de ${name}`}
                 style={{
@@ -62,7 +64,7 @@ const RestaurantCompactCard: React.FC<RestaurantCompactCardProps> = ({
                 </div>
                 
                 <div className="compact-info">
-                    <div className="compact-name">{name}</div>
+                    <div className="compact-name" data-testid="restaurant-card-name">{name}</div>
                     <div className="compact-meta">
                         {rating !== undefined && (
                             <>

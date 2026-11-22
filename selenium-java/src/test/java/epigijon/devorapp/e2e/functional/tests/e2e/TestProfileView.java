@@ -1,6 +1,7 @@
 package epigijon.devorapp.e2e.functional.tests.e2e;
 
 import epigijon.devorapp.e2e.functional.common.BaseLoggedClass;
+import epigijon.devorapp.e2e.functional.common.TestId;
 import epigijon.devorapp.e2e.functional.pages.LoginPage;
 import epigijon.devorapp.e2e.functional.pages.ProfilePage;
 import org.junit.jupiter.api.AfterAll;
@@ -8,7 +9,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -16,20 +16,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
-/**
- * Browser tests for the DevorApp profile page ({@code /profile}).
- *
- * <p>Adapts {@code profile.spec.ts} (Playwright) to Selenium + JUnit 5.
- *
- * <p>Base-Choice coverage:
- * <ul>
- *   <li>BASE — profile data loads correctly and invalid location update is validated (Ubicación = Mal).</li>
- *   <li>S2–S4 — save personal info (Nombre = Si, Apellidos = Si) and valid location update (Ubicación = Bien).</li>
- *   <li>S5–S9 — email change validations and happy path.</li>
- *   <li>S10–S16 — password change validations and happy path.</li>
- *   <li>S17 — account deletion.</li>
- * </ul>
- */
+/** Browser tests for {@code /profile} (BASE, S2-S17). */
 class TestProfileView extends BaseLoggedClass {
 
     @BeforeAll
@@ -48,7 +35,6 @@ class TestProfileView extends BaseLoggedClass {
         driver.get(sutUrl + "/login");
     }
 
-    /** Logs in and navigates to /profile. */
     private ProfilePage loginAndGoToProfile(String email, String password) throws Exception {
         clearSessionAndLogin();
         new LoginPage(driver, waiter)
@@ -58,16 +44,14 @@ class TestProfileView extends BaseLoggedClass {
         driver.get(sutUrl + "/profile");
         ProfilePage page = new ProfilePage(driver, waiter);
         waiter.waitUntil(ExpectedConditions.textToBePresentInElementLocated(
-                By.cssSelector(".location-info-card"), "UITester"), "Profile did not load");
+                TestId.of("profile-card-personal"), "UITester"), "Profile did not load");
         return page;
     }
 
-    // ── 1. Carga inicial + Gestión de Información Personal y Ubicación (BASE, S2–S4) ───
-
     @Test
-    @DisplayName("BASE, S2, S3, S4 — el perfil permite cargar y gestionar la información personal y la ubicación")
-    void testCargarYGestionarInformacionPersonalYUbicacion() throws Exception {
-        // Register a dedicated user to avoid cross-test pollution when mutating profile data
+    @DisplayName("BASE, S2, S3, S4 - profile loads and personal info and location can be managed")
+    void testLoadAndManagePersonalInfoAndLocation() throws Exception {
+        // Dedicated user: this test mutates profile data
         long ts = System.currentTimeMillis();
         String localEmail    = "personalui" + ts + "@devorapp.test";
         String localUsername = "personalui" + (ts % 100000);
@@ -77,61 +61,58 @@ class TestProfileView extends BaseLoggedClass {
         ProfilePage page = loginAndGoToProfile(localEmail, localPassword);
 
         // BASE: data is present
-        String personalCardText = page.getCardText("Información Personal");
-        String locationCardText = page.getCardText("Ubicación Preferida");
+        String personalCardText = page.getCardText("personal");
+        String locationCardText = page.getCardText("location");
         Assertions.assertTrue(personalCardText.contains("UITester"), "BASE: personal card must contain name");
         Assertions.assertTrue(personalCardText.contains("Test"),     "BASE: personal card must contain surname");
         Assertions.assertTrue(locationCardText.contains("Gijón"),    "BASE: location card must contain preferred location");
 
         injectAutocompleteMock();
 
-        // Cancel personal edit restores original values
+        // Cancelling the edit restores the original values
         page.editPersonalInfo()
-                .fillInputInCard("Información Personal", 0, "JuanModificado")
-                .fillInputInCard("Información Personal", 1, "PérezModificado")
+                .fillNombre("JuanModificado")
+                .fillApellidos("PérezModificado")
                 .cancelPersonalInfo();
-        Assertions.assertTrue(page.getCardText("Información Personal").contains("UITester"),
+        Assertions.assertTrue(page.getCardText("personal").contains("UITester"),
                 "Cancel must restore original name");
 
-        // S2 & S3: Save updated nombre/apellidos
+        // S2 & S3: save updated nombre/apellidos
         page.editPersonalInfo()
-                .fillInputInCard("Información Personal", 0, "Juan")
-                .fillInputInCard("Información Personal", 1, "Pérez")
+                .fillNombre("Juan")
+                .fillApellidos("Pérez")
                 .savePersonalInfo();
         waiter.waitForToast("success");
         Assertions.assertTrue(page.hasSuccessToast(), "S2/S3: success toast must appear");
         page.dismissSuccessToast();
-        personalCardText = page.getCardText("Información Personal");
+        personalCardText = page.getCardText("personal");
         Assertions.assertTrue(personalCardText.contains("Juan"),  "S2: card must contain updated name");
         Assertions.assertTrue(personalCardText.contains("Pérez"), "S3: card must contain updated surname");
 
-        // BASE: Type location manually without selecting → error (Ubicación = Mal)
-        page.clickButtonInCard("Ubicación Preferida", "Cambiar")
-                .fillInputInCard("Ubicación Preferida", 0, "aifgauif")
-                .clickButtonInCard("Ubicación Preferida", "Guardar cambios");
-        Assertions.assertTrue(page.getCardText("Ubicación Preferida").contains("Debes seleccionar una ubicación válida"),
+        // BASE: manually typed location (not picked from autocomplete) -> inline error
+        page.editLocation()
+                .fillLocation("aifgauif")
+                .saveLocation();
+        Assertions.assertTrue(page.getCardText("location").contains("Debes seleccionar una ubicación válida"),
                 "BASE: manual-typed location must show inline error");
 
-        // S4: Select location from autocomplete list (Ubicación = Bien)
-        page.fillInputInCard("Ubicación Preferida", 0, "Barcelona, España");
+        // S4: location picked from autocomplete
+        page.fillLocation("Barcelona, España");
         triggerAutocompletePlaceChanged();
-        page.clickButtonInCard("Ubicación Preferida", "Guardar cambios");
+        page.saveLocation();
         waiter.waitForToast("success");
         Assertions.assertTrue(page.hasSuccessToast(), "S4: success toast must appear after updating location");
         new WebDriverWait(driver, Duration.ofSeconds(10))
                 .until(ExpectedConditions.textToBePresentInElementLocated(
-                        By.xpath("//div[contains(@class,'location-info-card') and contains(.,'Ubicación Preferida')]"),
-                        "Barcelona, España"));
+                        TestId.of("profile-card-location"), "Barcelona, España"));
     }
 
-    // ── 2. Gestión de Correo y Contraseña (S5–S16) ──────────────────────────
-
     @Test
-    @DisplayName("S5 a S16 — validación y cambio de correo electrónico y contraseña")
-    void testGestionarCorreoYContrasena() throws Exception {
+    @DisplayName("S5 to S16 - email and password change validation and happy paths")
+    void testManageEmailAndPassword() throws Exception {
         long ts = System.currentTimeMillis();
 
-        // ── Email section ───────────────────────────────────────────────────────────
+        // Email section
         String emailUserEmail    = "tempemail" + ts + "@devorapp.test";
         String emailUserUsername = "tempemail" + (ts % 100000);
         String emailUserPassword = "Password123!";
@@ -141,8 +122,8 @@ class TestProfileView extends BaseLoggedClass {
         page.openEmailChange();
 
         // S7 & S9: required attributes
-        WebElement emailInput = driver.findElement(By.cssSelector("input[type='email']"));
-        WebElement passInput  = driver.findElement(By.id("email-password-input"));
+        WebElement emailInput = page.newEmailInput();
+        WebElement passInput  = page.emailPasswordInput();
         Assertions.assertEquals("true", emailInput.getAttribute("required"), "S7: email must be required");
         Assertions.assertEquals("true", passInput.getAttribute("required"),  "S9: password must be required");
 
@@ -171,10 +152,10 @@ class TestProfileView extends BaseLoggedClass {
         Assertions.assertTrue(page.hasSuccessToast(), "Success toast must appear");
         Assertions.assertTrue(page.getSuccessToastText().contains("confirmación"),
                 "Toast must mention confirmation");
-        Assertions.assertTrue(page.getCardText("Correo Electrónico").contains(emailUserEmail),
+        Assertions.assertTrue(page.getCardText("email").contains(emailUserEmail),
                 "Card must still display original email");
 
-        // ── Password section ────────────────────────────────────────────────────────
+        // Password section
         long ts2 = System.currentTimeMillis();
         String passUserEmail    = "temppass" + ts2 + "@devorapp.test";
         String passUserUsername = "temppass" + (ts2 % 100000);
@@ -185,10 +166,8 @@ class TestProfileView extends BaseLoggedClass {
         page.openPasswordChange();
 
         // S11 & S12: required attributes
-        WebElement currentPassInput = driver.findElement(By.id("current-password-input"));
-        WebElement newPassInput     = driver.findElement(By.id("new-password-input"));
-        Assertions.assertEquals("true", currentPassInput.getAttribute("required"), "S11: current pass must be required");
-        Assertions.assertEquals("true", newPassInput.getAttribute("required"),     "S12: new pass must be required");
+        Assertions.assertEquals("true", page.currentPasswordInput().getAttribute("required"), "S11: current pass must be required");
+        Assertions.assertEquals("true", page.newPasswordInput().getAttribute("required"),     "S12: new pass must be required");
 
         // S13: password too short (7 chars)
         page.fillPasswordChange(passUserPassword, "Short1!", "Short1!").submitPasswordChange();
@@ -216,17 +195,15 @@ class TestProfileView extends BaseLoggedClass {
         Assertions.assertTrue(page.hasErrorToast(), "S10: error toast for wrong old password");
         page.dismissErrorToast();
 
-        // S14: successful password change (16-char new password)
+        // S14: successful password change (17-char new password)
         page.fillPasswordChange(passUserPassword, "NewPassword12345!", "NewPassword12345!").submitPasswordChange();
         waiter.waitForToast("success");
         Assertions.assertTrue(page.hasSuccessToast(), "S14: success toast must appear");
     }
 
-    // ── 3. Eliminar Cuenta (S17) ──────────────────────────────────────────────────────
-
     @Test
-    @DisplayName("S17 — eliminación de cuenta tras validación de confirmación")
-    void testEliminarCuenta() throws Exception {
+    @DisplayName("S17 - account deletion after the confirmation check")
+    void testDeleteAccount() throws Exception {
         long ts = System.currentTimeMillis();
         String delEmail    = "delui" + ts + "@devorapp.test";
         String delUsername = "delui" + (ts % 100000);

@@ -526,3 +526,24 @@ org.sonarlint.eclipse.core.prefs
 /.github/modernize/java-upgrade/
 
 # End of https://www.toptal.com/developers/gitignore/api/python,react,visualstudiocode,reactnative
+
+### Extra IDE / OS / editor clutter ###
+*.ipr
+*.iws
+out/
+.settings/
+.metadata/
+tmp/
+*.launch
+.factorypath
+.buildpath
+.target/
+*.code-workspace
+.DS_Store?
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.swp
+*.swo
+*.bak

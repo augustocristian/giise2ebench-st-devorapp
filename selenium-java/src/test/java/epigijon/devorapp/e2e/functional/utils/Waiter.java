@@ -1,5 +1,6 @@
 package epigijon.devorapp.e2e.functional.utils;
 
+import epigijon.devorapp.e2e.functional.common.TestId;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -10,11 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
 
-/**
- * Centralised explicit-wait utility for DevorApp page objects.
- * Each {@code waitFor*} method corresponds to a specific page-readiness
- * condition and is called by the matching page-object constructor.
- */
+/** Explicit waits; each {@code waitFor*} is the readiness condition of one page object. */
 public class Waiter {
 
     private static final Logger log = LoggerFactory.getLogger(Waiter.class);
@@ -26,7 +23,7 @@ public class Waiter {
         wait = new WebDriverWait(driver, Duration.ofSeconds(WAIT_SECONDS));
     }
 
-    /** General-purpose wait. Throws a descriptive {@link org.openqa.selenium.TimeoutException} on failure. */
+    /** Waits for the condition; on timeout throws a TimeoutException carrying {@code errorMessage}. */
     public void waitUntil(ExpectedCondition<?> condition, String errorMessage) {
         try {
             wait.until(condition);
@@ -38,7 +35,7 @@ public class Waiter {
     }
 
     public void waitForLoginPage() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(By.id("login-form")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("login-form")),
                 "Login page did not load");
     }
 
@@ -48,64 +45,58 @@ public class Waiter {
     }
 
     public void waitForRegisterPage() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(By.id("reg-email")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("register-email")),
                 "Register page did not load");
     }
 
     public void waitForLoginError() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".message.error")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("login-message-error")),
                 "Login error message did not appear");
     }
 
     public void waitForTopBar() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".topbar, header, nav")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("topbar")),
                 "Top navigation bar did not appear");
     }
 
     public void waitForFavoritesPage() {
         waitUntil(ExpectedConditions.or(
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".fav-list-card")),
-                ExpectedConditions.visibilityOfElementLocated(By.xpath("//*[contains(text(),'Aún no tienes listas')]")),
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".favorites-container, .fav-page"))),
+                ExpectedConditions.visibilityOfElementLocated(TestId.of("favorites-list-card")),
+                ExpectedConditions.visibilityOfElementLocated(TestId.of("favorites-empty"))),
                 "Favorites page did not load");
     }
 
     public void waitForHistoryPage() {
         waitUntil(ExpectedConditions.or(
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".history-group-title")),
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector("input[placeholder='Buscar en historial...']")),
-                ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".history-container, .history-page"))),
+                ExpectedConditions.visibilityOfElementLocated(TestId.of("history-group-title")),
+                ExpectedConditions.visibilityOfElementLocated(TestId.of("history-search"))),
                 "History page did not load");
     }
 
     public void waitForRecommendPage() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath("//button[contains(.,'Buscar recomendaciones')]")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("recommend-submit")),
                 "Recommend page did not load");
-        By prefLocLabel = By.xpath("//label[contains(.,'Usar ubicación preferida')]");
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(prefLocLabel), 
-                "Preferred location radio label did not appear");
+        By preferredName = TestId.of("recommend-preferred-location-name");
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(preferredName),
+                "Preferred location label did not appear");
         waitUntil(ExpectedConditions.not(ExpectedConditions.textToBePresentInElementLocated(
-                prefLocLabel, "Desconocida")), 
+                preferredName, "Desconocida")),
                 "Preferred location did not load in time (remained 'Desconocida')");
     }
 
     public void waitForProfilePage() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector(".location-info-card")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("profile-card-personal")),
                 "Profile page did not load");
     }
 
     public void waitForSideMenuDrawer() {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector(".sidemenu-drawer")),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("side-menu-drawer")),
                 "Side menu drawer did not open");
     }
 
-    /** Waits for a toast of the given CSS type, e.g. "success" or "error". */
+    /** @param type toast type: "success", "error", "info" or "warning" */
     public void waitForToast(String type) {
-        waitUntil(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector(".toast." + type)),
+        waitUntil(ExpectedConditions.visibilityOfElementLocated(TestId.of("toast-" + type)),
                 "Toast of type '" + type + "' did not appear");
     }
 }

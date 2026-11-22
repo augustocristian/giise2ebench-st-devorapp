@@ -23,6 +23,7 @@ services:
   # ── Keras recommendation microservice ────────────────────────────────────────
   keras-api:
     build: ./keras-api
+    image: devorapp/keras-api:${IMAGE_TAG:-local}
     container_name: devorapp-keras-api
     env_file:
       - ./keras-api/.env
@@ -34,6 +35,7 @@ services:
   # ── FastAPI backend ─────────────────────────────────────────────────────────
   backend:
     build: ./backend
+    image: devorapp/backend:${IMAGE_TAG:-local}
     container_name: devorapp-backend
     env_file:
       - ./backend/.env
@@ -55,7 +57,10 @@ services:
   # ── React frontend (nginx) ──────────────────────────────────────────────────
   frontend:
     build: ./frontend
+    image: devorapp/frontend:${IMAGE_TAG:-local}
     container_name: devorapp-frontend
+    env_file:
+      - ./frontend/.env   # VITE_GOOGLE_CLIENT_ID, VITE_GOOGLE_API_KEY, VITE_API_URL (read at container start)
     ports:
       - "80:8080"
       - "443:8443"

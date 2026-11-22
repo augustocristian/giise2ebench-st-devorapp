@@ -325,38 +325,29 @@ updates:
       - dependency-name: "org.seleniumhq.selenium:*"
         update-types: ["version-update:semver-major"]
 
-  # ─── Test suite · cypress-js (npm) — DISABLED until the suite reaches main ──
-  # Dependabot reads this file from the default branch; cypress-js/ lives only on
-  # `1-create-the-devorapp-cypressjavascript-test-suite`, so enabling it on main
-  # makes the whole npm run fail ("couldn't find a package.json").
-  # Re-enable it in the commit that merges the Cypress suite into main.
-  #
-  # - package-ecosystem: npm
-  #   directory: "/cypress-js"
-  #   schedule:
-  #     interval: weekly
-  #     day: "friday"
-  #     time: "00:40"
-  #     timezone: "Europe/Madrid"
-  #   assignees:
-  #     - "augustocristian"
-  #   labels:
-  #     - "dependencies"
-  #     - "tests"
-  #   commit-message:
-  #     prefix: "deps(cypress-js)"
-  #   versioning-strategy: "increase"
-  #   rebase-strategy: "disabled"
-  #   open-pull-requests-limit: 20
-  #   groups:
-  #     cypress:
-  #       patterns:
-  #         - "cypress"
-  #         - "cypress-*"
-  #         - "@cypress/*"
-  #     cypress-js-misc:
-  #       patterns:
-  #         - "*"
+  # ─── Test suite · cypress-js (npm) ─────────────────────────────────────────
+  - package-ecosystem: npm
+    directory: "/cypress-js"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(cypress-js)"
+    versioning-strategy: "increase"
+    rebase-strategy: "auto"
+    open-pull-requests-limit: 20
+    groups:
+      # One group per lock file (see header).
+      cypress-js:
+        patterns:
+          - "*"
 
   # ─── Reserved · E2E suites not yet in the repository ───────────────────────
   # Uncomment each block together with its (currently empty) CI stage.

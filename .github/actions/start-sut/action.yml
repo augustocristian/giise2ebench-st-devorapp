@@ -1,113 +1,44 @@
 name: "Start DevorApp SUT"
 description: >-
-  Boots the DevorApp System Under Test (db + keras-api + backend + frontend)
-  with Docker Compose using dummy credentials, and waits until the backend
-  health endpoint answers. Shared by every E2E stage of the pipeline so all the
-  test-technology combinations exercise an identically configured SUT. By
-  default it also starts gplaces-mock and the Firebase emulator and points the
-  backend at them, so no stage ever calls the real Google Places or Firebase.
+  Loads the images built once by the `build-images` job (artifact `images`) and starts the
+  dev stack from them without rebuilding (sut/docker-compose.dev.override.yml). No credentials needed.
+  Each calling job gets its own instance. Relies on the workflow-level IMAGE_TAG.
 
 inputs:
-  services:
-    description: "Space-separated docker compose services to start."
-    required: false
-    default: "db gplaces-mock firebase-emulator keras-api backend frontend"
   health-timeout:
-    description: "Seconds to wait for GET /health before giving up."
+    description: "Seconds to wait for the backend /health endpoint."
     required: false
     default: "180"
-  use-places-mock:
-    description: >-
-      Layer docker-compose.dev.yml on top, replacing Google Places and Geocoding
-      with the local gplaces-mock container and the Firebase emulator. Set to "false" only for a stage that
-      deliberately exercises the real Google API.
-    required: false
-    default: "true"
-
-outputs:
-  backend-url:
-    description: "Base URL of the FastAPI backend (LOCALHOST_URL / apiUrl)."
-    value: "http://localhost:8000"
-  frontend-url:
-    description: "Base URL of the React frontend (FRONTEND_URL / baseUrl)."
-    value: "http://localhost"
-  places-mock-url:
-    description: "Base URL of gplaces-mock, including its /__admin control surface."
-    value: "http://localhost:8002"
 
 runs:
   using: "composite"
   steps:
-    - name: Create dummy Firebase credentials and .env configuration files
+    - uses: actions/download-artifact@v8
+      with:
+        name: images
+        path: ${{ runner.temp }}/images
+
+    - name: Load the images
+      shell: bash
+      run: |
+        ls -lh "${{ runner.temp }}/images"
+        docker load -i "${{ runner.temp }}/images/images.tar.gz"
+
+    - name: Start the dev stack (no build)
+      shell: bash
+      working-directory: sut
+      run: docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up -d --no-build
+
+    - name: Wait for the SUT
       shell: bash
       working-directory: sut
       run: |
-        # Firebase Admin is a lazy singleton: an empty JSON is enough to boot.
-        echo '{}' > backend/firebase-service-account.json
-
-        cat <<'EOF' > backend/.env
-        FIREBASE_PROJECT_ID=epi-devorapp
-        FIREBASE_API_KEY=dummy_firebase_key
-        GOOGLE_API_KEY=dummy_google_key
-        FIREBASE_SERVICE_ACCOUNT_PATH=firebase-service-account.json
-        SECRET_KEY=dummy_secret_key
-        DATABASE_URL=postgresql://postgres:password@db:5432/tfg_db
-        KERAS_API_URL=http://keras-api:8001/predict
-        KERAS_API_KEY=devorapp_6f8e2b9a1c4d5e0f7a3b8c9d0e1f2a3b4c5d6e7f8
-        GOOGLE_CLIENT_ID=dummy_google_client_id
-        EOF
-
-        cat <<'EOF' > keras-api/.env
-        API_KEY_RECOMMENDER=devorapp_6f8e2b9a1c4d5e0f7a3b8c9d0e1f2a3b4c5d6e7f8
-        MODEL_PATH=./models/modelo_prod.h5
-        PORT=8001
-        DATABASE_URL=postgresql://postgres:password@db:5432/tfg_db
-        GOOGLE_API_KEY=dummy_google_key
-        EOF
-
-    - name: Resolve the compose file set
-      shell: bash
-      working-directory: sut
-      run: |
-        if [ "${{ inputs.use-places-mock }}" = "true" ]; then
-          echo "COMPOSE_FILES=-f docker-compose.yml -f docker-compose.dev.yml" >> "$GITHUB_ENV"
-          echo "Google Places and Geocoding are served by gplaces-mock."
-        else
-          echo "COMPOSE_FILES=-f docker-compose.yml" >> "$GITHUB_ENV"
-          echo "::warning title=Google Places::This stage will call the real Google API."
-        fi
-
-    - name: Start DevorApp via Docker Compose
-      shell: bash
-      working-directory: sut
-      run: docker compose $COMPOSE_FILES up -d --build ${{ inputs.services }}
-
-    - name: Wait for the SUT to become ready
-      shell: bash
-      working-directory: sut
-      run: |
-        if [ "${{ inputs.use-places-mock }}" = "true" ]; then
-          echo "Waiting for http://localhost:8002/health (gplaces-mock) ..."
-          for i in $(seq 1 60); do
-            if curl -fsS http://localhost:8002/health > /dev/null 2>&1; then
-              echo "gplaces-mock is healthy after ${i}s."
-              break
-            fi
-            sleep 1
-          done
-        fi
-
-        echo "Waiting up to ${{ inputs.health-timeout }}s for http://localhost:8000/health ..."
         for i in $(seq 1 ${{ inputs.health-timeout }}); do
-          if curl -fsS http://localhost:8000/health > /dev/null 2>&1; then
-            echo "Backend is healthy after ${i}s."
-            curl -fsS -o /dev/null -w "Frontend answered with HTTP %{http_code}\n" http://localhost/ || \
-              echo "::warning title=Frontend::Backend is up but the frontend did not answer yet."
-            exit 0
-          fi
+          curl -fsS http://localhost:8000/health >/dev/null 2>&1 && curl -fsS http://localhost/ >/dev/null 2>&1 \
+            && echo "SUT ready after ${i}s" && exit 0
           sleep 1
         done
-        echo "::error title=SUT startup::/health did not answer within ${{ inputs.health-timeout }}s."
-        docker compose $COMPOSE_FILES ps
-        docker compose $COMPOSE_FILES logs --no-color --tail 120
+        echo "::error::SUT not ready after ${{ inputs.health-timeout }}s"
+        docker ps -a
+        docker compose -f docker-compose.yml -f docker-compose.dev.override.yml logs --no-color --tail 100
         exit 1

@@ -132,6 +132,8 @@ Dado el coste computacional y las dependencias específicas necesarias para el m
 
 ## Modos de despliegue: `dev` y `prod`
 
+> Guía completa de despliegue, variables y ejecución de pruebas en el [README de la raíz](../README.md). Las imágenes se construyen una vez y son las mismas en dev y prod; solo cambia el entorno con el que se arrancan (el frontend lee `VITE_GOOGLE_CLIENT_ID`, `VITE_GOOGLE_API_KEY` y `VITE_API_URL` al arrancar el contenedor).
+
 El sistema se despliega de dos formas con los mismos servicios (PostgreSQL, Backend, Frontend y Keras API). Lo único que cambia es **a qué servicios externos** habla el backend:
 
 | | **dev** | **prod** |
@@ -140,7 +142,7 @@ El sistema se despliega de dos formas con los mismos servicios (PostgreSQL, Back
 | Restaurantes y geocodificación (Google Places + Geocoding) | `gplaces-mock` (contenedor local, dataset fijo) | API real de Google |
 | Credenciales necesarias | **Ninguna** | `firebase-service-account.json`, `FIREBASE_API_KEY`, `GOOGLE_API_KEY`... |
 | Ficheros `.env` | No son necesarios | Necesarios (ver más abajo) |
-| Compose | `docker-compose.yml` + `docker-compose.dev.yml` | `docker-compose.yml` |
+| Compose | `docker-compose.yml` + `docker-compose.dev.override.yml` | `docker-compose.yml` |
 | Datos | Efímeros: se pierden al parar el emulador | Persistentes (Firebase real) |
 | Coste / cuota | Ninguno | Cuota y facturación de Google y Firebase |
 
@@ -148,28 +150,28 @@ El sistema se despliega de dos formas con los mismos servicios (PostgreSQL, Back
 
 ```bash
 # Desde la carpeta sut/
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up -d --build
 
 # Parar y borrar los datos (base de datos y emulador)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml down -v
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml down -v
 ```
 
-[`docker-compose.dev.yml`](docker-compose.dev.yml) añade dos servicios y reconfigura el backend para usarlos:
+[`docker-compose.dev.override.yml`](docker-compose.dev.override.yml) añade dos servicios y reconfigura el backend para usarlos:
 
 - **[`firebase-emulator`](firebase-emulator)**: *Firebase Local Emulator Suite* (Authentication en el puerto `9099` y Firestore en el `8080`, solo dentro de la red de Docker). El backend lo usa mediante `FIREBASE_AUTH_EMULATOR_HOST`, `FIRESTORE_EMULATOR_HOST` y `FIREBASE_AUTH_BASE_URL`. Con estas variables el Firebase Admin SDK arranca **sin clave de cuenta de servicio**.
-- **[`gplaces-mock`](gplaces-mock)**: sustituto de Google Places (New) y Geocoding en el puerto `8002`, con 12 restaurantes fijos en Gijón, Oviedo y Avilés y una superficie de control `/__admin` (ver su [README](gplaces-mock/README.md)). El backend lo usa mediante `GOOGLE_PLACES_BASE_URL` y `GOOGLE_GEOCODE_URL`.
+- **[`gplaces-mock`](gplaces-mock)**: sustituto de Google Places (New) y Geocoding en el puerto `8002`, con 13 lugares ficticios fijos en Gijón, Oviedo y Avilés y una superficie de control `/__admin` (ver su [README](gplaces-mock/README.md)). El backend lo usa mediante `GOOGLE_PLACES_BASE_URL` y `GOOGLE_GEOCODE_URL`.
 
 Además, en dev el backend arranca con `SKIP_EMAIL_VERIFICATION=true` (no hay bandeja de entrada donde leer el correo de verificación) y `COOKIE_SECURE=false` (la cookie de sesión no es `Secure`, para que los clientes HTTP que no son navegadores puedan usarla sobre `http://`). El propio fichero aporta valores ficticios para el resto de variables, por lo que **no hace falta crear `backend/.env`, `keras-api/.env` ni `backend/firebase-service-account.json`**.
 
 Para desarrollar con recarga en vivo, añade la capa de *hot reload* (sigue usando el emulador y el mock):
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.hotreload.yml up --build
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml -f docker-compose.hotreload.yml up --build
 ```
 
 > **Limitaciones de dev**: el inicio de sesión con Google no funciona con el emulador, y el autocompletado de ubicación del navegador usa el SDK de Google Maps JavaScript (configurado con `VITE_GOOGLE_API_KEY` en el frontend), que no está sustituido. Este modo es el que usan el pipeline de CI y las pruebas E2E.
 >
-> Requiere Docker Compose **2.24 o superior** (`docker-compose.dev.yml` usa la etiqueta `!reset` para anular los `env_file` y el montaje de credenciales del compose base).
+> Requiere Docker Compose **2.24 o superior** (`docker-compose.dev.override.yml` usa la etiqueta `!reset` para anular los `env_file` y el montaje de credenciales del compose base).
 
 ### Modo prod (Firebase y Google Places reales)
 
@@ -178,7 +180,7 @@ docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose
 docker compose up -d --build
 ```
 
-Sin `docker-compose.dev.yml` el backend habla con los servicios reales, por lo que hay que configurarlos:
+Sin `docker-compose.dev.override.yml` el backend habla con los servicios reales, por lo que hay que configurarlos:
 
 1. **Firebase** (Authentication + Firestore): crea un proyecto, activa *Email/Password* en Authentication y crea una base de datos Firestore. Descarga la clave de la cuenta de servicio en `backend/firebase-service-account.json` y copia `FIREBASE_PROJECT_ID` y la *Web API Key* (`FIREBASE_API_KEY`) en `backend/.env`.
 2. **Google Places y Geocoding**: habilita *Places API (New)* y *Geocoding API* en Google Cloud y pon la clave en `GOOGLE_API_KEY` (`backend/.env` y `keras-api/.env`) y en `VITE_GOOGLE_API_KEY` (`frontend/.env`).
@@ -274,10 +276,10 @@ Construir y arrancar todo el ecosistema (PostgreSQL, Backend, Frontend y Keras A
 docker compose up --build
 
 # Modo dev (emulador de Firebase + mock de Google Places; sin credenciales)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up --build
 
 # Modo dev con recarga en vivo de backend y frontend (volúmenes montados)
-docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.hotreload.yml up --build
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml -f docker-compose.hotreload.yml up --build
 ```
 
 - **Frontend**: Acceso en [http://localhost](http://localhost) (o [http://localhost:5173](http://localhost:5173) en desarrollo)

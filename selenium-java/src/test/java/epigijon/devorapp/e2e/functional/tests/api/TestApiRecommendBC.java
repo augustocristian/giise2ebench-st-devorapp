@@ -14,24 +14,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * API Base-Choice tests for the recommendation search module.
- *
- * <p>Adapts the recommendation scenarios from {@code recommendation.spec.ts}
- * (Playwright) to pure REST assertions against {@code POST /api/recommendations/search}.
- *
- * <p>Cases covered:
- * <ul>
- *   <li>BASE  — search with categories + prices + location returns HTTP 200 with results array.</li>
- *   <li>S2    — categories = [] (empty) → HTTP 200 with results array.</li>
- *   <li>S4    — prices = [] (empty) → HTTP 200 with results array.</li>
- *   <li>S6    — include_unconfirmed_price = false → HTTP 200.</li>
- *   <li>S7    — open_now = false → HTTP 200.</li>
- *   <li>S8    — using an alternative location → HTTP 200.</li>
- *   <li>S10   — results may be empty array (handled without error).</li>
- *   <li>S11   — results contain a single item with required fields.</li>
- * </ul>
- */
+/** API Base-Choice tests for the recommendation search module (see @DisplayName for scenario ids). */
 class TestApiRecommendBC extends BaseApiClass {
 
     private static final String LOCATION_PREF  = "Gijón, España";
@@ -48,11 +31,9 @@ class TestApiRecommendBC extends BaseApiClass {
         deleteTestUser();
     }
 
-    // ── BASE: búsqueda con filtros base ───────────────────────────────────────
-
     @Test
     @DisplayName("BASE — search with categories, prices and location returns HTTP 200 with results array")
-    void testBase_BusquedaFiltrosBase() throws IOException {
+    void testBase_SearchWithBaseFilters() throws IOException {
         String body = searchPayload(
                 Arrays.asList("mexican_restaurant", "italian_restaurant"),
                 Arrays.asList("PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"),
@@ -71,11 +52,9 @@ class TestApiRecommendBC extends BaseApiClass {
         );
     }
 
-    // ── S2: categorías vacías → HTTP 200 ──────────────────────────────────────
-
     @Test
     @DisplayName("S2 — empty categories list is accepted and returns HTTP 200")
-    void testS2_CategoriasVacias() throws IOException {
+    void testS2_EmptyCategories() throws IOException {
         String body = searchPayload(
                 Collections.emptyList(),
                 Arrays.asList("PRICE_LEVEL_MODERATE"),
@@ -90,11 +69,9 @@ class TestApiRecommendBC extends BaseApiClass {
                 "Empty categories must still return a 'results' array (S2)");
     }
 
-    // ── S4: precios vacíos → HTTP 200 ────────────────────────────────────────
-
     @Test
     @DisplayName("S4 — empty prices list is accepted and returns HTTP 200")
-    void testS4_PreciosVacios() throws IOException {
+    void testS4_EmptyPrices() throws IOException {
         String body = searchPayload(
                 Arrays.asList("mexican_restaurant"),
                 Collections.emptyList(),
@@ -109,11 +86,9 @@ class TestApiRecommendBC extends BaseApiClass {
                 "Empty prices must still return a 'results' array (S4)");
     }
 
-    // ── S6: include_unconfirmed_price = false ─────────────────────────────────
-
     @Test
     @DisplayName("S6 — include_unconfirmed_price=false returns HTTP 200")
-    void testS6_SinPrecioNoConfirmado() throws IOException {
+    void testS6_NoUnconfirmedPrice() throws IOException {
         String body = searchPayload(
                 Arrays.asList("mexican_restaurant", "italian_restaurant"),
                 Arrays.asList("PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"),
@@ -128,11 +103,9 @@ class TestApiRecommendBC extends BaseApiClass {
                 "include_unconfirmed_price=false must still return results array (S6)");
     }
 
-    // ── S7: open_now = false ──────────────────────────────────────────────────
-
     @Test
     @DisplayName("S7 — open_now=false is accepted and returns HTTP 200")
-    void testS7_NoAbierto() throws IOException {
+    void testS7_NotOpenNow() throws IOException {
         // Build payload with open_now=false
         JsonObject json = new JsonObject();
         JsonArray cats = new JsonArray();
@@ -154,11 +127,9 @@ class TestApiRecommendBC extends BaseApiClass {
                 "open_now=false must return a 'results' array (S7)");
     }
 
-    // ── S8: ubicación alternativa ─────────────────────────────────────────────
-
     @Test
     @DisplayName("S8 — alternative location is accepted and returns HTTP 200")
-    void testS8_UbicacionAlternativa() throws IOException {
+    void testS8_AlternativeLocation() throws IOException {
         String body = searchPayload(
                 Arrays.asList("mexican_restaurant", "italian_restaurant"),
                 Arrays.asList("PRICE_LEVEL_MODERATE", "PRICE_LEVEL_EXPENSIVE"),
@@ -173,11 +144,9 @@ class TestApiRecommendBC extends BaseApiClass {
                 "Alternative location must still return a 'results' array (S8)");
     }
 
-    // ── S10: resultados pueden ser vacíos ─────────────────────────────────────
-
     @Test
     @DisplayName("S10 — search returning 0 results returns HTTP 200 with empty results array")
-    void testS10_ResultadosVacios() throws IOException {
+    void testS10_EmptyResults() throws IOException {
         // Search for a very specific niche cuisine that is unlikely to return results
         String body = searchPayload(
                 Arrays.asList("some_very_obscure_cuisine_type_xyz"),

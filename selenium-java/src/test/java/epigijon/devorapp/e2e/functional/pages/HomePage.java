@@ -1,17 +1,14 @@
 package epigijon.devorapp.e2e.functional.pages;
 
+import epigijon.devorapp.e2e.functional.common.TestId;
 import epigijon.devorapp.e2e.functional.utils.Waiter;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 
-/**
- * Page object for {@code /home}.
- * The constructor waits until the URL contains {@code /home} and the top
- * navigation bar is visible before returning.
- */
+/** Page object for {@code /home}; the constructor waits for the URL and the top bar. */
 public class HomePage extends BasePage {
 
-    private static final By TOP_BAR = By.cssSelector(".topbar, header, nav");
+    private static final By TOP_BAR = TestId.of("topbar");
 
     public HomePage(WebDriver driver, Waiter waiter) {
         super(driver, waiter);
@@ -19,12 +16,10 @@ public class HomePage extends BasePage {
         waiter.waitForTopBar();
     }
 
-    /** Returns {@code true} if the top navigation bar is present in the DOM. */
     public boolean isTopBarVisible() {
         return isVisible(TOP_BAR);
     }
 
-    /** Returns the browser's current URL. */
     public String getCurrentUrl() {
         return driver.getCurrentUrl();
     }
