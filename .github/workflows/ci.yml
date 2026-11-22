@@ -498,7 +498,9 @@ jobs:
 
       - name: Run E2E & API specs
         working-directory: cypress-js
-        run: npm test
+        shell: bash   # pipefail keeps npm test's exit code through the filter below
+        # Electron logs a harmless D-Bus/NetworkManager error per page: runners have no NetworkManager.
+        run: npm test 2>&1 | sed '/object_proxy.cc/d'
 
       - name: Upload screenshots and JUnit results
         if: always()
