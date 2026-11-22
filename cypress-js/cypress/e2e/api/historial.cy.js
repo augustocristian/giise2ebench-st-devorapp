@@ -7,7 +7,7 @@ describe("API - Historial - Base-Choice", () => {
   describe("with an empty history", () => {
     const user = useTestUser("histempty");
 
-    it("Caso 2 - a fresh user gets an empty array", () => {
+    it("Case 2 - a fresh user gets an empty array", () => {
       cy.apiLoginAs(user);
       api.historial.list().then((res) => {
         expect(res.body, "A brand-new user must have an empty history").to.be.empty;
@@ -28,7 +28,7 @@ describe("API - Historial - Base-Choice", () => {
       });
     });
 
-    it("Caso 5 - a new entry is returned with id, place_id and fecha_acceso", () => {
+    it("Case 5 - a new entry is returned with id, place_id and fecha_acceso", () => {
       api.historial.add(PLACES.A).then((res) => {
         expect(res.body.id, "Entry id must be positive").to.be.above(0);
         expect(res.body.place_id, "place_id must echo the added place").to.eq(PLACES.A);
@@ -36,7 +36,7 @@ describe("API - Historial - Base-Choice", () => {
       });
     });
 
-    it("Caso 6 - deleting an entry removes it from the history", () => {
+    it("Case 6 - deleting an entry removes it from the history", () => {
       api.historial.add(PLACES.A).then((added) => {
         const entryId = added.body.id;
         api.historial.remove(entryId).its("status").should("eq", 204);
@@ -50,7 +50,7 @@ describe("API - Historial - Base-Choice", () => {
       });
     });
 
-    it("Caso 3 - the latest entry has a non-null fecha_acceso", () => {
+    it("Case 3 - the latest entry has a non-null fecha_acceso", () => {
       api.historial.add(PLACES.B);
 
       api.historial.list().then((res) => {

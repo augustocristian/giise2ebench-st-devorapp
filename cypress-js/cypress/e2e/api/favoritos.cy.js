@@ -24,19 +24,19 @@ describe("API - Favoritos - Base-Choice", () => {
     restaurantIds().should("have.members", [PLACES.A, PLACES.B, PLACES.C]);
   });
 
-  it("Caso 2 - a new list has an empty restaurantes array", () => {
+  it("Case 2 - a new list has an empty restaurantes array", () => {
     api.favoritos.getList(listId).then((res) => {
       expect(res.body.restaurantes, "A brand-new list must have no restaurants").to.be.empty;
     });
   });
 
-  it("Caso 3 - adding 1 restaurant returns a restaurantes array of size 1", () => {
+  it("Case 3 - adding 1 restaurant returns a restaurantes array of size 1", () => {
     api.favoritos.addRestaurant(listId, PLACES.A);
 
     restaurantIds().should("deep.equal", [PLACES.A]);
   });
 
-  it("Caso 4 - GET lists includes the created list", () => {
+  it("Case 4 - GET lists includes the created list", () => {
     api.favoritos.lists().then((res) => {
       expect(
         res.body.map((l) => l.id),
@@ -45,7 +45,7 @@ describe("API - Favoritos - Base-Choice", () => {
     });
   });
 
-  it("Caso 5 - deleting a restaurant removes only it from the list detail", () => {
+  it("Case 5 - deleting a restaurant removes only it from the list detail", () => {
     api.favoritos.addRestaurant(listId, PLACES.A).then((res) => {
       api.favoritos.addRestaurant(listId, PLACES.B);
       api.favoritos.removeRestaurant(res.body.id).its("status").should("eq", 204);
@@ -54,7 +54,7 @@ describe("API - Favoritos - Base-Choice", () => {
     restaurantIds().should("deep.equal", [PLACES.B]);
   });
 
-  it("Caso 6 - deleting a list removes it from the user's lists", () => {
+  it("Case 6 - deleting a list removes it from the user's lists", () => {
     api.favoritos.deleteList(listId).its("status").should("eq", 204);
 
     api.favoritos.lists().then((res) => {

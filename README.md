@@ -121,7 +121,7 @@ Requisitos: Node.js 22.
 ```bash
 cd cypress-js
 npm ci
-npm test               # espera a que el SUT responda y ejecuta todo: 22 pruebas de navegador + 42 de API
+npm test               # espera a que el SUT responda y ejecuta todo: 78 pruebas de navegador + 42 de API
 npm run test:api       # solo API
 npm run test:e2e       # solo navegador
 npm run cypress:open   # modo interactivo
