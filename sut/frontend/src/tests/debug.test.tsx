@@ -1,39 +1,39 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect } from 'vitest';
-import ValoracionesPage from '../views/ValoracionesPage';
+import RatingsPage from '../views/RatingsPage';
 
-vi.mock('../models/api/valoracionesService', () => ({
-    valoracionesService: {
-        obtenerTodasMisValoraciones: vi.fn(),
-        valorarRestaurante: vi.fn(),
-        eliminarValoracion: vi.fn(),
+vi.mock('../models/api/ratingsService', () => ({
+    ratingsService: {
+        getAllMyRatings: vi.fn(),
+        rateRestaurant: vi.fn(),
+        deleteRating: vi.fn(),
     },
 }));
-import { valoracionesService } from '../models/api/valoracionesService';
+import { ratingsService } from '../models/api/ratingsService';
 
 const mockShowNotification = vi.fn();
 const mockShowConfirm = vi.fn();
-vi.mock('../components/NotificationSystem', () => ({
+vi.mock('../components/useNotification', () => ({
     useNotification: () => ({
         showNotification: mockShowNotification,
         showConfirm: mockShowConfirm,
     }),
 }));
 
-const mockValoracionesData = [{
+const mockRatingsData = [{
     id: 1,
     place_id: 'place1',
-    calidad: 5, precio: 4, higiene: 3, trato: 5,
-    comentario: 'Muy buena experiencia',
+    quality: 5, price: 4, hygiene: 3, service: 5,
+    comment: 'Muy buena experiencia',
     restaurant: { name: 'Restaurante Test', address: 'Calle Falsa 123', types: ['restaurant'], main_photo: null },
-    fecha: '2026-04-20T10:00:00Z'
+    created_at: '2026-04-20T10:00:00Z'
 }];
 
-describe('Debug ValoracionesPage', () => {
-    it('debe mostrar el DOM', async () => {
-        (valoracionesService.obtenerTodasMisValoraciones as any).mockResolvedValue(mockValoracionesData);
-        render(<MemoryRouter><ValoracionesPage /></MemoryRouter>);
+describe('Debug RatingsPage', () => {
+    it('should show the DOM', async () => {
+        (ratingsService.getAllMyRatings as any).mockResolvedValue(mockRatingsData);
+        render(<MemoryRouter><RatingsPage /></MemoryRouter>);
         
         await waitFor(() => expect(screen.getByText('Restaurante Test')).toBeInTheDocument());
         

@@ -1,5 +1,5 @@
 /**
- * Tests para los custom hooks de la aplicación:
+ * Tests for the application custom hooks:
  *   - useLogin
  *   - useLogout
  *   - usePasswordReset
@@ -9,7 +9,7 @@
 import { renderHook, act } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 
-// ── Mock de authService ───────────────────────────────────────────────────────
+// ── authService mock ───────────────────────────────────────────────────────
 vi.mock('../models/api/authService', () => ({
     authService: {
         login: vi.fn(),
@@ -38,7 +38,7 @@ describe('useLogin', () => {
         vi.clearAllMocks();
     });
 
-    it('estado inicial: campos vacíos, sin mensaje, sin carga', () => {
+    it('initial state: empty fields, no message, not loading', () => {
         const { result } = renderHook(() => useLogin());
         expect(result.current.identifier).toBe('');
         expect(result.current.password).toBe('');
@@ -46,7 +46,7 @@ describe('useLogin', () => {
         expect(result.current.loading).toBe(false);
     });
 
-    it('setIdentifier y setPassword actualizan el estado', () => {
+    it('setIdentifier and setPassword update the state', () => {
         const { result } = renderHook(() => useLogin());
         act(() => result.current.setIdentifier('ana@test.com'));
         act(() => result.current.setPassword('Segura123'));
@@ -54,7 +54,7 @@ describe('useLogin', () => {
         expect(result.current.password).toBe('Segura123');
     });
 
-    it('validación: muestra error si los campos están vacíos al enviar', async () => {
+    it('validation: shows error if fields are empty on submit', async () => {
         const { result } = renderHook(() => useLogin());
         await act(async () => { await result.current.submitLogin(mockEvent); });
         expect(result.current.message?.type).toBe('error');
@@ -62,7 +62,7 @@ describe('useLogin', () => {
         expect(authService.login).not.toHaveBeenCalled();
     });
 
-    it('validación: muestra error si falta el password', async () => {
+    it('validation: shows error if the password is missing', async () => {
         const { result } = renderHook(() => useLogin());
         act(() => result.current.setIdentifier('ana@test.com'));
         await act(async () => { await result.current.submitLogin(mockEvent); });
@@ -70,8 +70,8 @@ describe('useLogin', () => {
         expect(authService.login).not.toHaveBeenCalled();
     });
 
-    it('login exitoso: llama al servicio y muestra bienvenida', async () => {
-        (authService.login as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { nombre: 'Ana' } });
+    it('successful login: calls the service and shows welcome message', async () => {
+        (authService.login as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { first_name: 'Ana' } });
         const { result } = renderHook(() => useLogin());
         act(() => {
             result.current.setIdentifier('ana@test.com');
@@ -83,9 +83,9 @@ describe('useLogin', () => {
         expect(result.current.message?.text).toContain('Ana');
     });
 
-    it('login exitoso: llama a onSuccess tras timeout', async () => {
+    it('successful login: calls onSuccess after timeout', async () => {
         vi.useFakeTimers();
-        (authService.login as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { nombre: 'Ana' } });
+        (authService.login as ReturnType<typeof vi.fn>).mockResolvedValue({ user: { first_name: 'Ana' } });
         const onSuccess = vi.fn();
         const { result } = renderHook(() => useLogin(onSuccess));
         act(() => {
@@ -99,7 +99,7 @@ describe('useLogin', () => {
         vi.useRealTimers();
     });
 
-    it('login fallido: muestra el mensaje de error del servicio', async () => {
+    it('failed login: shows the service error message', async () => {
         (authService.login as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Credenciales incorrectas'));
         const { result } = renderHook(() => useLogin());
         act(() => {
@@ -111,7 +111,7 @@ describe('useLogin', () => {
         expect(result.current.message?.text).toBe('Credenciales incorrectas');
     });
 
-    it('loading se pone a true durante la petición y a false al terminar', async () => {
+    it('loading is true during the request and false when done', async () => {
         let resolveLogin: (v: any) => void;
         (authService.login as ReturnType<typeof vi.fn>).mockReturnValue(
             new Promise(res => { resolveLogin = res; })
@@ -121,11 +121,11 @@ describe('useLogin', () => {
             result.current.setIdentifier('ana@test.com');
             result.current.setPassword('Segura123');
         });
-        // Iniciamos pero no esperamos (la promesa no resuelve aún)
+        // Start without awaiting (the promise has not resolved yet)
         act(() => { result.current.submitLogin(mockEvent); });
         expect(result.current.loading).toBe(true);
-        // Resolvemos la promesa
-        await act(async () => { resolveLogin!({ user: { nombre: 'Ana' } }); });
+        // Resolve the promise
+        await act(async () => { resolveLogin!({ user: { first_name: 'Ana' } }); });
         expect(result.current.loading).toBe(false);
     });
 });
@@ -138,13 +138,13 @@ describe('useLogin', () => {
 describe('useLogout', () => {
     beforeEach(() => vi.clearAllMocks());
 
-    it('estado inicial: sin carga, sin error', () => {
+    it('initial state: not loading, no error', () => {
         const { result } = renderHook(() => useLogout(() => {}));
         expect(result.current.loading).toBe(false);
         expect(result.current.error).toBeNull();
     });
 
-    it('logout exitoso: llama a onSuccess', async () => {
+    it('successful logout: calls onSuccess', async () => {
         (authService.logout as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
         const onSuccess = vi.fn();
         const { result } = renderHook(() => useLogout(onSuccess));
@@ -153,7 +153,7 @@ describe('useLogout', () => {
         expect(onSuccess).toHaveBeenCalledTimes(1);
     });
 
-    it('logout fallido: guarda el error y NO llama a onSuccess', async () => {
+    it('failed logout: stores the error and does NOT call onSuccess', async () => {
         (authService.logout as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
         const onSuccess = vi.fn();
         const { result } = renderHook(() => useLogout(onSuccess));
@@ -162,7 +162,7 @@ describe('useLogout', () => {
         expect(onSuccess).not.toHaveBeenCalled();
     });
 
-    it('loading es true durante la petición y false al terminar', async () => {
+    it('loading is true during the request and false when done', async () => {
         let resolve: (v: any) => void;
         (authService.logout as ReturnType<typeof vi.fn>).mockReturnValue(
             new Promise(res => { resolve = res; })
@@ -185,26 +185,26 @@ describe('usePasswordReset', () => {
 
     beforeEach(() => vi.clearAllMocks());
 
-    it('estado inicial sin argumento: identifier vacío', () => {
+    it('initial state without argument: empty identifier', () => {
         const { result } = renderHook(() => usePasswordReset());
         expect(result.current.identifier).toBe('');
         expect(result.current.message).toBeNull();
         expect(result.current.loading).toBe(false);
     });
 
-    it('estado inicial con argumento: usa el identifier dado', () => {
+    it('initial state with argument: uses the given identifier', () => {
         const { result } = renderHook(() => usePasswordReset('pre@test.com'));
         expect(result.current.identifier).toBe('pre@test.com');
     });
 
-    it('validación: muestra error si el email está vacío', async () => {
+    it('validation: shows error if the email is empty', async () => {
         const { result } = renderHook(() => usePasswordReset());
         await act(async () => { await result.current.submitPasswordReset(mockEvent); });
         expect(result.current.message?.type).toBe('error');
         expect(authService.requestPasswordReset).not.toHaveBeenCalled();
     });
 
-    it('reset exitoso: muestra mensaje de éxito y limpia el identifier', async () => {
+    it('successful reset: shows success message and clears the identifier', async () => {
         (authService.requestPasswordReset as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
         const { result } = renderHook(() => usePasswordReset('test@test.com'));
         await act(async () => { await result.current.submitPasswordReset(mockEvent); });
@@ -213,7 +213,7 @@ describe('usePasswordReset', () => {
         expect(result.current.identifier).toBe('');
     });
 
-    it('reset fallido: muestra el mensaje de error del servicio', async () => {
+    it('failed reset: shows the service error message', async () => {
         (authService.requestPasswordReset as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Email no encontrado'));
         const { result } = renderHook(() => usePasswordReset('bad@test.com'));
         await act(async () => { await result.current.submitPasswordReset(mockEvent); });
@@ -221,7 +221,7 @@ describe('usePasswordReset', () => {
         expect(result.current.message?.text).toBe('Email no encontrado');
     });
 
-    it('setIdentifier actualiza el valor', () => {
+    it('setIdentifier updates the value', () => {
         const { result } = renderHook(() => usePasswordReset());
         act(() => result.current.setIdentifier('nuevo@test.com'));
         expect(result.current.identifier).toBe('nuevo@test.com');
@@ -250,13 +250,13 @@ describe('useRegister', () => {
             result.current.setFieldValue('email',     'test@test.com');
             result.current.setFieldValue('username',  'testuser');
             result.current.setFieldValue('password',  'Test1234');
-            result.current.setFieldValue('nombre',    'Test');
-            result.current.setFieldValue('apellidos', 'User');
-            result.current.setFieldValue('ubicacion', 'Oviedo');
+            result.current.setFieldValue('first_name',    'Test');
+            result.current.setFieldValue('last_name', 'User');
+            result.current.setFieldValue('location', 'Oviedo');
         });
     };
 
-    it('estado inicial: form vacío, sin mensaje, sin carga', () => {
+    it('initial state: empty form, no message, not loading', () => {
         const { result } = renderHook(() => useRegister(() => {}));
         expect(result.current.form.email).toBe('');
         expect(result.current.message).toBeNull();
@@ -264,42 +264,42 @@ describe('useRegister', () => {
         expect(result.current.isWaitingVerification).toBe(false);
     });
 
-    it('handleInputChange actualiza el campo correspondiente', () => {
+    it('handleInputChange updates the corresponding field', () => {
         const { result } = renderHook(() => useRegister(() => {}));
         const fakeEvent = { target: { name: 'email', value: 'a@b.com' } } as React.ChangeEvent<HTMLInputElement>;
         act(() => result.current.handleInputChange(fakeEvent));
         expect(result.current.form.email).toBe('a@b.com');
     });
 
-    it('setFieldValue actualiza un campo del formulario', () => {
+    it('setFieldValue updates a form field', () => {
         const { result } = renderHook(() => useRegister(() => {}));
-        act(() => result.current.setFieldValue('nombre', 'María'));
-        expect(result.current.form.nombre).toBe('María');
+        act(() => result.current.setFieldValue('first_name', 'María'));
+        expect(result.current.form.first_name).toBe('María');
     });
 
-    it('validación: error si faltan campos obligatorios', async () => {
+    it('validation: error if required fields are missing', async () => {
         const { result } = renderHook(() => useRegister(() => {}));
         await act(async () => { await result.current.submitRegister(mockEvent); });
         expect(result.current.message?.type).toBe('error');
         expect(authService.register).not.toHaveBeenCalled();
     });
 
-    it('validación: error si falta la ubicación', async () => {
+    it('validation: error if the location is missing', async () => {
         const { result } = renderHook(() => useRegister(() => {}));
         act(() => {
             result.current.setFieldValue('email', 'a@b.com');
             result.current.setFieldValue('username', 'user');
             result.current.setFieldValue('password', 'Pass1234');
-            result.current.setFieldValue('nombre', 'Ana');
-            result.current.setFieldValue('apellidos', 'García');
-            // ubicacion vacía (por defecto)
+            result.current.setFieldValue('first_name', 'Ana');
+            result.current.setFieldValue('last_name', 'García');
+            // empty location (default)
         });
         await act(async () => { await result.current.submitRegister(mockEvent); });
         expect(result.current.message?.type).toBe('error');
         expect(result.current.message?.text).toMatch(/ubicaci/i);
     });
 
-    it('registro exitoso: mensaje de éxito e isWaitingVerification = true', async () => {
+    it('successful registration: success message and isWaitingVerification = true', async () => {
         (authService.register as ReturnType<typeof vi.fn>).mockResolvedValue({});
         (authService.checkEmailVerification as ReturnType<typeof vi.fn>).mockResolvedValue(false);
         const { result } = renderHook(() => useRegister(() => {}));
@@ -309,7 +309,7 @@ describe('useRegister', () => {
         expect(result.current.isWaitingVerification).toBe(true);
     });
 
-    it('registro fallido: muestra el error del servicio', async () => {
+    it('failed registration: shows the service error', async () => {
         (authService.register as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Email ya registrado'));
         const { result } = renderHook(() => useRegister(() => {}));
         fillForm(result);
@@ -318,19 +318,19 @@ describe('useRegister', () => {
         expect(result.current.message?.text).toBe('Email ya registrado');
     });
 
-    it('polling: llama a onSuccess cuando checkEmailVerification devuelve true', async () => {
+    it('polling: calls onSuccess when checkEmailVerification returns true', async () => {
         (authService.register as ReturnType<typeof vi.fn>).mockResolvedValue({});
         (authService.checkEmailVerification as ReturnType<typeof vi.fn>).mockResolvedValue(true);
         const onSuccess = vi.fn();
         const { result } = renderHook(() => useRegister(onSuccess));
         fillForm(result);
         await act(async () => { await result.current.submitRegister(mockEvent); });
-        // Avanzamos el intervalo de 5 segundos
+        // Advance the 5-second interval
         await act(async () => {
             vi.advanceTimersByTime(5000);
             await Promise.resolve();
         });
-        // Avanzamos el setTimeout de redirección (2 segundos)
+        // Advance the redirect setTimeout (2 seconds)
         await act(async () => {
             vi.advanceTimersByTime(2000);
         });

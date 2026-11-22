@@ -33,19 +33,19 @@ class TestFavoritesView extends BaseLoggedClass {
         driver.get(sutUrl + "/login");
     }
 
-    private void injectFavoritesMock(String listasJson, String detailJson) {
+    private void injectFavoritesMock(String listsJson, String detailJson) {
         ((JavascriptExecutor) driver).executeScript(
-                "window.mockFavoritesListas = JSON.parse('" + listasJson.replace("'", "\\'") + "');" +
+                "window.mockFavoritesLists = JSON.parse('" + listsJson.replace("'", "\\'") + "');" +
                         "window.mockFavoritesDetail = JSON.parse('" + detailJson.replace("'", "\\'") + "');" +
                         "window.originalFetch = window.fetch; " +
                         "window.fetch = function(input, init) { " +
                         "  if (typeof input === 'string') { " +
-                        "    if (input.includes('/api/favoritos/listas/')) { " +
+                        "    if (input.includes('/api/v1/favorites/lists/')) { " +
                         "      return Promise.resolve(new Response(JSON.stringify(window.mockFavoritesDetail), { status: 200, headers: { 'Content-Type': 'application/json' } })); "
                         +
                         "    } " +
-                        "    if (input.includes('/api/favoritos/listas')) { " +
-                        "      return Promise.resolve(new Response(JSON.stringify(window.mockFavoritesListas), { status: 200, headers: { 'Content-Type': 'application/json' } })); "
+                        "    if (input.includes('/api/v1/favorites/lists')) { " +
+                        "      return Promise.resolve(new Response(JSON.stringify(window.mockFavoritesLists), { status: 200, headers: { 'Content-Type': 'application/json' } })); "
                         +
                         "    } " +
                         "  } " +
@@ -58,28 +58,28 @@ class TestFavoritesView extends BaseLoggedClass {
                 "if (window.originalFetch) { window.fetch = window.originalFetch; }");
     }
 
-    private FavoritesPage loginGoToFavoritesWithMock(String listasJson, String detailJson) throws Exception {
+    private FavoritesPage loginGoToFavoritesWithMock(String listsJson, String detailJson) throws Exception {
         clearSessionAndLogin();
         new LoginPage(driver, waiter)
                 .enterIdentifier(testEmail)
                 .enterPassword(testPassword)
                 .submitLogin();
 
-        injectFavoritesMock(listasJson, detailJson);
+        injectFavoritesMock(listsJson, detailJson);
 
         new SideMenuPage(driver, waiter).open().goTo("favorites");
 
         return new FavoritesPage(driver, waiter);
     }
 
-    private String getMockListasJson(int count) {
+    private String getMockListsJson(int count) {
         StringBuilder sb = new StringBuilder("[");
         for (int i = 1; i <= count; i++) {
             if (i > 1)
                 sb.append(",");
             sb.append("{\"id\":").append(i)
-                    .append(",\"user_id\":\"uid\",\"nombre\":\"Lista ").append(i)
-                    .append("\",\"icono\":\"Heart\"}");
+                    .append(",\"user_id\":\"uid\",\"name\":\"Lista ").append(i)
+                    .append("\",\"icon\":\"Heart\"}");
         }
         sb.append("]");
         return sb.toString();
@@ -87,9 +87,9 @@ class TestFavoritesView extends BaseLoggedClass {
 
     private String getMockDetailJson(int listId, String listName, int restaurantCount) {
         StringBuilder sb = new StringBuilder();
-        sb.append("{\"lista\":{\"id\":").append(listId)
-                .append(",\"user_id\":\"uid\",\"nombre\":\"").append(listName)
-                .append("\",\"icono\":\"Heart\"},\"restaurantes\":[");
+        sb.append("{\"list\":{\"id\":").append(listId)
+                .append(",\"user_id\":\"uid\",\"name\":\"").append(listName)
+                .append("\",\"icon\":\"Heart\"},\"restaurants\":[");
 
         String[] placeIds = { PLACE_A, PLACE_B };
         String[] names = { "Restaurante Uno", "Restaurante Dos" };
@@ -98,7 +98,7 @@ class TestFavoritesView extends BaseLoggedClass {
             if (i > 0)
                 sb.append(",");
             sb.append("{\"id\":").append(i + 1)
-                    .append(",\"lista_id\":").append(listId)
+                    .append(",\"list_id\":").append(listId)
                     .append(",\"place_id\":\"").append(placeIds[i % placeIds.length])
                     .append("\",\"restaurant\":{")
                     .append("\"id\":\"").append(placeIds[i % placeIds.length])
@@ -113,7 +113,7 @@ class TestFavoritesView extends BaseLoggedClass {
     @Test
     @DisplayName("BASE - several lists, 0 restaurants, with search")
     void testBase_ListSearch() throws Exception {
-        FavoritesPage page = loginGoToFavoritesWithMock(getMockListasJson(2), getMockDetailJson(1, "Lista 1", 0));
+        FavoritesPage page = loginGoToFavoritesWithMock(getMockListsJson(2), getMockDetailJson(1, "Lista 1", 0));
         try {
             Assertions.assertEquals(2, page.getListCount(), "2 lists must be visible");
 
@@ -140,7 +140,7 @@ class TestFavoritesView extends BaseLoggedClass {
         }
 
         // S3: 1 list, 0 restaurants, with search
-        FavoritesPage pageS3 = loginGoToFavoritesWithMock(getMockListasJson(1), getMockDetailJson(1, "Lista 1", 0));
+        FavoritesPage pageS3 = loginGoToFavoritesWithMock(getMockListsJson(1), getMockDetailJson(1, "Lista 1", 0));
         try {
             Assertions.assertEquals(1, pageS3.getListCount(), "S3: there must be 1 list");
             pageS3.openListByName("Lista 1");
@@ -151,7 +151,7 @@ class TestFavoritesView extends BaseLoggedClass {
         }
 
         // S6: several lists, 0 restaurants, no search
-        FavoritesPage pageS6 = loginGoToFavoritesWithMock(getMockListasJson(2), getMockDetailJson(1, "Lista 1", 0));
+        FavoritesPage pageS6 = loginGoToFavoritesWithMock(getMockListsJson(2), getMockDetailJson(1, "Lista 1", 0));
         try {
             Assertions.assertEquals(2, pageS6.getListCount(), "S6: there must be 2 lists");
             pageS6.openListByName("Lista 1");
@@ -166,7 +166,7 @@ class TestFavoritesView extends BaseLoggedClass {
     @DisplayName("S4, S5 - lists with restaurants and searches")
     void testCasesWithRestaurants() throws Exception {
         // S4: several lists, 1 restaurant, with search
-        FavoritesPage pageS4 = loginGoToFavoritesWithMock(getMockListasJson(2), getMockDetailJson(1, "Lista 1", 1));
+        FavoritesPage pageS4 = loginGoToFavoritesWithMock(getMockListsJson(2), getMockDetailJson(1, "Lista 1", 1));
         try {
             pageS4.openListByName("Lista 1");
             Assertions.assertEquals(1, pageS4.getRestaurantCount(), "S4: there must be 1 restaurant initially");
@@ -182,7 +182,7 @@ class TestFavoritesView extends BaseLoggedClass {
         }
 
         // S5: several lists, several restaurants, with search
-        FavoritesPage pageS5 = loginGoToFavoritesWithMock(getMockListasJson(2), getMockDetailJson(1, "Lista 1", 2));
+        FavoritesPage pageS5 = loginGoToFavoritesWithMock(getMockListsJson(2), getMockDetailJson(1, "Lista 1", 2));
         try {
             pageS5.openListByName("Lista 1");
             Assertions.assertEquals(2, pageS5.getRestaurantCount(), "S5: there must be 2 restaurants initially");

@@ -1,6 +1,6 @@
 name: "Start DevorApp SUT"
 description: >-
-  Loads the images built once by the `build-images` job (artifact `images`) and starts the
+  Loads the images built once by the `build-images` matrix (artifacts `image-<service>`) and starts the
   dev stack from them without rebuilding (sut/docker-compose.dev.override.yml). No credentials needed.
   Each calling job gets its own instance. Relies on the workflow-level IMAGE_TAG.
 
@@ -15,14 +15,15 @@ runs:
   steps:
     - uses: actions/download-artifact@v8
       with:
-        name: images
+        pattern: image-*
+        merge-multiple: true
         path: ${{ runner.temp }}/images
 
     - name: Load the images
       shell: bash
       run: |
         ls -lh "${{ runner.temp }}/images"
-        docker load -i "${{ runner.temp }}/images/images.tar.gz"
+        for f in "${{ runner.temp }}"/images/*.tar.gz; do docker load -i "$f"; done
 
     - name: Start the dev stack (no build)
       shell: bash

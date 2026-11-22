@@ -29,9 +29,9 @@ class ProfilePage {
     return this;
   }
 
-  fillPersonalInfo(nombre, apellidos) {
-    cy.tid(P.personalNombre).fill(nombre);
-    cy.tid(P.personalApellidos).fill(apellidos);
+  fillPersonalInfo(firstName, lastName) {
+    cy.tid(P.personalFirstName).fill(firstName);
+    cy.tid(P.personalLastName).fill(lastName);
     return this;
   }
 

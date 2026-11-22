@@ -34,10 +34,10 @@ class TestRatingView extends BaseLoggedClass {
     void ensureHistoryEntry() throws IOException {
         apiLogin();
         String apiBase = properties.getProperty("LOCALHOST_URL", "http://localhost:8000");
-        apiDelete(apiBase + "/api/valoraciones/" + PLACE_ID);
+        apiDelete(apiBase + "/api/v1/restaurants/" + PLACE_ID + "/rating");
         JsonObject payload = new JsonObject();
         payload.addProperty("place_id", PLACE_ID);
-        apiPost(apiBase + "/api/historial", payload.toString());
+        apiPost(apiBase + "/api/v1/history", payload.toString());
     }
 
     @AfterAll
@@ -76,11 +76,11 @@ class TestRatingView extends BaseLoggedClass {
         return !btns.isEmpty() && btns.get(0).isEnabled();
     }
 
-    private void fillRatings(int calidad, int precio, int higiene, int trato, String comment) {
-        selectStars("calidad", calidad);
-        selectStars("precio", precio);
-        selectStars("higiene", higiene);
-        selectStars("trato", trato);
+    private void fillRatings(int quality, int price, int hygiene, int service, String comment) {
+        selectStars("quality", quality);
+        selectStars("price", price);
+        selectStars("hygiene", hygiene);
+        selectStars("service", service);
         WebElement textarea = driver.findElement(TestId.of("rating-comment"));
         textarea.clear();
         if (comment != null) textarea.sendKeys(comment);
@@ -113,29 +113,29 @@ class TestRatingView extends BaseLoggedClass {
     @Test
     @DisplayName("Submit is disabled with 0 stars in any aspect (S2, S5, S8, S11) and an empty comment is accepted (S14)")
     void testZeroStarsDisableSubmitAndEmptyCommentAccepted() throws Exception {
-        // S2: calidad = 0
+        // S2: quality = 0
         HistoryPage page = loginAndGoToHistory();
         openRatingModal(page);
         fillRatings(0, 5, 5, 5, "Comentario");
-        Assertions.assertFalse(isSubmitEnabled(), "S2: submit must be disabled when calidad has 0 stars");
+        Assertions.assertFalse(isSubmitEnabled(), "S2: submit must be disabled when quality has 0 stars");
 
-        // S5: precio = 0
+        // S5: price = 0
         page = reloadHistory();
         openRatingModal(page);
         fillRatings(5, 0, 5, 5, "Comentario");
-        Assertions.assertFalse(isSubmitEnabled(), "S5: submit must be disabled when precio has 0 stars");
+        Assertions.assertFalse(isSubmitEnabled(), "S5: submit must be disabled when price has 0 stars");
 
-        // S8: higiene = 0
+        // S8: hygiene = 0
         page = reloadHistory();
         openRatingModal(page);
         fillRatings(5, 5, 0, 5, "Comentario");
-        Assertions.assertFalse(isSubmitEnabled(), "S8: submit must be disabled when higiene has 0 stars");
+        Assertions.assertFalse(isSubmitEnabled(), "S8: submit must be disabled when hygiene has 0 stars");
 
-        // S11: trato = 0
+        // S11: service = 0
         page = reloadHistory();
         openRatingModal(page);
         fillRatings(5, 5, 5, 0, "Comentario");
-        Assertions.assertFalse(isSubmitEnabled(), "S11: submit must be disabled when trato has 0 stars");
+        Assertions.assertFalse(isSubmitEnabled(), "S11: submit must be disabled when service has 0 stars");
 
         // S14: empty comment is accepted
         page = reloadHistory();
@@ -146,16 +146,16 @@ class TestRatingView extends BaseLoggedClass {
     }
 
     @Test
-    @DisplayName("Save ratings with varying calidad, precio, higiene and trato (S3, S4, S6, S7, S9, S10, S12, S13)")
+    @DisplayName("Save ratings with varying quality, price, hygiene and service (S3, S4, S6, S7, S9, S10, S12, S13)")
     void testVariableRatings() throws Exception {
-        // S3 & S7: calidad = 1, precio = 3 (rest at base = 5)
+        // S3 & S7: quality = 1, price = 3 (rest at base = 5)
         HistoryPage page = loginAndGoToHistory();
         openRatingModal(page);
         fillRatings(1, 3, 5, 5, "Comentario");
         Assertions.assertTrue(isSubmitEnabled(), "S3/S7: submit must be enabled");
         submitRatingAndVerifySuccess();
 
-        // S4 & S6: calidad = 3, precio = 1
+        // S4 & S6: quality = 3, price = 1
         ensureHistoryEntry();
         page = reloadHistory();
         openRatingModal(page);
@@ -163,7 +163,7 @@ class TestRatingView extends BaseLoggedClass {
         Assertions.assertTrue(isSubmitEnabled(), "S4/S6: submit must be enabled");
         submitRatingAndVerifySuccess();
 
-        // S9 & S13: higiene = 1, trato = 3
+        // S9 & S13: hygiene = 1, service = 3
         ensureHistoryEntry();
         page = reloadHistory();
         openRatingModal(page);
@@ -171,7 +171,7 @@ class TestRatingView extends BaseLoggedClass {
         Assertions.assertTrue(isSubmitEnabled(), "S9/S13: submit must be enabled");
         submitRatingAndVerifySuccess();
 
-        // S10 & S12: higiene = 3, trato = 1
+        // S10 & S12: hygiene = 3, service = 1
         ensureHistoryEntry();
         page = reloadHistory();
         openRatingModal(page);

@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import ProfilePage from '../views/ProfilePage';
 import { authService } from '../models/api/authService';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 
 // ── Mocks ─────────────────────────────────────────────────────────────────
 vi.mock('../models/api/authService', () => ({
@@ -16,7 +16,7 @@ vi.mock('../models/api/authService', () => ({
     },
 }));
 
-vi.mock('../components/NotificationSystem', () => ({
+vi.mock('../components/useNotification', () => ({
     useNotification: vi.fn(),
 }));
 
@@ -41,9 +41,9 @@ const renderProfilePage = () =>
 const mockUser = {
     username: 'testuser',
     email: 'test@example.com',
-    nombre: 'Ana',
-    apellidos: 'García',
-    ubicacion: 'Madrid',
+    first_name: 'Ana',
+    last_name: 'García',
+    location: 'Madrid',
 };
 
 describe('ProfilePage', () => {
@@ -55,8 +55,8 @@ describe('ProfilePage', () => {
         (authService.getMe as any).mockResolvedValue(mockUser);
     });
 
-    // ── 1. Renderizado básico y carga ─────────────────────────────────────────
-    it('debe mostrar el estado de carga y luego renderizar los datos del usuario', async () => {
+    // ── 1. Basic rendering and loading ─────────────────────────────────────────
+    it('should show the loading state and then render the user data', async () => {
         let resolvePromise: any;
         const promise = new Promise((resolve) => {
             resolvePromise = resolve;
@@ -65,10 +65,10 @@ describe('ProfilePage', () => {
 
         renderProfilePage();
 
-        // Inicialmente no debe mostrar el nombre porque está cargando (solo el TopBar con showMenu=false)
+        // Initially the name must not show because it is loading (only the TopBar with showMenu=false)
         expect(screen.queryByText('Ana García')).not.toBeInTheDocument();
 
-        // Resolvemos la carga
+        // Resolve the load
         resolvePromise(mockUser);
 
         await waitFor(() => {
@@ -77,7 +77,7 @@ describe('ProfilePage', () => {
         });
     });
 
-    it('debe redirigir a /home si getMe falla', async () => {
+    it('should redirect to /home if getMe fails', async () => {
         (authService.getMe as any).mockRejectedValue(new Error('Unauthorized'));
 
         renderProfilePage();
@@ -88,51 +88,51 @@ describe('ProfilePage', () => {
         });
     });
 
-    // ── 2. Edición de Información Personal ────────────────────────────────────
-    it('debe permitir editar la información personal', async () => {
+    // ── 2. Editing Personal Information ────────────────────────────────────
+    it('should allow editing personal information', async () => {
         renderProfilePage();
 
         await waitFor(() => expect(screen.getAllByText('Ana García')[0]).toBeInTheDocument());
 
-        // Clic en el botón Editar de Información Personal
+        // Click the Edit button of Información Personal
         const editButtons = screen.getAllByText('Editar');
         fireEvent.click(editButtons[0]);
 
-        // Verificamos que se abrió el formulario
+        // Verify the form opened
         const nameInput = screen.getByDisplayValue('Ana');
 
-        // Modificamos datos
+        // Modify data
         fireEvent.change(nameInput, { target: { value: 'Laura' } });
 
         (authService.updateProfile as any).mockResolvedValue({
             message: 'Success',
-            user: { ...mockUser, nombre: 'Laura' },
+            user: { ...mockUser, first_name: 'Laura' },
         });
 
-        // Guardamos
+        // Save
         fireEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
 
         await waitFor(() => {
             expect(authService.updateProfile).toHaveBeenCalledWith({
-                nombre: 'Laura',
-                apellidos: 'García',
-                ubicacion: 'Madrid',
+                first_name: 'Laura',
+                last_name: 'García',
+                location: 'Madrid',
                 password: '',
             });
             expect(mockShowNotification).toHaveBeenCalledWith('Perfil actualizado correctamente', 'success');
         });
 
-        // Verifica que la UI se actualizó
+        // Verify the UI was updated
         expect(screen.getAllByText('Laura García')[0]).toBeInTheDocument();
     });
 
-    // ── 3. Edición de Correo Electrónico ──────────────────────────────────────
-    it('debe permitir cambiar el correo y redirigir al login', async () => {
+    // ── 3. Editing Email ──────────────────────────────────────
+    it('should allow changing the email and redirect to login', async () => {
         renderProfilePage();
 
         await waitFor(() => expect(screen.getAllByText('test@example.com')[0]).toBeInTheDocument());
 
-        // El botón dice "Cambiar", pero usamos getAll por si acaso
+        // The button says "Cambiar", but use getAll just in case
         const changeButtons = screen.getAllByRole('button', { name: /Cambiar$/i });
         fireEvent.click(changeButtons[1]);
 
@@ -158,8 +158,8 @@ describe('ProfilePage', () => {
         });
     });
 
-    // ── 4. Edición de Contraseña ──────────────────────────────────────────────
-    it('debe mostrar error si las contraseñas nuevas no coinciden', async () => {
+    // ── 4. Editing Password ──────────────────────────────────────────────
+    it('should show an error if the new passwords do not match', async () => {
         renderProfilePage();
         await waitFor(() => expect(screen.getAllByText('test@example.com')[0]).toBeInTheDocument());
 
@@ -182,7 +182,7 @@ describe('ProfilePage', () => {
         });
     });
 
-    it('debe permitir cambiar la contraseña si los datos son correctos', async () => {
+    it('should allow changing the password if the data is correct', async () => {
         renderProfilePage();
         await waitFor(() => expect(screen.getAllByText('test@example.com')[0]).toBeInTheDocument());
 
@@ -210,12 +210,12 @@ describe('ProfilePage', () => {
         });
     });
 
-    // ── 5. Eliminación de Cuenta ──────────────────────────────────────────────
-    it('debe permitir eliminar la cuenta', async () => {
+    // ── 5. Deleting Account ──────────────────────────────────────────────
+    it('should allow deleting the account', async () => {
         renderProfilePage();
         await waitFor(() => expect(screen.getAllByText('test@example.com')[0]).toBeInTheDocument());
 
-        // Hacer clic en "Eliminar cuenta permanentemente" para abrir el formulario
+        // Click "Eliminar cuenta permanentemente" to open the form
         const deleteButtons = screen.getAllByRole('button', { name: /Eliminar cuenta permanentemente/i });
         fireEvent.click(deleteButtons[0]);
 
@@ -232,8 +232,8 @@ describe('ProfilePage', () => {
         });
     });
 
-    // ── 6. Usuario de Google ──────────────────────────────────────────────────
-    it('no debe mostrar los botones para cambiar correo y contraseña si el usuario es de Google', async () => {
+    // ── 6. Google user ──────────────────────────────────────────────────
+    it('should not show the change email and password buttons if the user is a Google user', async () => {
         (authService.getMe as any).mockResolvedValue({
             ...mockUser,
             is_google: true,
@@ -243,14 +243,14 @@ describe('ProfilePage', () => {
 
         await waitFor(() => expect(screen.getAllByText('test@example.com')[0]).toBeInTheDocument());
 
-        // Verificamos que se muestra el badge de Google
+        // Verify the Google badge is shown
         expect(screen.getByText('Vinculado a Google')).toBeInTheDocument();
 
-        // El de Ubicación dice "Cambiar" también. Así que debería haber exactamente 1 botón con el texto "Cambiar".
+        // The Ubicación one also says "Cambiar", so there should be exactly 1 button with the text "Cambiar".
         const changeButtons = screen.getAllByRole('button', { name: /Cambiar$/i });
-        expect(changeButtons).toHaveLength(1); // Solo el de Ubicación
+        expect(changeButtons).toHaveLength(1); // Only the Ubicación one
 
-        // El de contraseña no debe estar en absoluto
+        // The password one must not be present at all
         expect(screen.queryByRole('button', { name: /Cambiar contraseña/i })).not.toBeInTheDocument();
         expect(screen.getByText('Iniciaste sesión con Google. La seguridad de tu cuenta se gestiona a través de Google.')).toBeInTheDocument();
     });

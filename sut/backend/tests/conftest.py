@@ -40,12 +40,12 @@ async def async_client():
 
 @pytest.fixture
 def dummy_user():
-    """Usuario autenticado reutilizable en todos los test files."""
+    """Authenticated user reusable across all test files."""
     return Usuario(
         id="test_uid",
         email="test@test.com",
         username="testuser",
-        nombre="Test",
-        apellidos="User",
-        ubicacion="Madrid",
+        first_name="Test",
+        last_name="User",
+        location="Madrid",
     )

@@ -13,8 +13,8 @@ import java.time.Duration;
 class TestRegisterView extends BaseLoggedClass {
 
     private static final String BASE_PASSWORD  = "Segura123";
-    private static final String BASE_NOMBRE    = "Ana";
-    private static final String BASE_APELLIDOS = "García";
+    private static final String BASE_FIRST_NAME    = "Ana";
+    private static final String BASE_LAST_NAME = "García";
 
     @org.junit.jupiter.api.BeforeAll
     static void prepareDuplicateUser() throws Exception {
@@ -29,12 +29,12 @@ class TestRegisterView extends BaseLoggedClass {
     }
 
     private void fillStep1(RegisterPage reg, String email, String username,
-                           String password, String nombre, String apellidos) {
+                           String password, String firstName, String lastName) {
         reg.enterEmail(email)
            .enterUsername(username)
            .enterPassword(password)
-           .enterNombre(nombre)
-           .enterApellidos(apellidos);
+           .enterFirstName(firstName)
+           .enterLastName(lastName);
     }
 
     private String getErrorMessageWithWait(RegisterPage reg) {
@@ -59,13 +59,13 @@ class TestRegisterView extends BaseLoggedClass {
         fillStep1(reg,
                 email,
                 "regbase" + (ts % 100000),
-                password, BASE_NOMBRE, BASE_APELLIDOS);
+                password, BASE_FIRST_NAME, BASE_LAST_NAME);
         injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
 
         Assertions.assertTrue(reg.isOnStep2(), "Must advance to step 2");
 
-        reg.enterUbicacion("Madrid, España");
+        reg.enterLocation("Madrid, España");
 
         triggerAutocompletePlaceChanged();
 
@@ -88,7 +88,7 @@ class TestRegisterView extends BaseLoggedClass {
         // S4: empty email
         driver.get(sutUrl + "/register");
         RegisterPage reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, "", validUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, "", validUsername, BASE_PASSWORD, BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S4: must stay on step 1");
         String errS4 = getErrorMessageWithWait(reg);
@@ -98,7 +98,7 @@ class TestRegisterView extends BaseLoggedClass {
         // S2: invalid email
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, "correosinformato", validUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, "correosinformato", validUsername, BASE_PASSWORD, BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S2: must stay on step 1");
         String errS2 = getErrorMessageWithWait(reg);
@@ -108,7 +108,7 @@ class TestRegisterView extends BaseLoggedClass {
         // S3: email already in use
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, testEmail, validUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, testEmail, validUsername, BASE_PASSWORD, BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         RegisterPage finalReg1 = reg;
         new WebDriverWait(driver, Duration.ofSeconds(5))
@@ -118,7 +118,7 @@ class TestRegisterView extends BaseLoggedClass {
         // S5: empty username
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, validEmail, "", BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, validEmail, "", BASE_PASSWORD, BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S5: must stay on step 1");
         String errS5 = getErrorMessageWithWait(reg);
@@ -128,36 +128,36 @@ class TestRegisterView extends BaseLoggedClass {
         // S6: username already in use
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, validEmail, testUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, validEmail, testUsername, BASE_PASSWORD, BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         RegisterPage finalReg2 = reg;
         new WebDriverWait(driver, Duration.ofSeconds(5))
                 .until(d -> !finalReg2.getUsernameError().isEmpty());
         Assertions.assertTrue(reg.getUsernameError().contains("uso"), "S6: username in use error");
 
-        // S7: empty nombre
+        // S7: empty first name
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, validEmail, validUsername, BASE_PASSWORD, "", BASE_APELLIDOS);
+        fillStep1(reg, validEmail, validUsername, BASE_PASSWORD, "", BASE_LAST_NAME);
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S7: must stay on step 1");
         String errS7 = getErrorMessageWithWait(reg);
-        Assertions.assertTrue(errS7.contains("nombre"), "S7: nombre error");
+        Assertions.assertTrue(errS7.contains("nombre"), "S7: first name error");
 
-        // S8: empty apellidos
+        // S8: empty last name
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, validEmail, validUsername, BASE_PASSWORD, BASE_NOMBRE, "");
+        fillStep1(reg, validEmail, validUsername, BASE_PASSWORD, BASE_FIRST_NAME, "");
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S8: must stay on step 1");
         // Wording varies; only require that some error is shown
         String errS8 = getErrorMessageWithWait(reg);
-        Assertions.assertFalse(errS8.isEmpty(), "S8: apellidos error must be shown");
+        Assertions.assertFalse(errS8.isEmpty(), "S8: last name error must be shown");
 
         // S9: empty password
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, validEmail, validUsername, "", BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, validEmail, validUsername, "", BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S9: must stay on step 1");
         String errS9 = getErrorMessageWithWait(reg);
@@ -167,7 +167,7 @@ class TestRegisterView extends BaseLoggedClass {
         // S10: short password (6 chars)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, validEmail, validUsername, "Seg123", BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, validEmail, validUsername, "Seg123", BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S10: must stay on step 1");
         String errS10 = getErrorMessageWithWait(reg);
@@ -185,7 +185,7 @@ class TestRegisterView extends BaseLoggedClass {
         // S16: empty location
         driver.get(sutUrl + "/register");
         RegisterPage reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, "regloc1" + ts + "@devorapp.test", "reglocone" + (ts % 10000), "12345678", BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, "regloc1" + ts + "@devorapp.test", "reglocone" + (ts % 10000), "12345678", BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue().waitForStep2();
         reg.clickSubmit();
         Assertions.assertTrue(reg.isOnStep2(), "S16: must stay on step 2");
@@ -196,9 +196,9 @@ class TestRegisterView extends BaseLoggedClass {
         // S15: manually typed location, not picked from the list
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, "regloc2" + ts + "@devorapp.test", "regloctwo" + (ts % 10000), "12345678", BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, "regloc2" + ts + "@devorapp.test", "regloctwo" + (ts % 10000), "12345678", BASE_FIRST_NAME, BASE_LAST_NAME);
         reg.clickContinue().waitForStep2();
-        reg.enterUbicacion("Ubicación No Válida");
+        reg.enterLocation("Ubicación No Válida");
         reg.clickSubmit();
         Assertions.assertTrue(reg.isOnStep2(), "S15: must stay on step 2");
         String errS15 = getErrorMessageWithWait(reg);
@@ -208,10 +208,10 @@ class TestRegisterView extends BaseLoggedClass {
         // S13: password without letters (backend error)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, "regloc3" + ts + "@devorapp.test", "reglocthree" + (ts % 10000), "12345678", BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, "regloc3" + ts + "@devorapp.test", "reglocthree" + (ts % 10000), "12345678", BASE_FIRST_NAME, BASE_LAST_NAME);
         injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
-        reg.enterUbicacion("Gijón, España");
+        reg.enterLocation("Gijón, España");
         triggerAutocompletePlaceChanged();
         reg.clickSubmit();
         String errS13 = getErrorMessageWithWait(reg);
@@ -223,10 +223,10 @@ class TestRegisterView extends BaseLoggedClass {
         // S12: password without numbers (backend error)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
-        fillStep1(reg, "regloc4" + ts + "@devorapp.test", "reglocfour" + (ts % 10000), "PasswordNoNum", BASE_NOMBRE, BASE_APELLIDOS);
+        fillStep1(reg, "regloc4" + ts + "@devorapp.test", "reglocfour" + (ts % 10000), "PasswordNoNum", BASE_FIRST_NAME, BASE_LAST_NAME);
         injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
-        reg.enterUbicacion("Gijón, España");
+        reg.enterLocation("Gijón, España");
         triggerAutocompletePlaceChanged();
         reg.clickSubmit();
         String errS12 = getErrorMessageWithWait(reg);
@@ -247,13 +247,13 @@ class TestRegisterView extends BaseLoggedClass {
         fillStep1(reg,
                 emailS11,
                 "reglong" + (ts2 % 100000),
-                passwordS11, BASE_NOMBRE, BASE_APELLIDOS);
+                passwordS11, BASE_FIRST_NAME, BASE_LAST_NAME);
         injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
 
         Assertions.assertTrue(reg.isOnStep2(), "S11: must advance to step 2");
 
-        reg.enterUbicacion("Madrid, España");
+        reg.enterLocation("Madrid, España");
         triggerAutocompletePlaceChanged();
         reg.clickSubmit();
 

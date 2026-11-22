@@ -25,12 +25,13 @@ sys.path.append(os.getcwd())
 from app.infrastructure.database import Base
 # Import all entities to ensure they are registered in metadata
 import app.models.entities.usuarios
-import app.models.entities.favoritos
-import app.models.entities.listas_favoritos
-import app.models.entities.restaurante
-import app.models.entities.valoracion
-import app.models.entities.historial
-import app.models.entities.mas_tarde
+import app.models.entities.favorites
+import app.models.entities.favorite_lists
+import app.models.entities.restaurant
+import app.models.entities.rating
+import app.models.entities.history
+import app.models.entities.saved_for_later
+import app.models.entities.rating_like
 
 target_metadata = Base.metadata
 

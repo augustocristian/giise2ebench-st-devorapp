@@ -42,8 +42,8 @@ public class ProfilePage extends BasePage {
     public ProfilePage editPersonalInfo() throws ElementNotFoundException { return clickId("profile-personal-edit"); }
     public ProfilePage savePersonalInfo() throws ElementNotFoundException { return clickId("profile-personal-save"); }
     public ProfilePage cancelPersonalInfo() throws ElementNotFoundException { return clickId("profile-personal-cancel"); }
-    public ProfilePage fillNombre(String value) { return fillId("profile-personal-nombre", value); }
-    public ProfilePage fillApellidos(String value) { return fillId("profile-personal-apellidos", value); }
+    public ProfilePage fillFirstName(String value) { return fillId("profile-personal-first-name", value); }
+    public ProfilePage fillLastName(String value) { return fillId("profile-personal-last-name", value); }
 
     // Location
     public ProfilePage editLocation() throws ElementNotFoundException { return clickId("profile-location-edit"); }

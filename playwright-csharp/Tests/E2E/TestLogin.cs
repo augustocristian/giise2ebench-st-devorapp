@@ -5,9 +5,7 @@ using NUnit.Framework;
 namespace DevorApp.E2ETests.Tests.E2E;
 
 /// <summary>
-/// Port of epigijon.devorapp.e2e.functional.tests.e2e.TestLogin.
-///
-/// Browser tests for the DevorApp login page.
+/// Browser tests for the login page.
 ///
 /// Base-Choice coverage:
 ///   BASE — valid credentials redirect to /home (S7 - Happy Path).
@@ -30,8 +28,6 @@ public class TestLogin : BaseLoggedClass
 
     [OneTimeTearDown]
     public async Task CleanupTestUser() => await TeardownTestUserAsync();
-
-    // ── Tests ────────────────────────────────────────────────────────────────
 
     /// <summary>S7 — valid credentials redirect the user to /home.</summary>
     [Test]

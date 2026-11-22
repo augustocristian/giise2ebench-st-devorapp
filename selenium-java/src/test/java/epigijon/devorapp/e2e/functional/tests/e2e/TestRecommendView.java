@@ -152,7 +152,7 @@ class TestRecommendView extends BaseLoggedClass {
         ((JavascriptExecutor) driver).executeScript(
             "window.originalFetch = window.fetch; " +
             "window.fetch = function(input, init) { " +
-            "  if (typeof input === 'string' && input.includes('/api/recommendations/search')) { " +
+            "  if (typeof input === 'string' && input.includes('/api/v1/recommendations/search')) { " +
             "    return Promise.resolve(new Response(JSON.stringify({ results: [], next_page_token: null }), { status: 200, headers: { 'Content-Type': 'application/json' } })); " +
             "  } " +
             "  return window.originalFetch(input, init); " +
@@ -174,7 +174,7 @@ class TestRecommendView extends BaseLoggedClass {
         ((JavascriptExecutor) driver).executeScript(
             "window.originalFetch = window.fetch; " +
             "window.fetch = function(input, init) { " +
-            "  if (typeof input === 'string' && input.includes('/api/recommendations/search')) { " +
+            "  if (typeof input === 'string' && input.includes('/api/v1/recommendations/search')) { " +
             "    return Promise.resolve(new Response(JSON.stringify({ " +
             "      results: [{ id: 'test_place_11', name: 'Restaurante S11', rating: 4.0, user_ratings_total: 10, types: ['restaurant'], address: 'Calle 11', main_photo: null, summary: 'S11', open_now: true }], " +
             "      next_page_token: null " +

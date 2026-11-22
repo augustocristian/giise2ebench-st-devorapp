@@ -15,15 +15,18 @@ describe("API - Profile - Base-Choice", () => {
     });
   });
 
-  it("S2+S3 - PATCH /profile updates nombre and apellidos, and GET /me reflects them", () => {
-    const nombre = `NewName${Date.now()}`;
-    const apellidos = "NewSurname";
+  it("S2+S3 - PATCH /profile updates first_name and last_name, and GET /me reflects them", () => {
+    const firstName = `NewName${Date.now()}`;
+    const lastName = "NewSurname";
 
-    api.profile.update({ nombre, apellidos, ubicacion: "", password: user.password }).its("status").should("eq", 200);
+    api.profile
+      .update({ first_name: firstName, last_name: lastName, location: "", password: user.password })
+      .its("status")
+      .should("eq", 200);
 
     api.auth.me().then((res) => {
-      expect(res.body.nombre, "nombre must be updated").to.eq(nombre);
-      expect(res.body.apellidos, "apellidos must be updated").to.eq(apellidos);
+      expect(res.body.first_name, "first_name must be updated").to.eq(firstName);
+      expect(res.body.last_name, "last_name must be updated").to.eq(lastName);
     });
   });
 
@@ -37,8 +40,8 @@ describe("API - Profile - Base-Choice", () => {
     });
   });
 
-  it("S13 - a new password shorter than 8 characters returns 400", () => {
-    api.profile.changePassword(user.password, "Sh1!").its("status").should("eq", 400);
+  it("S13 - a new password shorter than 8 characters returns 422", () => {
+    api.profile.changePassword(user.password, "Sh1!").its("status").should("eq", 422);
   });
 
   it("S14 - a valid password change returns 200", () => {

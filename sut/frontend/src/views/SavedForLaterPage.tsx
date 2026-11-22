@@ -6,11 +6,11 @@ import {
 } from 'lucide-react';
 import { savedForLaterService } from '../models/api/savedForLaterService';
 import type { SavedForLaterEntry } from '../models/api/savedForLaterService';
-import { historialService } from '../models/api/historialService';
+import { historyService } from '../models/api/historyService';
 import TopBar from '../components/TopBar';
 import RestaurantDetailView from '../components/RestaurantDetailView';
 import RestaurantCompactCard from '../components/RestaurantCompactCard';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 
 // ── Item Menu (for restaurants) ──────────────────────────────────────────────
 interface ItemMenuProps {
@@ -71,21 +71,14 @@ const SavedForLaterPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedEntryForDetail, setSelectedEntryForDetail] = useState<SavedForLaterEntry | null>(null);
     const { showNotification, showConfirm } = useNotification();
 
-    // Sync selected entry with URL parameter 'detail'
-    useEffect(() => {
-        const detailId = searchParams.get('detail');
-        if (detailId) {
-            const entry = savedEntries.find(e => e.id === detailId);
-            if (entry) {
-                setSelectedEntryForDetail(entry);
-            }
-        } else {
-            setSelectedEntryForDetail(null);
-        }
-    }, [searchParams, savedEntries]);
+    // Derived from the URL parameter 'detail'
+    const detailId = searchParams.get('detail');
+    const selectedEntryForDetail = useMemo(
+        () => (detailId ? savedEntries.find(e => e.id === detailId) ?? null : null),
+        [detailId, savedEntries]
+    );
 
     useEffect(() => {
         const fetchSaved = async () => {
@@ -178,7 +171,7 @@ const SavedForLaterPage: React.FC = () => {
                                         }}
                                         onHistory={async () => {
                                             try {
-                                                await historialService.addToHistorial(entry.place_id);
+                                                await historyService.addToHistory(entry.place_id);
                                                 await handleRemoveEntry(entry.id);
                                                 showNotification(`Has elegido ${entry.name}`, 'success');
                                                 navigate('/home');
@@ -208,7 +201,7 @@ const SavedForLaterPage: React.FC = () => {
                             <button
                                 onClick={async () => {
                                     try {
-                                        await historialService.addToHistorial(selectedEntryForDetail.place_id);
+                                        await historyService.addToHistory(selectedEntryForDetail.place_id);
                                         await handleRemoveEntry(selectedEntryForDetail.id);
                                         showNotification(`Has seleccionado ${selectedEntryForDetail.name}`, 'success');
                                         navigate('/home');

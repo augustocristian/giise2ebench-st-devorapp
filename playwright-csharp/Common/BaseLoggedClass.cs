@@ -5,32 +5,12 @@ using NUnit.Framework;
 namespace DevorApp.E2ETests.Common;
 
 /// <summary>
-/// Base class for all DevorApp browser (Playwright) tests. Port of
-/// epigijon.devorapp.e2e.functional.common.BaseLoggedClass.
+/// Base class for the DevorApp browser tests. Port of the selenium-java BaseLoggedClass.
 ///
-/// Browser/page lifecycle is entirely delegated to
-/// <see cref="Microsoft.Playwright.NUnit.PageTest"/>: it launches one
-/// Chromium instance per test worker (reused across the whole run) and
-/// hands each [Test] method a brand-new <c>Page</c> in its own, fully
-/// isolated <c>IBrowserContext</c>. Unlike the Java suite there is no
-/// manual clearSession() step (cookies/localStorage/sessionStorage/
-/// IndexedDB wipe) anywhere in this port: every test already starts from a
-/// pristine, storage-free context, which is exactly what clearSession() was
-/// working around Selenium's lack of for.
-///
-/// This class layers DevorApp's test-user lifecycle on top: SetupTestUserAsync
-/// / TeardownTestUserAsync so every subclass creates and deletes a real
-/// backend user in a couple of lines, without duplicating HTTP-client
-/// boilerplate.
-///
-/// NUnit note: unlike JUnit5 (one test-class instance per [Test] method by
-/// default), NUnit instantiates a TestFixture class ONCE and reuses that
-/// SAME instance for every [Test] method in the fixture. That means plain
-/// instance fields set in [OneTimeSetUp] (TestEmail/TestUsername/TestPassword
-/// below) are already visible to every test in the class — no class-keyed
-/// dictionary or per-test re-read is needed here, unlike the Java suite
-/// (which works around JUnit5's per-method instantiation with static maps)
-/// or the Python port (which needs a Dict[Type, ...] for the same reason).
+/// <see cref="PageTest"/> launches one Chromium per worker and gives every test a fresh page in its
+/// own browser context, so there is no session clearing between tests. This class adds the
+/// test-user lifecycle (register via API, delete on teardown). NUnit reuses one fixture instance
+/// for all its tests, so the credentials set in [OneTimeSetUp] are visible to every test.
 /// </summary>
 public abstract class BaseLoggedClass : PageTest
 {
@@ -61,19 +41,16 @@ public abstract class BaseLoggedClass : PageTest
     [SetUp]
     public void LoggedTestSetup()
     {
-        // Matches the Java suite's Waiter.WAIT_SECONDS = 20 default.
+        // Same 20 s default as the Selenium suite.
         Page.SetDefaultTimeout(20_000);
     }
 
-    /// <summary>Navigates to /login. Equivalent to the Java suite's
-    /// repeated <c>clearSession(); driver.get(sutUrl + "/login");</c> — the
-    /// clear step is unnecessary here since every test already runs in a
-    /// fresh, isolated browser context.</summary>
+    /// <summary>Navigates to /login (each test already starts with clean storage).</summary>
     protected async Task GoToLoginAsync() => await Page.GotoAsync($"{SutUrl}/login");
 
     // ── Test-user helpers ────────────────────────────────────────────────────
 
-    /// <summary>Registers a new test user via POST /api/register and stores
+    /// <summary>Registers a new test user via POST /api/v1/users and stores
     /// the credentials for later teardown. Call from a subclass
     /// [OneTimeSetUp].</summary>
     protected async Task SetupTestUserAsync(string username, string email, string password)
@@ -83,7 +60,7 @@ public abstract class BaseLoggedClass : PageTest
         TestPassword = password;
 
         var apiBase = Properties.GetValueOrDefault("LOCALHOST_URL", "http://localhost:8000");
-        await PostJsonAsync($"{apiBase}/api/register", RegisterPayload(username, email, password));
+        await PostJsonAsync($"{apiBase}/api/v1/users", RegisterPayload(username, email, password));
         TestContext.Progress.WriteLine($"Registered browser test user: {email}");
     }
 
@@ -93,14 +70,14 @@ public abstract class BaseLoggedClass : PageTest
     protected void RegisterEmailForCleanup(string email, string password) =>
         _registeredUsers.Add((email, password));
 
-    /// <summary>Registers a new test user via POST /api/register directly,
+    /// <summary>Registers a new test user via POST /api/v1/users directly,
     /// without storing it as the fixture's primary test user (avoids
     /// session pollution for other tests).</summary>
     protected async Task RegisterUserApiAsync(string username, string email, string password)
     {
         RegisterEmailForCleanup(email, password);
         var apiBase = Properties.GetValueOrDefault("LOCALHOST_URL", "http://localhost:8000");
-        await PostJsonAsync($"{apiBase}/api/register", RegisterPayload(username, email, password));
+        await PostJsonAsync($"{apiBase}/api/v1/users", RegisterPayload(username, email, password));
         TestContext.Progress.WriteLine($"Registered API-only test user: {email}");
     }
 
@@ -109,12 +86,12 @@ public abstract class BaseLoggedClass : PageTest
         ["username"] = username,
         ["email"] = email,
         ["password"] = password,
-        ["nombre"] = "UITester",
-        ["apellidos"] = "Test",
-        ["ubicacion"] = "Gijón",
+        ["first_name"] = "UITester",
+        ["last_name"] = "Test",
+        ["location"] = "Gijón",
     };
 
-    /// <summary>Logs in and calls DELETE /api/profile to permanently remove
+    /// <summary>Logs in and calls DELETE /api/v1/profile to permanently remove
     /// the test user created by <see cref="SetupTestUserAsync"/>, as well
     /// as any extra users registered during the test. Call from a subclass
     /// [OneTimeTearDown].</summary>
@@ -126,9 +103,9 @@ public abstract class BaseLoggedClass : PageTest
         {
             try
             {
-                await PostJsonAsync($"{apiBase}/api/login",
+                await PostJsonAsync($"{apiBase}/api/v1/sessions",
                     new JsonObject { ["identifier"] = email, ["password"] = password });
-                await _apiClient.DeleteAsync($"{apiBase}/api/profile?password={Uri.EscapeDataString(password)}");
+                await _apiClient.DeleteAsync($"{apiBase}/api/v1/profile?password={Uri.EscapeDataString(password)}");
                 TestContext.Progress.WriteLine($"Deleted extra registered test user: {email}");
             }
             catch (Exception e)
@@ -141,9 +118,9 @@ public abstract class BaseLoggedClass : PageTest
         if (TestEmail is null || TestPassword is null) return;
         try
         {
-            await PostJsonAsync($"{apiBase}/api/login",
+            await PostJsonAsync($"{apiBase}/api/v1/sessions",
                 new JsonObject { ["identifier"] = TestEmail, ["password"] = TestPassword });
-            await _apiClient.DeleteAsync($"{apiBase}/api/profile?password={Uri.EscapeDataString(TestPassword)}");
+            await _apiClient.DeleteAsync($"{apiBase}/api/v1/profile?password={Uri.EscapeDataString(TestPassword)}");
             TestContext.Progress.WriteLine($"Deleted browser test user: {TestEmail}");
         }
         catch (Exception e)
@@ -175,7 +152,7 @@ public abstract class BaseLoggedClass : PageTest
     protected async Task ApiLoginAsync()
     {
         var apiBase = Properties.GetValueOrDefault("LOCALHOST_URL", "http://localhost:8000");
-        await PostJsonAsync($"{apiBase}/api/login",
+        await PostJsonAsync($"{apiBase}/api/v1/sessions",
             new JsonObject { ["identifier"] = TestEmail, ["password"] = TestPassword });
     }
 

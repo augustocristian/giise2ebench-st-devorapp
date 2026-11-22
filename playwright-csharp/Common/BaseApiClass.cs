@@ -6,30 +6,18 @@ using NUnit.Framework;
 namespace DevorApp.E2ETests.Common;
 
 /// <summary>
-/// Base class for DevorApp API tests. Provides HTTP request helpers, JSON
-/// payload builders, auth lifecycle (RegisterAndLoginAsync /
-/// DeleteTestUserAsync), and fixture creation methods. Port of
-/// epigijon.devorapp.e2e.functional.common.BaseApiClass.
+/// Base class for DevorApp API tests: HTTP helpers, JSON payload builders,
+/// auth lifecycle (RegisterAndLoginAsync / DeleteTestUserAsync) and fixture
+/// creation methods. Port of the selenium-java BaseApiClass.
 ///
-/// <see cref="HttpClient"/> plays the role of the Java suite's
-/// CloseableHttpClient + BasicCookieStore: HttpClientHandler's cookie
-/// container (enabled by default) automatically captures the JWT
-/// access_token cookie issued on login and resends it on every subsequent
-/// request made through the same client.
-///
-/// NUnit note: unlike JUnit5, which creates a new test-class instance per
-/// [Test] method by default, NUnit instantiates a TestFixture class ONCE
-/// and reuses that same instance across every [Test] method in the fixture.
-/// That means the instance state below (Client, SutUrl, TestEmail, ...) is
-/// safely shared across a class's tests without needing static fields or
-/// any of the reflection-based "who's my calling subclass" workaround the
-/// Java version doesn't need either (its fields genuinely are static there)
-/// but the Python port had to build for itself.
+/// The shared <see cref="HttpClient"/> keeps the JWT cookie issued on login
+/// (its cookie container is on by default). NUnit reuses one fixture
+/// instance for all its tests, so the instance state below is shared.
 /// </summary>
 public abstract class BaseApiClass
 {
     /// <summary>A stable Google Places ID used as a test restaurant in all test classes.</summary>
-    protected const string TestPlaceId = "ChIJN1t_tDeuEmsRUsoyG83frY4";
+    protected const string TestPlaceId = "MOCK_PLACE_101";
 
     protected string SutUrl { get; private set; } = string.Empty;
     protected HttpClient Client { get; private set; } = null!;
@@ -57,12 +45,13 @@ public abstract class BaseApiClass
 
     // ── URL builders ─────────────────────────────────────────────────────────
 
-    protected string AuthUrl(string path) => $"{SutUrl}/api{path}";
-    protected string FavoritosUrl(string path) => $"{SutUrl}/api/favoritos{path}";
-    protected string HistorialUrl(string path) => $"{SutUrl}/api/historial{path}";
-    protected string MasTardeUrl(string path) => $"{SutUrl}/api/mas-tarde{path}";
-    protected string ValoracionesUrl(string path) => $"{SutUrl}/api/valoraciones{path}";
-    protected string RecommendationsUrl(string path) => $"{SutUrl}/api/recommendations{path}";
+    protected string AuthUrl(string path) => $"{SutUrl}/api/v1{path}";
+    protected string FavoritesUrl(string path) => $"{SutUrl}/api/v1/favorites{path}";
+    protected string HistoryUrl(string path) => $"{SutUrl}/api/v1/history{path}";
+    protected string SavedForLaterUrl(string path) => $"{SutUrl}/api/v1/saved-for-later{path}";
+    protected string RatingsUrl(string path) => $"{SutUrl}/api/v1/ratings{path}";
+    protected string RestaurantsUrl(string path) => $"{SutUrl}/api/v1/restaurants{path}";
+    protected string RecommendationsUrl(string path) => $"{SutUrl}/api/v1/recommendations{path}";
 
     // ── HTTP verbs ───────────────────────────────────────────────────────────
 
@@ -102,6 +91,22 @@ public abstract class BaseApiClass
         using var request = new HttpRequestMessage(HttpMethod.Patch, url) { Content = JsonBody(payload) };
         using var response = await Client.SendAsync(request);
         return (int)response.StatusCode;
+    }
+
+    /// <summary>Sends a request with an optional JSON body and returns status, body and Location header.</summary>
+    protected async Task<ApiResult> SendAsync(HttpMethod method, string url, JsonNode? payload = null)
+    {
+        using var request = new HttpRequestMessage(method, url);
+        if (payload is not null) request.Content = JsonBody(payload);
+        using var response = await Client.SendAsync(request);
+        var body = await response.Content.ReadAsStringAsync();
+        TestContext.Progress.WriteLine($"{method} {url} -> {(int)response.StatusCode}");
+        return new ApiResult((int)response.StatusCode, body, response.Headers.Location?.ToString());
+    }
+
+    protected sealed record ApiResult(int Status, string Body, string? Location)
+    {
+        public JsonObject Json() => JsonNode.Parse(Body)!.AsObject();
     }
 
     protected async Task<int> DeleteAsync(string url)
@@ -150,8 +155,8 @@ public abstract class BaseApiClass
 
     // ── Auth lifecycle ───────────────────────────────────────────────────────
 
-    /// <summary>Registers a new test user via POST /api/register, then logs
-    /// in via POST /api/login. The JWT cookie is captured automatically by
+    /// <summary>Registers a new test user via POST /api/v1/users, then logs
+    /// in via POST /api/v1/sessions. The JWT cookie is captured automatically by
     /// the shared HttpClient.</summary>
     protected async Task RegisterAndLoginAsync(string username, string email, string password)
     {
@@ -159,10 +164,10 @@ public abstract class BaseApiClass
         TestEmail = email;
         TestPassword = password;
 
-        await PostAsync(AuthUrl("/register"), RegisterPayload(username, email, password, "Test", "User", ""));
+        await PostAsync(AuthUrl("/users"), RegisterPayload(username, email, password, "Test", "User", ""));
         TestContext.Progress.WriteLine($"Registered test user: {username} / {email}");
 
-        await PostAsync(AuthUrl("/login"), LoginPayload(email, password));
+        await PostAsync(AuthUrl("/sessions"), LoginPayload(email, password));
         TestContext.Progress.WriteLine("Logged in test user");
     }
 
@@ -184,14 +189,14 @@ public abstract class BaseApiClass
     // ── Payload builders ─────────────────────────────────────────────────────
 
     protected static JsonObject RegisterPayload(string username, string email, string password,
-        string nombre, string apellidos, string ubicacion) => new()
+        string firstName, string lastName, string location) => new()
     {
         ["username"] = username,
         ["email"] = email,
         ["password"] = password,
-        ["nombre"] = nombre,
-        ["apellidos"] = apellidos,
-        ["ubicacion"] = ubicacion,
+        ["first_name"] = firstName,
+        ["last_name"] = lastName,
+        ["location"] = location,
     };
 
     protected static JsonObject LoginPayload(string identifier, string password) => new()
@@ -200,38 +205,33 @@ public abstract class BaseApiClass
         ["password"] = password,
     };
 
-    protected static JsonObject ListaPayload(string nombre, string icono = "Heart") => new()
+    protected static JsonObject ListPayload(string name, string icon = "Heart") => new()
     {
-        ["nombre"] = nombre,
-        ["icono"] = icono,
+        ["name"] = name,
+        ["icon"] = icon,
     };
 
-    protected static JsonObject FavoritoPayload(string placeId) => new() { ["place_id"] = placeId };
-    protected static JsonObject MasTardePayload(string placeId) => new() { ["place_id"] = placeId };
-    protected static JsonObject HistorialPayload(string placeId) => new() { ["place_id"] = placeId };
+    protected static JsonObject PlacePayload(string placeId) => new() { ["place_id"] = placeId };
 
-    protected static JsonObject ValoracionPayload(string placeId, int calidad, int precio,
-        int higiene, int trato, string comentario) => new()
+    protected static JsonObject RatingPayload(int quality, int price,
+        int hygiene, int service, string comment) => new()
     {
-        ["place_id"] = placeId,
-        ["calidad"] = calidad,
-        ["precio"] = precio,
-        ["higiene"] = higiene,
-        ["trato"] = trato,
-        ["comentario"] = comentario,
+        ["quality"] = quality,
+        ["price"] = price,
+        ["hygiene"] = hygiene,
+        ["service"] = service,
+        ["comment"] = comment,
     };
 
-    protected static JsonObject ProfileUpdatePayload(string nombre, string apellidos, string ubicacion, string password) => new()
+    protected static JsonObject ProfileUpdatePayload(string firstName, string lastName, string location, string password) => new()
     {
-        ["nombre"] = nombre,
-        ["apellidos"] = apellidos,
-        ["ubicacion"] = ubicacion,
+        ["first_name"] = firstName,
+        ["last_name"] = lastName,
+        ["location"] = location,
         ["password"] = password,
     };
 
-    protected static JsonObject PopularesPayload(int limit) => new() { ["limit"] = limit };
-
-    /// <summary>Builds the request body for POST /api/recommendations/search.</summary>
+    /// <summary>Builds the request body for POST /api/v1/recommendations/search.</summary>
     protected static JsonObject SearchPayload(IEnumerable<string> categories, IEnumerable<string> prices,
         bool includeUnconfirmedPrice, string location, int maxResults, bool? openNow = null)
     {
@@ -251,48 +251,41 @@ public abstract class BaseApiClass
     // ── CRUD helpers ─────────────────────────────────────────────────────────
 
     /// <summary>Creates a favorite list and returns its assigned id.</summary>
-    protected async Task<int> CreateListaAsync(string nombre)
+    protected async Task<int> CreateListAsync(string name)
     {
-        var response = await PostJsonObjectAsync(FavoritosUrl("/listas"), ListaPayload(nombre));
+        var response = await PostJsonObjectAsync(FavoritesUrl("/lists"), ListPayload(name));
         return response["id"]!.GetValue<int>();
     }
 
-    /// <summary>Adds a restaurant to a list and returns the favorito id.</summary>
-    protected async Task<int> AddFavoritoAsync(int listaId, string placeId)
+    /// <summary>Adds a restaurant to a list and returns the favorite id.</summary>
+    protected async Task<int> AddFavoriteAsync(int listId, string placeId)
     {
-        var response = await PostJsonObjectAsync(FavoritosUrl($"/listas/{listaId}"), FavoritoPayload(placeId));
+        var response = await PostJsonObjectAsync(FavoritesUrl($"/lists/{listId}/restaurants"), PlacePayload(placeId));
         return response["id"]!.GetValue<int>();
     }
 
-    /// <summary>Adds a restaurant to historial and returns the entry id.</summary>
-    protected async Task<int> AddHistorialAsync(string placeId)
+    /// <summary>Adds a restaurant to the history and returns the entry id.</summary>
+    protected async Task<int> AddHistoryAsync(string placeId)
     {
-        var response = await PostJsonObjectAsync(HistorialUrl(""), HistorialPayload(placeId));
+        var response = await PostJsonObjectAsync(HistoryUrl(""), PlacePayload(placeId));
         return response["id"]!.GetValue<int>();
     }
 
-    /// <summary>Adds a restaurant to mas-tarde and returns the entry id.</summary>
-    protected async Task<int> AddMasTardeAsync(string placeId)
+    /// <summary>Adds a restaurant to saved-for-later and returns the entry id.</summary>
+    protected async Task<int> AddSavedForLaterAsync(string placeId)
     {
-        var response = await PostJsonObjectAsync(MasTardeUrl(""), MasTardePayload(placeId));
+        var response = await PostJsonObjectAsync(SavedForLaterUrl(""), PlacePayload(placeId));
         return response["id"]!.GetValue<int>();
     }
 
-    /// <summary>Creates a valoracion and returns the full response object.</summary>
-    protected async Task<JsonObject> CreateValoracionAsync(string placeId, int calidad, int precio,
-        int higiene, int trato, string comentario) =>
-        await PostJsonObjectAsync(ValoracionesUrl(""), ValoracionPayload(placeId, calidad, precio, higiene, trato, comentario));
+    /// <summary>Creates or replaces the caller's rating via PUT and returns the full result.</summary>
+    protected async Task<ApiResult> PutRatingAsync(string placeId, int quality, int price,
+        int hygiene, int service, string comment) =>
+        await SendAsync(HttpMethod.Put, RestaurantsUrl($"/{placeId}/rating"),
+            RatingPayload(quality, price, hygiene, service, comment));
 
-    /// <summary>Returns the id of the first lista named "Favoritos" in the
-    /// user's lista collection, or -1 if not found.</summary>
-    protected async Task<int> GetDefaultListaIdAsync()
-    {
-        var listas = await GetJsonArrayAsync(FavoritosUrl("/listas"));
-        foreach (var node in listas)
-        {
-            if (node is JsonObject obj && obj["nombre"]?.GetValue<string>() == "Favoritos")
-                return obj["id"]!.GetValue<int>();
-        }
-        return -1;
-    }
+    /// <summary>Creates a rating and returns the response object.</summary>
+    protected async Task<JsonObject> CreateRatingAsync(string placeId, int quality, int price,
+        int hygiene, int service, string comment) =>
+        (await PutRatingAsync(placeId, quality, price, hygiene, service, comment)).Json();
 }

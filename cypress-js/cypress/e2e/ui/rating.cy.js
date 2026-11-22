@@ -9,13 +9,13 @@ import { TID } from "../../support/testids";
 describe("Rating", () => {
   const user = useTestUser("rate");
   const page = new HistoryPage();
-  const MAX = { calidad: 5, precio: 5, higiene: 5, trato: 5 };
+  const MAX = { quality: 5, price: 5, hygiene: 5, service: 5 };
 
   beforeEach(() => {
     // Fresh state per test: no rating yet and a history entry to rate.
     cy.apiLoginAs(user);
-    api.valoraciones.remove(PLACES.A);
-    api.historial.add(PLACES.A);
+    api.ratings.remove(PLACES.A);
+    api.history.add(PLACES.A);
     cy.loginAs(user);
     page.visit().openRatingModal();
   });
@@ -31,10 +31,10 @@ describe("Rating", () => {
   });
 
   [
-    ["S2", "calidad"],
-    ["S5", "precio"],
-    ["S8", "higiene"],
-    ["S11", "trato"],
+    ["S2", "quality"],
+    ["S5", "price"],
+    ["S8", "hygiene"],
+    ["S11", "service"],
   ].forEach(([id, aspect]) => {
     it(`${id} - ${aspect} at 0 stars disables submit`, () => {
       page.fillRating({ ...MAX, [aspect]: 0 }, "Comentario").expectRatingSubmitDisabled();
@@ -47,10 +47,10 @@ describe("Rating", () => {
   });
 
   [
-    ["S3, S7", { calidad: 1, precio: 3 }],
-    ["S4, S6", { calidad: 3, precio: 1 }],
-    ["S9, S13", { higiene: 1, trato: 3 }],
-    ["S10, S12", { higiene: 3, trato: 1 }],
+    ["S3, S7", { quality: 1, price: 3 }],
+    ["S4, S6", { quality: 3, price: 1 }],
+    ["S9, S13", { hygiene: 1, service: 3 }],
+    ["S10, S12", { hygiene: 3, service: 1 }],
   ].forEach(([ids, scores]) => {
     it(`${ids} - variable scores ${JSON.stringify(scores)} are saved`, () => {
       page.fillRating({ ...MAX, ...scores }, "Comentario").expectRatingSubmitEnabled();

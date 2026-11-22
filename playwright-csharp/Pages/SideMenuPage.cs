@@ -1,22 +1,17 @@
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using DevorApp.E2ETests.Common;
 
 namespace DevorApp.E2ETests.Pages;
 
 /// <summary>
-/// Page object for the side menu drawer (accessible from /home and other
-/// authenticated pages via the hamburger button). Port of
-/// epigijon.devorapp.e2e.functional.pages.SideMenuPage.
-///
-/// The drawer contains:
-///   - Theme toggle group (Claro / Oscuro)
-///   - Font-size toggle group (S / M / L)
+/// Page object for the side menu drawer, opened from the hamburger button on authenticated pages.
 /// </summary>
 public class SideMenuPage : BasePage
 {
-    private ILocator Hamburger => Page.Locator("button[aria-label='Abrir menú']");
-    private ILocator Drawer => Page.Locator(".sidemenu-drawer");
-    private ILocator ToggleGroups => Page.Locator(".sidemenu-toggle-group");
+    private ILocator Hamburger => ByTestId("side-menu-open");
+    private ILocator Drawer => ByTestId("side-menu-drawer");
+    // data-theme / data-font-size live on <html>: they are read as attributes, not used as locators
     private ILocator Html => Page.Locator("html");
 
     private SideMenuPage(IPage page) : base(page)
@@ -25,7 +20,6 @@ public class SideMenuPage : BasePage
 
     public static Task<SideMenuPage> CreateAsync(IPage page) => InitAsync(new SideMenuPage(page));
 
-    /// <summary>Clicks the hamburger button to open the side menu.</summary>
     public async Task<SideMenuPage> OpenAsync()
     {
         await Hamburger.ClickAsync();
@@ -33,70 +27,39 @@ public class SideMenuPage : BasePage
         return this;
     }
 
-    /// <summary>Returns true if the drawer is currently visible.</summary>
     public Task<bool> IsOpenAsync() => Drawer.IsVisibleAsync();
 
-    // ── Theme toggle ─────────────────────────────────────────────────────────
-
-    private ILocator GetToggleGroup(int index) => ToggleGroups.Nth(index);
-
-    /// <summary>Clicks the theme button with the given label inside the
-    /// first toggle group. <paramref name="label"/>: "Claro" or "Oscuro".</summary>
-    public async Task<SideMenuPage> ClickThemeAsync(string label)
+    /// <summary>Clicks a menu entry: home, recommend, favorites, saved, history or ratings.</summary>
+    public async Task<SideMenuPage> GoToAsync(string entry)
     {
-        var button = GetToggleGroup(0).Locator("button").Filter(ContainsTextFilter(label));
-        if (await button.CountAsync() == 0) throw new ElementNotFoundException($"Theme button not found: {label}");
-        await button.First.ClickAsync();
+        await Page.Locator(TestId.SideMenu(entry)).ClickAsync();
         return this;
     }
 
-    /// <summary>Returns true if the theme button <paramref name="label"/> has the "active" class.</summary>
-    public async Task<bool> IsThemeActiveAsync(string label)
+    /// <summary>Clicks the theme button: "light" or "dark".</summary>
+    public async Task<SideMenuPage> ClickThemeAsync(string theme)
     {
-        var buttons = GetToggleGroup(0).Locator("button");
-        var count = await buttons.CountAsync();
-        for (var i = 0; i < count; i++)
-        {
-            var button = buttons.Nth(i);
-            var text = await button.TextContentAsync() ?? "";
-            var classAttr = await button.GetAttributeAsync("class") ?? "";
-            if (text.Contains(label) && classAttr.Contains("active")) return true;
-        }
-        return false;
+        await ByTestId($"theme-{theme}").ClickAsync();
+        return this;
     }
 
-    /// <summary>Returns the data-theme attribute of the &lt;html&gt;
-    /// element, or empty string if the attribute is absent.</summary>
+    public Task<bool> IsThemeActiveAsync(string theme) => HasActiveClassAsync(ByTestId($"theme-{theme}"));
+
     public async Task<string> GetHtmlDataThemeAsync() => await Html.GetAttributeAsync("data-theme") ?? "";
 
-    // ── Font-size toggle ─────────────────────────────────────────────────────
-
-    /// <summary>Clicks the font-size button with the given label inside the
-    /// second toggle group. <paramref name="label"/>: "S", "M", or "L".</summary>
-    public async Task<SideMenuPage> ClickFontSizeAsync(string label)
+    /// <summary>Clicks the font-size button: "S", "M" or "L".</summary>
+    public async Task<SideMenuPage> ClickFontSizeAsync(string size)
     {
-        var button = GetToggleGroup(1).Locator("button").Filter(ExactTextFilter(label));
-        if (await button.CountAsync() == 0) throw new ElementNotFoundException($"Font-size button not found: {label}");
-        await button.First.ClickAsync();
+        await ByTestId($"font-size-{size.ToLowerInvariant()}").ClickAsync();
         return this;
     }
 
-    /// <summary>Returns true if the font-size button <paramref name="label"/> has the "active" class.</summary>
-    public async Task<bool> IsFontSizeActiveAsync(string label)
-    {
-        var buttons = GetToggleGroup(1).Locator("button");
-        var count = await buttons.CountAsync();
-        for (var i = 0; i < count; i++)
-        {
-            var button = buttons.Nth(i);
-            var text = (await button.TextContentAsync() ?? "").Trim();
-            var classAttr = await button.GetAttributeAsync("class") ?? "";
-            if (text == label && classAttr.Contains("active")) return true;
-        }
-        return false;
-    }
+    public Task<bool> IsFontSizeActiveAsync(string size) =>
+        HasActiveClassAsync(ByTestId($"font-size-{size.ToLowerInvariant()}"));
 
-    /// <summary>Returns the data-font-size attribute of the &lt;html&gt;
-    /// element, or empty string if absent.</summary>
     public async Task<string> GetHtmlDataFontSizeAsync() => await Html.GetAttributeAsync("data-font-size") ?? "";
+
+    // The selected state is only exposed through the "active" class
+    private static async Task<bool> HasActiveClassAsync(ILocator locator) =>
+        Regex.IsMatch(await locator.GetAttributeAsync("class") ?? "", @"\bactive\b");
 }

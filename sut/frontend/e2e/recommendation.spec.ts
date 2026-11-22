@@ -1,17 +1,51 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
+const PREFERRED_LOCATION = 'Madrid, Spain';
+
+const PLACE_1 = {
+  id: 'mock_restaurant_1',
+  name: 'Test Restaurant 1',
+  main_photo: null,
+  rating: 4.5,
+  user_ratings_total: 120,
+  types: ['mexican_restaurant', 'restaurant'],
+  address: 'Fake Street 123, Madrid',
+  summary: 'An excellent Mexican place.',
+  opening_hours: { open_now: true },
+  google_maps_uri: 'https://maps.google.com/?q=Test+Restaurant+1',
+  website_uri: 'https://testrestaurant1.com',
+};
+
+const PLACE_2 = {
+  id: 'mock_restaurant_2',
+  name: 'Test Restaurant 2',
+  main_photo: null,
+  rating: 4.0,
+  user_ratings_total: 80,
+  types: ['italian_restaurant', 'restaurant'],
+  address: 'Fake Street 124, Madrid',
+  summary: 'An excellent Italian place.',
+  opening_hours: { open_now: true },
+  google_maps_uri: 'https://maps.google.com/?q=Test+Restaurant+2',
+  website_uri: 'https://testrestaurant2.com',
+};
+
+// Cuisine tags from src/data/tags.json. The query is matched against the (Spanish) tag label.
+const MEXICAN = { id: 'mexican_restaurant', query: 'Mexicano' };
+const ITALIAN = { id: 'italian_restaurant', query: 'Italiano' };
+
+test.describe('Restaurant Recommender - Base-Choice', () => {
 
   let lastSearchPayload: any = null;
 
   test.beforeEach(async ({ page }) => {
-    // Escuchamos logs de la consola del navegador para diagnóstico
+    // Browser console logs help diagnose failures
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-    // Reset del payload
+    // Reset the payload
     lastSearchPayload = null;
 
-    // Interceptamos la carga del script de Google GSI
+    // Stub the Google GSI script
     await page.route('**/gsi/client', async (route) => {
       await route.fulfill({
         status: 200,
@@ -20,7 +54,7 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
       });
     });
 
-    // Interceptamos la carga del script de Google Maps API para evitar que cargue el script real y sobrescriba nuestro mock
+    // Stub the Google Maps script so the real one cannot overwrite our mock
     await page.route('**/maps/api/js*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -29,7 +63,7 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
       });
     });
 
-    // Inyectamos el mock global de Google Maps Autocomplete con stubs para evitar crasheos de react-google-autocomplete
+    // Inject a global Google Maps Autocomplete mock to avoid react-google-autocomplete crashes
     await page.addInitScript(() => {
       (window as any).google = {
         maps: {
@@ -48,7 +82,7 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
               }
               getPlace() {
                 return {
-                  formatted_address: this.input ? this.input.value : 'Madrid, España',
+                  formatted_address: this.input ? this.input.value : PREFERRED_LOCATION,
                   address_components: [
                     {
                       types: ['country'],
@@ -70,23 +104,23 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
       };
     });
 
-    // Mock de perfil /api/me para indicar ubicación preferida
-    await page.route('**/api/me', async (route) => {
+    // Mock /api/v1/me to provide the preferred location
+    await page.route('**/api/v1/me', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           username: 'testuser',
           email: 'test@test.com',
-          nombre: 'Test',
-          apellidos: 'User',
-          ubicacion: 'Madrid, España',
+          first_name: 'Test',
+          last_name: 'User',
+          location: PREFERRED_LOCATION,
           is_google: false,
         }),
       });
     });
 
-    // Mock de Google Geocoding API para la carga de moneda al detectar ubicación preferida
+    // Mock Google Geocoding (used to load the currency for the preferred location)
     await page.route('**/maps/api/geocode/json*', async (route) => {
       await route.fulfill({
         status: 200,
@@ -109,8 +143,8 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
       });
     });
 
-    // Mock del endpoint de búsqueda de recomendaciones
-    await page.route('**/api/recommendations/search', async (route) => {
+    // Mock the recommendation search endpoint
+    await page.route('**/api/v1/recommendations/search', async (route) => {
       if (route.request().method() !== 'POST') {
         return route.fallback();
       }
@@ -119,239 +153,174 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({
-          results: [
-            {
-              id: "restaurante_mock_1",
-              name: "Restaurante de Prueba 1",
-              main_photo: null,
-              rating: 4.5,
-              user_ratings_total: 120,
-              types: ["mexican_restaurant", "restaurant"],
-              address: "Calle Falsa 123, Madrid",
-              summary: "Un excelente lugar de comida mexicana.",
-              opening_hours: {
-                open_now: true
-              },
-              google_maps_uri: "https://maps.google.com/?q=Restaurante+de+Prueba+1",
-              website_uri: "https://restauranteprueba1.com"
-            },
-            {
-              id: "restaurante_mock_2",
-              name: "Restaurante de Prueba 2",
-              main_photo: null,
-              rating: 4.0,
-              user_ratings_total: 80,
-              types: ["italian_restaurant", "restaurant"],
-              address: "Calle Falsa 124, Madrid",
-              summary: "Un excelente lugar de comida italiana.",
-              opening_hours: {
-                open_now: true
-              },
-              google_maps_uri: "https://maps.google.com/?q=Restaurante+de+Prueba+2",
-              website_uri: "https://restauranteprueba2.com"
-            }
-          ],
-          next_page_token: null
-        })
+        body: JSON.stringify({ results: [PLACE_1, PLACE_2], next_page_token: null }),
       });
     });
 
-    // Vamos a la página del recomendador
+    // Go to the recommender page
     await page.goto('/recommend-restaurants');
   });
 
-  // Helper para añadir una etiqueta/cocina en el dropdown autocomplete
-  async function addTag(page: any, query: string, label: string) {
-    const input = page.getByPlaceholder('+ Añadir tipo de cocina...');
+  // Adds a cuisine from the autocomplete dropdown. The option is a <button> inside the form, so
+  // depending on the build the click may also submit a search and collapse the filters. Either way,
+  // end with the filter form open and all the chips visible.
+  async function addTag(page: any, tag: { id: string; query: string }, expectedChips: number) {
+    const input = page.getByTestId('recommend-cuisine-input');
+    const chips = page.getByTestId('recommend-cuisine-tag');
+    const editFilters = page.getByTestId('recommend-edit-filters');
+
     await input.click();
-    await input.fill(query);
-    
-    // Localizamos la opción del dropdown usando el selector de hermano adyacente para evitar falsos positivos en el DOM
-    const option = page.locator('input[placeholder="+ Añadir tipo de cocina..."] + div > div').filter({ hasText: label }).first();
-    await expect(option).toBeVisible();
-    await option.click();
-    
-    // Esperamos a que el chip de la etiqueta seleccionada aparezca en la UI para asegurar que se añadió correctamente
-    const chip = page.locator('span', { hasText: label }).first();
-    await expect(chip).toBeVisible();
+    await input.fill(tag.query);
+    await page.getByTestId(`cuisine-option-${tag.id}`).click();
+
+    // Retry until the form is open and shows all chips (reopens it only if it collapsed).
+    await expect(async () => {
+      if (await editFilters.isVisible()) await editFilters.click();
+      await expect(chips).toHaveCount(expectedChips, { timeout: 1000 });
+    }).toPass();
   }
 
-  // Helper para rellenar los valores BASE comunes de los filtros
+  // Fill the common BASE filter values
   async function setupBaseFilters(page: any) {
-    // 1. Etiquetas: Varias (Mexicano e Italiano)
-    await addTag(page, 'Mexicano', 'Mexicano');
-    await addTag(page, 'Italiano', 'Italiano');
+    // 1. Tags: several (Mexican and Italian)
+    await addTag(page, MEXICAN, 1);
+    await addTag(page, ITALIAN, 2);
 
-    // 2. Precio: Varios (Moderado €€ y Caro €€€)
-    await page.locator('button', { hasText: '€€' }).first().click();
-    await page.locator('button', { hasText: '€€€' }).first().click();
+    // 2. Price: several (moderate and expensive)
+    await page.getByTestId('price-2').click();
+    await page.getByTestId('price-3').click();
 
-    // 3. Sin precio: Sí
-    await page.getByLabel('Incluir sitios sin precio confirmado').setChecked(true);
+    // 3. No-price places: yes
+    await page.getByTestId('recommend-include-no-price').setChecked(true);
 
-    // 4. Abierto: Sí
-    await page.getByLabel('Solo lugares abiertos ahora').setChecked(true);
+    // 4. Open now: yes
+    await page.getByTestId('recommend-open-now').setChecked(true);
 
-    // 5. Ubicación: Preferida (Seleccionada por defecto, pero forzamos por seguridad)
-    await page.getByLabel('Usar ubicación preferida').check();
+    // 5. Location: preferred (default, forced for safety)
+    await page.getByTestId('recommend-location-preferred').check();
   }
 
-  // ── 1. Caso BASE: Búsqueda con filtros base y ubicación preferida (BASE) ──────────
-  test('debe buscar con todos los filtros base y ubicación preferida correctamente (BASE)', async ({ page }) => {
-    // 1. Configuramos filtros base comunes
+  async function expectBothResults(page: any) {
+    await expect(page.getByTestId('recommend-results-title')).toBeVisible();
+    const cards = page.getByTestId('recommend-result-card');
+    await expect(cards).toHaveCount(2);
+    await expect(cards.nth(0)).toContainText(PLACE_1.name);
+    await expect(cards.nth(1)).toContainText(PLACE_2.name);
+  }
+
+  // ── 1. BASE case: base filters with preferred location (BASE) ──────────
+  test('should search with all base filters and the preferred location (BASE)', async ({ page }) => {
     await setupBaseFilters(page);
 
-    // 2. Enviar búsqueda
-    await page.locator('button', { hasText: 'Buscar recomendaciones' }).click({ noWaitAfter: true });
+    await page.getByTestId('recommend-submit').click({ noWaitAfter: true });
 
-    // 3. Validamos que la petición se envió con todos los filtros BASE y la ubicación preferida
+    // The request carries every BASE filter and the preferred location
     await expect.poll(() => lastSearchPayload).not.toBeNull();
-    expect(lastSearchPayload.categories).toContain('mexican_restaurant');
-    expect(lastSearchPayload.categories).toContain('italian_restaurant');
+    expect(lastSearchPayload.categories).toContain(MEXICAN.id);
+    expect(lastSearchPayload.categories).toContain(ITALIAN.id);
     expect(lastSearchPayload.prices).toContain('PRICE_LEVEL_MODERATE');
     expect(lastSearchPayload.prices).toContain('PRICE_LEVEL_EXPENSIVE');
     expect(lastSearchPayload.include_unconfirmed_price).toBe(true);
     expect(lastSearchPayload.open_now).toBe(true);
-    expect(lastSearchPayload.location).toBe('Madrid, España');
+    expect(lastSearchPayload.location).toBe(PREFERRED_LOCATION);
 
-    // 4. Validamos que los resultados se listan en pantalla
-    await expect(page.locator('text=Sugerencias para ti')).toBeVisible();
-    await expect(page.locator('.suggestion-card')).toHaveCount(2);
-    await expect(page.locator('text=Restaurante de Prueba 1')).toBeVisible();
-    await expect(page.locator('text=Restaurante de Prueba 2')).toBeVisible();
+    await expectBothResults(page);
   });
 
-  // ── 2. Búsqueda sin filtros y con 0 resultados (S2, S4, S10) ───────────────────
-  test('debe buscar sin filtros seleccionados y manejar la respuesta vacía (S2, S4, S10)', async ({ page }) => {
-    // Interceptamos la llamada para este test devolviendo un array vacío
-    await page.route('**/api/recommendations/search', async (route) => {
+  // ── 2. Search without filters and with 0 results (S2, S4, S10) ───────────────────
+  test('should search without filters and handle an empty response (S2, S4, S10)', async ({ page }) => {
+    // Empty results for this test
+    await page.route('**/api/v1/recommendations/search', async (route) => {
       lastSearchPayload = JSON.parse(route.request().postData() || '{}');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({
-          results: [],
-          next_page_token: null
-        })
+        body: JSON.stringify({ results: [], next_page_token: null }),
       });
     });
 
-    // Enviar búsqueda directamente (sin añadir categorías o precios, con ubicación preferida por defecto)
-    await page.locator('button', { hasText: 'Buscar recomendaciones' }).click({ noWaitAfter: true });
+    // Submit directly (no tags or prices, preferred location by default)
+    await page.getByTestId('recommend-submit').click({ noWaitAfter: true });
 
-    // Validamos la petición al backend
     await expect.poll(() => lastSearchPayload).not.toBeNull();
-    expect(lastSearchPayload.categories).toEqual([]); // S2 (Etiquetas = 0)
-    expect(lastSearchPayload.prices).toEqual([]); // S4 (Precio = 0)
-    expect(lastSearchPayload.location).toBe('Madrid, España');
+    expect(lastSearchPayload.categories).toEqual([]); // S2 (Tags = 0)
+    expect(lastSearchPayload.prices).toEqual([]); // S4 (Price = 0)
+    expect(lastSearchPayload.location).toBe(PREFERRED_LOCATION);
 
-    // Verificamos que no se renderiza ninguna tarjeta y la sección de títulos está oculta (S10)
-    await expect(page.locator('.suggestion-card')).toHaveCount(0);
-    await expect(page.locator('text=Sugerencias para ti')).not.toBeVisible();
+    // No cards and no results title (S10)
+    await expect(page.getByTestId('recommend-result-card')).toHaveCount(0);
+    await expect(page.getByTestId('recommend-results-title')).toHaveCount(0);
   });
 
-  // ── 3. Búsqueda con filtros simples y 1 resultado (S3, S5, S11) ───────────────────
-  test('debe buscar con filtros simples y mostrar un único resultado (S3, S5, S11)', async ({ page }) => {
-    // Interceptamos la llamada para este test devolviendo 1 restaurante
-    await page.route('**/api/recommendations/search', async (route) => {
+  // ── 3. Simple filters and a single result (S3, S5, S11) ───────────────────
+  test('should search with simple filters and show a single result (S3, S5, S11)', async ({ page }) => {
+    // One restaurant for this test
+    await page.route('**/api/v1/recommendations/search', async (route) => {
       lastSearchPayload = JSON.parse(route.request().postData() || '{}');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({
-          results: [
-            {
-              id: "restaurante_mock_1",
-              name: "Restaurante de Prueba 1",
-              main_photo: null,
-              rating: 4.5,
-              user_ratings_total: 120,
-              types: ["mexican_restaurant", "restaurant"],
-              address: "Calle Falsa 123, Madrid",
-              summary: "Un excelente lugar de comida mexicana.",
-              opening_hours: {
-                open_now: true
-              },
-              google_maps_uri: "https://maps.google.com/?q=Restaurante+de+Prueba+1",
-              website_uri: "https://restauranteprueba1.com"
-            }
-          ],
-          next_page_token: null
-        })
+        body: JSON.stringify({ results: [PLACE_1], next_page_token: null }),
       });
     });
 
-    // Exactamente 1 etiqueta
-    await addTag(page, 'Mexicano', 'Mexicano'); // S3 (Etiquetas = 1)
+    // Exactly 1 tag
+    await addTag(page, MEXICAN, 1); // S3 (Tags = 1)
 
-    // Precio: 1 (Económico €)
-    await page.locator('button', { hasText: '€' }).first().click(); // S5 (Precio = 1)
+    // Price: 1 (inexpensive)
+    await page.getByTestId('price-1').click(); // S5 (Price = 1)
 
-    // Enviar búsqueda
-    await page.locator('button', { hasText: 'Buscar recomendaciones' }).click({ noWaitAfter: true });
+    await page.getByTestId('recommend-submit').click({ noWaitAfter: true });
 
-    // Validamos la petición al backend
     await expect.poll(() => lastSearchPayload).not.toBeNull();
-    expect(lastSearchPayload.categories).toEqual(['mexican_restaurant']);
+    expect(lastSearchPayload.categories).toEqual([MEXICAN.id]);
     expect(lastSearchPayload.prices).toEqual(['PRICE_LEVEL_INEXPENSIVE']);
 
-    // Verificamos que se muestra exactamente 1 tarjeta (S11)
-    await expect(page.locator('.suggestion-card')).toHaveCount(1);
-    await expect(page.locator('text=Restaurante de Prueba 1')).toBeVisible();
+    // Exactly 1 card (S11)
+    const cards = page.getByTestId('recommend-result-card');
+    await expect(cards).toHaveCount(1);
+    await expect(cards.first()).toContainText(PLACE_1.name);
   });
 
-  // ── 4. Exclusión de filtros booleanos y error de ubicación alternativa (S6, S7, S9) ──
-  test('debe validar la exclusión de booleanos y el bloqueo de ubicación alternativa vacía (S6, S7, S9)', async ({ page }) => {
-    // Configurar filtros base para tags y precios
-    await addTag(page, 'Mexicano', 'Mexicano');
-    await addTag(page, 'Italiano', 'Italiano');
-    await page.locator('button', { hasText: '€€' }).first().click();
-    await page.locator('button', { hasText: '€€€' }).first().click();
+  // ── 4. Boolean filters off and empty alternative location error (S6, S7, S9) ──
+  test('should validate excluded booleans and block an empty alternative location (S6, S7, S9)', async ({ page }) => {
+    await addTag(page, MEXICAN, 1);
+    await addTag(page, ITALIAN, 2);
+    await page.getByTestId('price-2').click();
+    await page.getByTestId('price-3').click();
 
-    // Desmarcamos "Incluir sitios sin precio confirmado" (S6: Sin precio = No)
-    await page.getByLabel('Incluir sitios sin precio confirmado').setChecked(false);
+    // Uncheck "include places without a confirmed price" (S6: No-price = No)
+    await page.getByTestId('recommend-include-no-price').setChecked(false);
 
-    // Desmarcamos "Solo lugares abiertos ahora" (S7: Abierto = No)
-    await page.getByLabel('Solo lugares abiertos ahora').setChecked(false);
+    // Uncheck "open now only" (S7: Open = No)
+    await page.getByTestId('recommend-open-now').setChecked(false);
 
-    // Seleccionamos escoger otra ubicación
-    await page.getByLabel('Escoger otra ubicación').check();
+    // Choose another location
+    await page.getByTestId('recommend-location-custom').check();
+    await expect(page.getByTestId('recommend-location-input')).toBeVisible();
 
-    // Aseguramos que el input está visible
-    const autocompleteInput = page.getByPlaceholder('Ej. Madrid, Barcelona...');
-    await expect(autocompleteInput).toBeVisible();
+    // Leave the input empty (S9: Location = invalid alternative) and submit
+    await page.getByTestId('recommend-submit').click({ noWaitAfter: true });
 
-    // Dejamos el input vacío (S9: Ubicación = Otra No Válida) y hacemos clic en Buscar
-    await page.locator('button', { hasText: 'Buscar recomendaciones' }).click({ noWaitAfter: true });
-
-    // Comprobamos el mensaje de error de validación en pantalla
-    const errorMsg = page.locator('.message.error');
-    await expect(errorMsg).toContainText('Por favor, selecciona o introduce una ubicación.');
-
-    // Verificamos que no se realizó ninguna petición de búsqueda al backend
+    // Validation error is shown and no search request is made
+    await expect(page.getByTestId('recommend-error')).toBeVisible();
     expect(lastSearchPayload).toBeNull();
   });
 
-  // ── 5. Búsqueda en ubicación alternativa y Caso BASE / Resultados Varios (S8) ──
-  test('debe buscar correctamente con filtros completos, ubicación alternativa y mostrar múltiples resultados (S8)', async ({ page }) => {
-    // 1. Configuramos filtros base comunes
+  // ── 5. Alternative location with full filters and several results (S8) ──
+  test('should search with full filters and an alternative location showing several results (S8)', async ({ page }) => {
     await setupBaseFilters(page);
 
-    // 2. Desmarcamos la ubicación preferida y seleccionamos otra ubicación
-    await page.getByLabel('Escoger otra ubicación').check();
-
-    // Esperamos a que el input esté visible
-    const autocompleteInput = page.getByPlaceholder('Ej. Madrid, Barcelona...');
+    // Switch from the preferred location to another one
+    await page.getByTestId('recommend-location-custom').check();
+    const autocompleteInput = page.getByTestId('recommend-location-input');
     await expect(autocompleteInput).toBeVisible();
+    await autocompleteInput.fill('Barcelona, Spain');
 
-    // Rellenamos el input
-    await autocompleteInput.fill('Barcelona, España');
-
-    // Esperamos a que la instancia del mock esté en el window
+    // Wait for the Autocomplete mock instance to exist
     await page.waitForFunction(() => (window as any).mockAutocompleteInstance !== undefined);
 
-    // Simulamos la llamada al listener 'place_changed' de Google Maps
+    // Fire the Google Maps 'place_changed' listener
     await page.evaluate(() => {
       const instance = (window as any).mockAutocompleteInstance;
       if (instance && instance.listeners['place_changed']) {
@@ -359,24 +328,19 @@ test.describe('Pruebas del Recomendador de Restaurantes - Base-Choice', () => {
       }
     });
 
-    // Enviar búsqueda
-    await page.locator('button', { hasText: 'Buscar recomendaciones' }).click({ noWaitAfter: true });
+    await page.getByTestId('recommend-submit').click({ noWaitAfter: true });
 
-    // Validamos que la petición se envió con todos los filtros BASE y la ubicación alternativa (S8)
+    // The request carries every BASE filter and the alternative location (S8)
     await expect.poll(() => lastSearchPayload).not.toBeNull();
-    expect(lastSearchPayload.categories).toContain('mexican_restaurant');
-    expect(lastSearchPayload.categories).toContain('italian_restaurant');
+    expect(lastSearchPayload.categories).toContain(MEXICAN.id);
+    expect(lastSearchPayload.categories).toContain(ITALIAN.id);
     expect(lastSearchPayload.prices).toContain('PRICE_LEVEL_MODERATE');
     expect(lastSearchPayload.prices).toContain('PRICE_LEVEL_EXPENSIVE');
     expect(lastSearchPayload.include_unconfirmed_price).toBe(true);
     expect(lastSearchPayload.open_now).toBe(true);
-    expect(lastSearchPayload.location).toBe('Barcelona, España');
+    expect(lastSearchPayload.location).toBe('Barcelona, Spain');
 
-    // Validamos que los resultados se listan en pantalla (Varios outputs)
-    await expect(page.locator('text=Sugerencias para ti')).toBeVisible();
-    await expect(page.locator('.suggestion-card')).toHaveCount(2);
-    await expect(page.locator('text=Restaurante de Prueba 1')).toBeVisible();
-    await expect(page.locator('text=Restaurante de Prueba 2')).toBeVisible();
+    await expectBothResults(page);
   });
 
 });

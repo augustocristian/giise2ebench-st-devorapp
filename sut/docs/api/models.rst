@@ -9,17 +9,17 @@ DTOs (Pydantic)
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.dtos.favoritos_dto
+.. automodule:: app.models.dtos.favorites_dto
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.dtos.historial_dto
+.. automodule:: app.models.dtos.history_dto
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.dtos.mas_tarde_dto
+.. automodule:: app.models.dtos.saved_for_later_dto
    :members:
    :undoc-members:
    :show-inheritance:
@@ -34,7 +34,7 @@ DTOs (Pydantic)
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.dtos.valoracion_dto
+.. automodule:: app.models.dtos.rating_dto
    :members:
    :undoc-members:
    :show-inheritance:
@@ -42,27 +42,27 @@ DTOs (Pydantic)
 Entidades (SQLAlchemy)
 ----------------------
 
-.. automodule:: app.models.entities.favoritos
+.. automodule:: app.models.entities.favorites
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.entities.historial
+.. automodule:: app.models.entities.history
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.entities.listas_favoritos
+.. automodule:: app.models.entities.favorite_lists
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.entities.mas_tarde
+.. automodule:: app.models.entities.saved_for_later
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.entities.restaurante
+.. automodule:: app.models.entities.restaurant
    :members:
    :undoc-members:
    :show-inheritance:
@@ -72,12 +72,12 @@ Entidades (SQLAlchemy)
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.entities.valoracion
+.. automodule:: app.models.entities.rating
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.models.entities.valoracion_like
+.. automodule:: app.models.entities.rating_like
    :members:
    :undoc-members:
    :show-inheritance:

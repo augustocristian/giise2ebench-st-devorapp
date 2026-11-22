@@ -1,9 +1,9 @@
 """
-Repositorio de usuarios usando Firebase Authentication + Firestore.
+User repository using Firebase Authentication + Firestore.
 
-Cada usuario tiene:
-  - Firebase Auth: gestiona email y contraseña (con hashing seguro)
-  - Firestore colección 'usuarios/{uid}': almacena username, nombre, apellidos, ubicacion
+Each user has:
+  - Firebase Auth: manages email and password (with secure hashing)
+  - Firestore collection 'users/{uid}': stores username, first_name, last_name, location
 """
 from typing import Optional
 
@@ -18,8 +18,8 @@ from app.infrastructure.firebase.firebase_admin import get_firebase_app, get_fir
 
 def verify_password_and_get_uid(email: str, password: str) -> Optional[str]:
     """
-    Verifica las credenciales contra Firebase Authentication REST API.
-    Devuelve el uid del usuario si son correctas, None en caso contrario.
+    Verify the credentials against the Firebase Authentication REST API.
+    Return the user's uid if they are correct, otherwise None.
     """
     get_firebase_app()
     url = (
@@ -40,11 +40,11 @@ def verify_password_and_get_uid(email: str, password: str) -> Optional[str]:
 
 def send_verification_email(email: str, password: str) -> bool:
     """
-    Inicia sesión temporalmente para obtener un idToken y solicita el envío
-    del correo de verificación nativo de Firebase mediante la REST API.
+    Sign in temporarily to get an idToken and request sending
+    Firebase's native verification email through the REST API.
     """
     get_firebase_app()
-    # 1. Obtener el idToken iniciando sesión
+    # 1. Get the idToken by signing in
     login_url = (
         f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:signInWithPassword"
         f"?key={settings.FIREBASE_API_KEY}"
@@ -66,7 +66,7 @@ def send_verification_email(email: str, password: str) -> bool:
             print("DEBUG: idToken was empty!")
             return False
 
-        # 2. Solicitar el correo de verificación
+        # 2. Request the verification email
         print("DEBUG: Requesting verification email...")
         verify_url = (
             f"{settings.FIREBASE_AUTH_BASE_URL}/accounts:sendOobCode"
@@ -87,8 +87,8 @@ def send_verification_email(email: str, password: str) -> bool:
 
 def send_email_change_verification(email: str, password: str, new_email: str) -> bool:
     """
-    Inicia sesión temporalmente para obtener un idToken y solicita el envío
-    del correo de verificación para cambio de email mediante la REST API.
+    Sign in temporarily to get an idToken and request sending
+    the verification email for an email change through the REST API.
     """
     get_firebase_app()
     login_url = (
@@ -128,7 +128,7 @@ def send_email_change_verification(email: str, password: str, new_email: str) ->
 
 def send_password_reset_email(email: str) -> bool:
     """
-    Envía un correo de recuperación de contraseña nativo de Firebase al usuario.
+    Send Firebase's native password recovery email to the user.
     """
     get_firebase_app()
     url = (
@@ -145,10 +145,10 @@ def send_password_reset_email(email: str) -> bool:
     except httpx.RequestError:
         return False
 
-def get_usuario_by_uid(uid: str) -> Optional[Usuario]:
+def get_user_by_uid(uid: str) -> Optional[Usuario]:
     """
-    Obtiene un Usuario combinando datos de Firebase Auth y Firestore.
-    El campo 'username' se lee del documento Firestore; si no existe, usa el uid.
+    Get a Usuario combining Firebase Auth and Firestore data.
+    The 'username' field is read from the Firestore document; if missing, the uid is used.
     """
     get_firebase_app()
     try:
@@ -157,7 +157,7 @@ def get_usuario_by_uid(uid: str) -> Optional[Usuario]:
         return None
 
     db = get_firestore_client()
-    doc = db.collection("usuarios").document(uid).get()
+    doc = db.collection("users").document(uid).get()
     profile: dict = doc.to_dict() or {}
 
     is_google = profile.get("is_google", False)
@@ -166,59 +166,59 @@ def get_usuario_by_uid(uid: str) -> Optional[Usuario]:
         uid=uid,
         username=profile.get("username", uid),
         email=user_record.email or "",
-        nombre=profile.get("nombre", ""),
-        apellidos=profile.get("apellidos", ""),
-        ubicacion=profile.get("ubicacion", ""),
+        first_name=profile.get("first_name", ""),
+        last_name=profile.get("last_name", ""),
+        location=profile.get("location", ""),
         is_google=is_google,
     )
 
 
-def get_usuario_by_email(email: str) -> Optional[Usuario]:
-    """Obtiene un Usuario a partir de su email usando Firebase Auth."""
+def get_user_by_email(email: str) -> Optional[Usuario]:
+    """Get a Usuario by email using Firebase Auth."""
     get_firebase_app()
     try:
         user_record = fb_auth.get_user_by_email(email)
-        return get_usuario_by_uid(user_record.uid)
+        return get_user_by_uid(user_record.uid)
     except Exception:
         return None
 
 
 def get_uid_by_username(username: str) -> Optional[str]:
     """
-    Busca en Firestore el uid de un usuario a partir de su username.
-    Necesario para permitir login con nombre de usuario en lugar de email.
+    Look up a user's uid in Firestore from their username.
+    Needed to allow login with a username instead of an email.
     """
     get_firebase_app()
     db = get_firestore_client()
     docs = (
-        db.collection("usuarios")
+        db.collection("users")
         .where("username", "==", username)
         .limit(1)
         .get()
     )
     for doc in docs:
-        return doc.id  # el ID del documento es el Firebase UID
+        return doc.id  # the document ID is the Firebase UID
     return None
 
 
-def create_usuario(
+def create_user(
     email: str,
     password: str,
     username: str,
-    nombre: str,
-    apellidos: str,
-    ubicacion: Optional[str] = None,
+    first_name: str,
+    last_name: str,
+    location: Optional[str] = None,
 ) -> Usuario:
     """
-    Crea un nuevo usuario en Firebase Auth y su documento de perfil en Firestore.
-    Lanza HTTPException con el código y mensaje adecuados si algo falla.
+    Create a new user in Firebase Auth and its profile document in Firestore.
+    Raise HTTPException with the appropriate code and message on failure.
     """
 
     get_firebase_app()
 
     if get_uid_by_username(username) is not None:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Ese username ya está en uso",
         )
 
@@ -230,60 +230,60 @@ def create_usuario(
         )
     except fb_auth.EmailAlreadyExistsError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="El email ya está registrado",
         )
     except FirebaseError as e:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=422,
             detail=f"Error al crear el usuario: {e.message}",
         )
 
     uid = user_record.uid
     db = get_firestore_client()
-    db.collection("usuarios").document(uid).set({
+    db.collection("users").document(uid).set({
         "username": username,
-        "nombre": nombre,
-        "apellidos": apellidos,
-        "ubicacion": ubicacion,
+        "first_name": first_name,
+        "last_name": last_name,
+        "location": location,
         "is_google": False,
     })
 
     return Usuario(
         username=username,
         email=email,
-        nombre=nombre,
-        apellidos=apellidos,
-        ubicacion=ubicacion,
+        first_name=first_name,
+        last_name=last_name,
+        location=location,
     )
 
-def update_usuario_profile(uid: str, nombre: str, apellidos: str, ubicacion: str) -> None:
-    """Actualiza el nombre, apellidos y ubicación en Firestore."""
+def update_user_profile(uid: str, first_name: str, last_name: str, location: str) -> None:
+    """Update first name, last name and location in Firestore."""
     get_firebase_app()
     db = get_firestore_client()
-    db.collection("usuarios").document(uid).update({
-        "nombre": nombre,
-        "apellidos": apellidos,
-        "ubicacion": ubicacion,
+    db.collection("users").document(uid).update({
+        "first_name": first_name,
+        "last_name": last_name,
+        "location": location,
     })
 
-def update_usuario_email(uid: str, new_email: str) -> None:
-    """Actualiza el email en Firebase Auth y lo marca como verificado."""
+def update_user_email(uid: str, new_email: str) -> None:
+    """Update the email in Firebase Auth and mark it as verified."""
     get_firebase_app()
     fb_auth.update_user(uid, email=new_email, email_verified=True)
 
-def update_usuario_password(uid: str, new_password: str) -> None:
-    """Actualiza la contraseña en Firebase Auth."""
+def update_user_password(uid: str, new_password: str) -> None:
+    """Update the password in Firebase Auth."""
     get_firebase_app()
     fb_auth.update_user(uid, password=new_password)
 
-def delete_usuario_profile(uid: str) -> None:
-    """Elimina el perfil del usuario en Firestore."""
+def delete_user_profile(uid: str) -> None:
+    """Delete the user profile from Firestore."""
     get_firebase_app()
     db = get_firestore_client()
-    db.collection("usuarios").document(uid).delete()
+    db.collection("users").document(uid).delete()
 
-def delete_usuario_auth(uid: str) -> None:
-    """Elimina al usuario de Firebase Authentication."""
+def delete_user_auth(uid: str) -> None:
+    """Delete the user from Firebase Authentication."""
     get_firebase_app()
     fb_auth.delete_user(uid)

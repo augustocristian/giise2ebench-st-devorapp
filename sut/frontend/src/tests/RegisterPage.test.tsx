@@ -15,7 +15,7 @@ vi.mock('../models/api/authService', () => ({
 import { authService } from '../models/api/authService';
 
 
-// Helper: llena los campos del paso 1 del registro
+// Helper: fills in the step 1 fields of the registration
 const fillStep1 = () => {
     fireEvent.change(screen.getByLabelText('Email'), {
         target: { name: 'email', value: 'nuevo@test.com' },
@@ -27,10 +27,10 @@ const fillStep1 = () => {
         target: { name: 'password', value: 'Segura123' },
     });
     fireEvent.change(screen.getByLabelText('Nombre'), {
-        target: { name: 'nombre', value: 'Nuevo' },
+        target: { name: 'first_name', value: 'Nuevo' },
     });
     fireEvent.change(screen.getByLabelText('Apellidos'), {
-        target: { name: 'apellidos', value: 'Usuario' },
+        target: { name: 'last_name', value: 'Usuario' },
     });
 };
 
@@ -44,15 +44,15 @@ const renderRegisterPage = () =>
 describe('RegisterPage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        // Por defecto, la comprobación de disponibilidad no bloquea
+        // By default, the availability check does not block
         (authService.checkAvailability as any).mockResolvedValue({
             email_taken: false,
             username_taken: false,
         });
     });
 
-    // ── 1. Renderizado básico (Paso 1) ────────────────────────────────────────
-    it('debe renderizar todos los campos del formulario de registro (paso 1)', () => {
+    // ── 1. Basic rendering (Step 1) ────────────────────────────────────────
+    it('should render all registration form fields (step 1)', () => {
         renderRegisterPage();
 
         expect(screen.getByRole('heading', { name: 'Crear cuenta' })).toBeInTheDocument();
@@ -61,20 +61,20 @@ describe('RegisterPage', () => {
         expect(screen.getByLabelText('Contraseña')).toBeInTheDocument();
         expect(screen.getByLabelText('Nombre')).toBeInTheDocument();
         expect(screen.getByLabelText('Apellidos')).toBeInTheDocument();
-        // En el paso 1, el botón principal es "Continuar"
+        // In step 1, the main button is "Continuar"
         expect(screen.getByRole('button', { name: 'Continuar' })).toBeInTheDocument();
         expect(screen.getByRole('link', { name: 'Inicia sesión' })).toBeInTheDocument();
     });
 
-    // ── 2. Validación: campos vacíos en paso 1 ────────────────────────────────
-    it('debe mostrar error si se envía el formulario con campos obligatorios vacíos', async () => {
+    // ── 2. Validation: empty fields in step 1 ────────────────────────────────
+    it('should show an error if the form is submitted with empty required fields', async () => {
         renderRegisterPage();
 
-        // El botón "Continuar" es el que activa la validación en el paso 1
+        // The "Continuar" button triggers validation in step 1
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
         await waitFor(() => {
-            // El mensaje de error del paso 1 (stepError)
+            // The step 1 error message (stepError)
             expect(
                 screen.getByText(/El email es obligatorio|Rellene todos los campos obligatorios/i)
             ).toBeInTheDocument();
@@ -83,8 +83,8 @@ describe('RegisterPage', () => {
         expect(authService.register).not.toHaveBeenCalled();
     });
 
-    // ── 3. Validación: falta apellidos ────────────────────────────────────────
-    it('debe mostrar error si falta un campo como apellidos', async () => {
+    // ── 3. Validation: missing last name ────────────────────────────────────────
+    it('should show an error if a field such as last name is missing', async () => {
         renderRegisterPage();
 
         fireEvent.change(screen.getByLabelText('Email'), {
@@ -97,9 +97,9 @@ describe('RegisterPage', () => {
             target: { name: 'password', value: 'Segura123' },
         });
         fireEvent.change(screen.getByLabelText('Nombre'), {
-            target: { name: 'nombre', value: 'Nuevo' },
+            target: { name: 'first_name', value: 'Nuevo' },
         });
-        // Apellidos queda vacío
+        // Last name stays empty
 
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
@@ -110,22 +110,22 @@ describe('RegisterPage', () => {
         });
     });
 
-    // ── 4. Navegar al paso 2 y validar ubicación vacía ───────────────────────
-    it('debe mostrar error específico si falta la ubicación (paso 2)', async () => {
+    // ── 4. Go to step 2 and validate empty location ───────────────────────
+    it('should show a specific error if the location is missing (step 2)', async () => {
         renderRegisterPage();
 
-        // Rellenar paso 1
+        // Fill in step 1
         fillStep1();
 
-        // Avanzar al paso 2
+        // Go to step 2
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
-        // Esperar a que aparezca el paso 2 (tiene el botón "Crear cuenta")
+        // Wait for step 2 to appear (it has the "Crear cuenta" button)
         await waitFor(() => {
             expect(screen.getByRole('button', { name: 'Crear cuenta' })).toBeInTheDocument();
         });
 
-        // Intentar enviar sin ubicación
+        // Try to submit without a location
         fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
         await waitFor(() => {
@@ -135,28 +135,28 @@ describe('RegisterPage', () => {
         });
     });
 
-    // ── 5. Registro exitoso → pantalla de verificación ───────────────────────
-    it('debe llamar a authService.register y mostrar la pantalla de verificación de email', async () => {
+    // ── 5. Successful registration → verification screen ───────────────────────
+    it('should call authService.register and show the email verification screen', async () => {
         (authService.register as ReturnType<typeof vi.fn>).mockResolvedValue({});
         (authService.checkEmailVerification as ReturnType<typeof vi.fn>).mockResolvedValue(false);
 
         renderRegisterPage();
 
-        // Paso 1
+        // Step 1
         fillStep1();
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
-        // Esperar paso 2
+        // Wait for step 2
         await waitFor(() => {
             expect(screen.getByRole('button', { name: 'Crear cuenta' })).toBeInTheDocument();
         });
 
-        // Simular selección de ubicación (como si el autocomplete la hubiese seleccionado)
-        // El mock de react-google-autocomplete dispara onPlaceSelected al cambiar el input
+        // Simulate location selection (as if autocomplete had selected it)
+        // The react-google-autocomplete mock fires onPlaceSelected when the input changes
         const autocomplete = screen.getByTestId('mock-autocomplete');
         fireEvent.change(autocomplete, { target: { value: 'Madrid' } });
 
-        // Enviar paso 2
+        // Submit step 2
         fireEvent.click(screen.getByRole('button', { name: 'Crear cuenta' }));
 
         await waitFor(() => {
@@ -165,8 +165,8 @@ describe('RegisterPage', () => {
                     email: 'nuevo@test.com',
                     password: 'Segura123',
                     username: 'nuevousuario',
-                    nombre: 'Nuevo',
-                    apellidos: 'Usuario',
+                    first_name: 'Nuevo',
+                    last_name: 'Usuario',
                 })
             );
         });
@@ -179,23 +179,23 @@ describe('RegisterPage', () => {
     });
 
     // ── 6. Registro fallido ───────────────────────────────────────────────────
-    it('debe mostrar el error del servicio cuando el registro falla', async () => {
+    it('should show the service error when registration fails', async () => {
         (authService.register as ReturnType<typeof vi.fn>).mockRejectedValue(
             new Error('El email ya está en uso')
         );
 
         renderRegisterPage();
 
-        // Paso 1
+        // Step 1
         fillStep1();
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
-        // Esperar paso 2
+        // Wait for step 2
         await waitFor(() => {
             expect(screen.getByRole('button', { name: 'Crear cuenta' })).toBeInTheDocument();
         });
 
-        // Simular selección de ubicación
+        // Simulate location selection
         const autocomplete = screen.getByTestId('mock-autocomplete');
         fireEvent.change(autocomplete, { target: { value: 'Madrid' } });
 
@@ -206,22 +206,22 @@ describe('RegisterPage', () => {
         });
     });
 
-    // ── 7. El botón se deshabilita mientras carga en paso 2 ──────────────────
-    it('debe deshabilitar el botón mientras se procesa el registro', async () => {
+    // ── 7. The button is disabled while loading in step 2 ──────────────────
+    it('should disable the button while registration is processing', async () => {
         (authService.register as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => { }));
 
         renderRegisterPage();
 
-        // Paso 1
+        // Step 1
         fillStep1();
         fireEvent.click(screen.getByRole('button', { name: 'Continuar' }));
 
-        // Esperar paso 2
+        // Wait for step 2
         await waitFor(() => {
             expect(screen.getByRole('button', { name: 'Crear cuenta' })).toBeInTheDocument();
         });
 
-        // Simular selección de ubicación
+        // Simulate location selection
         const autocomplete = screen.getByTestId('mock-autocomplete');
         fireEvent.change(autocomplete, { target: { value: 'Madrid' } });
 

@@ -1,10 +1,10 @@
 import { cacheService } from './cacheService';
-import { getApiUrl } from './apiConfig';
+import { getApiUrl, fetchAllPages } from './apiConfig';
 
 const API_URL = getApiUrl();
 
 export interface SavedForLaterEntry {
-    id: string; // En el frontend se tratará como string aunque venga como int
+    id: string; // Treated as a string in the frontend even if it arrives as an int
     place_id: string;
     user_id?: string;
     name: string;
@@ -19,7 +19,7 @@ export interface SavedForLaterEntry {
     google_maps_uri?: string;
     website_uri?: string;
     phone_number?: string;
-    saved_at?: string; // Mantenemos para posible uso futuro, aunque no venga de backend
+    saved_at?: string; // Kept for possible future use, even though the backend does not send it
 }
 
 const CACHE_KEYS = {
@@ -50,21 +50,13 @@ class SavedForLaterService {
         const cached = cacheService.get<SavedForLaterEntry[]>(CACHE_KEYS.SAVED_FOR_LATER);
         if (cached) return cached;
 
-        const response = await fetch(`${API_URL}/mas-tarde`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
+        const data = await fetchAllPages(`${API_URL}/saved-for-later`, async (response) => {
+            const body = await response.json().catch(() => ({}));
+            return new Error(body.detail || 'Error al obtener los lugares guardados');
         });
 
-        if (!response.ok) {
-            const data = await response.json();
-            throw new Error(data.detail || 'Error al obtener los lugares guardados');
-        }
-
-        const data = await response.json();
-
-        // Mapear la respuesta del backend (que tiene { id, restaurant: {...} }) 
-        // al formato que espera la vista
+        // Map the backend response (shaped { id, restaurant: {...} }) 
+        // to the format the view expects
         const mapped = data.map((item: any) => mapBackendRestaurantToEntry(item));
 
         cacheService.set(CACHE_KEYS.SAVED_FOR_LATER, mapped);
@@ -72,7 +64,7 @@ class SavedForLaterService {
     }
 
     async saveForLater(restaurantData: { place_id: string;[key: string]: any }): Promise<{ entry: SavedForLaterEntry, already_saved: boolean }> {
-        const response = await fetch(`${API_URL}/mas-tarde`, {
+        const response = await fetch(`${API_URL}/saved-for-later`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -88,7 +80,7 @@ class SavedForLaterService {
 
         cacheService.invalidate(CACHE_KEYS.SAVED_FOR_LATER);
 
-        // Mapeamos lo devuelto al formato de la vista
+        // Map the returned data to the view format
         return {
             entry: mapBackendRestaurantToEntry(item),
             already_saved: item.already_saved
@@ -96,7 +88,7 @@ class SavedForLaterService {
     }
 
     async deleteSaved(entryId: string): Promise<void> {
-        const response = await fetch(`${API_URL}/mas-tarde/${entryId}`, {
+        const response = await fetch(`${API_URL}/saved-for-later/${entryId}`, {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',

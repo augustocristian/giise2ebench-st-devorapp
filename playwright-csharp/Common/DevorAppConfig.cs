@@ -1,10 +1,8 @@
 namespace DevorApp.E2ETests.Common;
 
 /// <summary>
-/// Loads DevorApp test configuration from resources/test.properties, with
-/// environment-variable overrides. Mirrors
-/// src/test/resources/test.properties in the selenium-java suite: same
-/// file format (flat KEY=VALUE lines), same keys.
+/// Loads the test configuration from resources/test.properties (flat KEY=VALUE lines, same keys as
+/// the selenium-java suite). The SUT_URL environment variable overrides the base URLs.
 /// </summary>
 public static class DevorAppConfig
 {
@@ -29,15 +27,13 @@ public static class DevorAppConfig
         return result;
     }
 
-    /// <summary>Base URL for API requests: SUT_URL env var &gt; LOCALHOST_URL property.</summary>
+    /// <summary>Base URL for API requests: SUT_URL env var, else the LOCALHOST_URL property.</summary>
     public static string GetApiBaseUrl() =>
         Environment.GetEnvironmentVariable("SUT_URL")
         ?? Properties.GetValueOrDefault("LOCALHOST_URL", "http://localhost:8000");
 
-    /// <summary>Base URL for the browser: SUT_URL env var &gt; FRONTEND_URL property.</summary>
+    /// <summary>Base URL for the browser: SUT_URL env var, else the FRONTEND_URL property.</summary>
     public static string GetFrontendBaseUrl() =>
         Environment.GetEnvironmentVariable("SUT_URL")
         ?? Properties.GetValueOrDefault("FRONTEND_URL", "http://localhost");
-
-    public static string GetTJobName() => Environment.GetEnvironmentVariable("TJOB_NAME") ?? "local";
 }

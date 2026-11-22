@@ -8,14 +8,14 @@ import {
     ThumbsUp, Gift, Cake, ShoppingBag, Moon, Sun, Zap,
     HelpCircle, DollarSign, Home, User, ChevronLeft
 } from 'lucide-react';
-import { historialService } from '../models/api/historialService';
-import { favoritosService } from '../models/api/favoritosService';
-import { valoracionesService } from '../models/api/valoracionesService';
-import type { FavoritosList } from '../models/api/favoritosService';
+import { historyService } from '../models/api/historyService';
+import { favoritesService } from '../models/api/favoritesService';
+import { ratingsService } from '../models/api/ratingsService';
+import type { FavoriteList } from '../models/api/favoritesService';
 import TopBar from '../components/TopBar';
 import RestaurantCompactCard from '../components/RestaurantCompactCard';
 import RestaurantDetailView from '../components/RestaurantDetailView';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 
 interface HistoryEntry {
     id: string;
@@ -138,7 +138,7 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ isRated, onRate, onFavorite, onRech
 // ── Aspect Stars Row (Reduces nesting level) ──────────────────────────────────
 interface AspectStarsRowProps {
     aspect: string;
-    ratingVal: { calidad: number; precio: number; higiene: number; trato: number };
+    ratingVal: { quality: number; price: number; hygiene: number; service: number };
     onStarClick: (aspect: string, star: number) => void;
 }
 
@@ -352,29 +352,22 @@ const HistoryPage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'rated' | 'unrated'>('all');
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
-    const [selectedEntryForDetail, setSelectedEntryForDetail] = useState<HistoryEntry | null>(null);
 
-    // Sync detail with URL
-    useEffect(() => {
-        const detailId = searchParams.get('detail');
-        if (detailId) {
-            const entry = historyEntries.find(e => e.place_id === detailId);
-            if (entry) {
-                setSelectedEntryForDetail(entry);
-            }
-        } else {
-            setSelectedEntryForDetail(null);
-        }
-    }, [searchParams, historyEntries]);
+    // Derived from the URL parameter 'detail'
+    const detailId = searchParams.get('detail');
+    const selectedEntryForDetail = useMemo(
+        () => (detailId ? historyEntries.find(e => e.place_id === detailId) ?? null : null),
+        [detailId, historyEntries]
+    );
 
     // Modals state
     const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
     const [selectedEntryForRating, setSelectedEntryForRating] = useState<HistoryEntry | null>(null);
-    const [ratingVal, setRatingVal] = useState({ calidad: 0, precio: 0, higiene: 0, trato: 0 });
+    const [ratingVal, setRatingVal] = useState({ quality: 0, price: 0, hygiene: 0, service: 0 });
     const [ratingComment, setRatingComment] = useState('');
 
     const [isFavModalOpen, setIsFavModalOpen] = useState(false);
-    const [favLists, setFavLists] = useState<FavoritosList[]>([]);
+    const [favLists, setFavLists] = useState<FavoriteList[]>([]);
     const [selectedEntryForFav, setSelectedEntryForFav] = useState<HistoryEntry | null>(null);
     const [isCreatingList, setIsCreatingList] = useState(false);
     const [newListName, setNewListName] = useState('Mis Favoritos');
@@ -386,24 +379,31 @@ const HistoryPage: React.FC = () => {
     };
 
     const ASPECT_DESCRIPTIONS: Record<string, string> = {
-        calidad: "Evalúa la frescura de los ingredientes y el sabor de los platos.",
-        precio: "¿Te pareció justa la cuenta en relación a la calidad y cantidad?",
-        higiene: "Valora la limpieza de la mesa, los cubiertos y el local en general.",
-        trato: "Amabilidad, atención y rapidez del personal del establecimiento."
+        quality: "Evalúa la frescura de los ingredientes y el sabor de los platos.",
+        price: "¿Te pareció justa la cuenta en relación a la calidad y cantidad?",
+        hygiene: "Valora la limpieza de la mesa, los cubiertos y el local en general.",
+        service: "Amabilidad, atención y rapidez del personal del establecimiento."
+    };
+
+    const ASPECT_LABELS: Record<string, string> = {
+        quality: "calidad",
+        price: "precio",
+        hygiene: "higiene",
+        service: "trato"
     };
 
     const ASPECT_CONFIG: Record<string, { icon: React.FC<any>, class: string }> = {
-        calidad: { icon: Heart, class: 'calidad' },
-        precio: { icon: DollarSign, class: 'precio' },
-        higiene: { icon: Home, class: 'higiene' },
-        trato: { icon: User, class: 'trato' }
+        quality: { icon: Heart, class: 'quality' },
+        price: { icon: DollarSign, class: 'price' },
+        hygiene: { icon: Home, class: 'hygiene' },
+        service: { icon: User, class: 'service' }
     };
 
     useEffect(() => {
         const fetchHistory = async () => {
             try {
                 setLoading(true);
-                const data = await historialService.getHistorial();
+                const data = await historyService.getHistory();
                 const mappedEntries: HistoryEntry[] = data.map((item: any) => ({
                     id: String(item.id),
                     name: item.restaurant.name,
@@ -416,7 +416,7 @@ const HistoryPage: React.FC = () => {
                     opening_hours: item.restaurant.opening_hours,
                     google_maps_uri: item.restaurant.google_maps_uri,
                     website_uri: item.restaurant.website_uri,
-                    visited_at: item.fecha_acceso,
+                    visited_at: item.accessed_at,
                     place_id: item.place_id,
                 }));
                 setHistoryEntries(mappedEntries);
@@ -435,7 +435,7 @@ const HistoryPage: React.FC = () => {
 
         const fetchRatings = async () => {
             try {
-                const ratings = await valoracionesService.obtenerTodasMisValoraciones();
+                const ratings = await ratingsService.getAllMyRatings();
                 setRatedPlaceIds(new Set(ratings.map(r => r.place_id)));
             } catch (err) {
                 console.error("Error fetching ratings:", err);
@@ -501,15 +501,15 @@ const HistoryPage: React.FC = () => {
     // ── Handlers ─────────────────────────────────────────────────────────────
     const handleRateClick = async (entry: HistoryEntry) => {
         setSelectedEntryForRating(entry);
-        setRatingVal({ calidad: 0, precio: 0, higiene: 0, trato: 0 });
+        setRatingVal({ quality: 0, price: 0, hygiene: 0, service: 0 });
         setRatingComment('');
         setIsRatingModalOpen(true);
         setModalLoading(true);
         try {
-            const existingRating = await valoracionesService.obtenerMiValoracion(entry.place_id);
+            const existingRating = await ratingsService.getMyRating(entry.place_id);
             if (existingRating) {
-                setRatingVal({ calidad: existingRating.calidad, precio: existingRating.precio, higiene: existingRating.higiene, trato: existingRating.trato });
-                setRatingComment(existingRating.comentario || '');
+                setRatingVal({ quality: existingRating.quality, price: existingRating.price, hygiene: existingRating.hygiene, service: existingRating.service });
+                setRatingComment(existingRating.comment || '');
             }
         } catch (error) {
             console.error("Error fetching existing rating:", error);
@@ -522,11 +522,11 @@ const HistoryPage: React.FC = () => {
         if (!selectedEntryForRating) return;
         try {
             setModalLoading(true);
-            await valoracionesService.valorarRestaurante({
+            await ratingsService.rateRestaurant({
                 place_id: selectedEntryForRating.place_id,
-                calidad: ratingVal.calidad, precio: ratingVal.precio,
-                higiene: ratingVal.higiene, trato: ratingVal.trato,
-                comentario: ratingComment
+                quality: ratingVal.quality, price: ratingVal.price,
+                hygiene: ratingVal.hygiene, service: ratingVal.service,
+                comment: ratingComment
             });
             setRatedPlaceIds(prev => new Set([...prev, selectedEntryForRating.place_id]));
             showNotification(`Gracias por valorar ${selectedEntryForRating.name}`, 'success');
@@ -543,7 +543,7 @@ const HistoryPage: React.FC = () => {
         setIsFavModalOpen(true);
         setModalLoading(true);
         try {
-            const lists = await favoritosService.getListas();
+            const lists = await favoritesService.getLists();
             setFavLists(lists);
             if (lists.length === 0) setIsCreatingList(true);
         } catch (err) {
@@ -557,7 +557,7 @@ const HistoryPage: React.FC = () => {
         if (!selectedEntryForFav) return;
         try {
             setModalLoading(true);
-            await favoritosService.addFavorito(listId, selectedEntryForFav.place_id);
+            await favoritesService.addFavorite(listId, selectedEntryForFav.place_id);
             showNotification(`${selectedEntryForFav.name} añadido a favoritos`, 'success');
             setIsFavModalOpen(false);
         } catch (err: any) {
@@ -571,8 +571,8 @@ const HistoryPage: React.FC = () => {
         if (!selectedEntryForFav || !newListName.trim()) return;
         try {
             setModalLoading(true);
-            const newList = await favoritosService.crearLista(newListName.trim());
-            await favoritosService.addFavorito(newList.id, selectedEntryForFav.place_id);
+            const newList = await favoritesService.createList(newListName.trim());
+            await favoritesService.addFavorite(newList.id, selectedEntryForFav.place_id);
             showNotification(`Lista "${newListName}" creada y ${selectedEntryForFav.name} añadido`, 'success');
             setIsFavModalOpen(false);
             setNewListName('Mis Favoritos');
@@ -585,7 +585,7 @@ const HistoryPage: React.FC = () => {
 
     const handleRechoose = async (entry: HistoryEntry) => {
         try {
-            await historialService.addToHistorial(entry.place_id);
+            await historyService.addToHistory(entry.place_id);
             showNotification(`Has vuelto a elegir ${entry.name}`, 'success');
             navigate('/home');
         } catch (err: any) {
@@ -597,7 +597,7 @@ const HistoryPage: React.FC = () => {
         const confirmed = await showConfirm(`¿Eliminar ${entry.name} de tu historial?`, 'Eliminar del historial', true);
         if (!confirmed) return;
         try {
-            await historialService.deleteFromHistorial(entry.id);
+            await historyService.deleteFromHistory(entry.id);
             showNotification(`${entry.name} eliminado del historial`, 'success');
             setHistoryEntries(prev => prev.filter(item => item.id !== entry.id));
             if (selectedEntryForDetail?.id === entry.id) setSearchParams({});
@@ -641,7 +641,7 @@ const HistoryPage: React.FC = () => {
                     </div>
 
                     <div className="aspects-card">
-                        {['calidad', 'precio', 'higiene', 'trato'].map((aspect) => {
+                        {['quality', 'price', 'hygiene', 'service'].map((aspect) => {
                             const config = ASPECT_CONFIG[aspect];
                             const IconComp = config.icon;
                             
@@ -658,7 +658,7 @@ const HistoryPage: React.FC = () => {
                                                 style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center' }}
                                             >
                                                 <span className="aspect-name-premium" style={{ textTransform: 'capitalize', marginRight: '0.4rem' }}>
-                                                    {aspect}
+                                                    {ASPECT_LABELS[aspect]}
                                                 </span>
                                                 <HelpCircle size={12} style={{ color: 'var(--muted)', opacity: 0.6 }} />
                                                 
@@ -775,12 +775,12 @@ const HistoryPage: React.FC = () => {
                                     >
                                         <div style={{
                                             width: 36, height: 36, borderRadius: 8,
-                                            background: getIconColor(list.icono),
+                                            background: getIconColor(list.icon),
                                             color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                                         }}>
-                                            {renderIconComponent(list.icono, 18)}
+                                            {renderIconComponent(list.icon, 18)}
                                         </div>
-                                        <div style={{ flex: 1, textAlign: 'left', fontWeight: 600, fontSize: '0.95rem' }}>{list.nombre}</div>
+                                        <div style={{ flex: 1, textAlign: 'left', fontWeight: 600, fontSize: '0.95rem' }}>{list.name}</div>
                                         <ChevronRight size={16} style={{ opacity: 0.3 }} />
                                     </button>
                                 ))}

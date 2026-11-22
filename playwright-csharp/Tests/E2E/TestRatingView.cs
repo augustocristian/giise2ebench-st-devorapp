@@ -7,21 +7,19 @@ using static Microsoft.Playwright.Assertions;
 namespace DevorApp.E2ETests.Tests.E2E;
 
 /// <summary>
-/// Port of epigijon.devorapp.e2e.functional.tests.e2e.TestRatingView.
-///
-/// Browser tests for the DevorApp rating modal (accessed from the history page).
+/// Browser tests for the rating modal opened from the history page (BASE, S2-S14).
 ///
 /// Base-Choice coverage:
-///   BASE — all aspects rated at max with a comment → submission succeeds.
+///   BASE — all aspects at maximum with a comment: the submission succeeds.
 ///   S2, S5, S8, S11 — any single aspect at 0 stars disables the submit button.
-///   S3, S4, S6, S7 — variable calidad/precio ratings with the rest at max → succeeds.
-///   S9, S10, S12, S13 — variable higiene/trato ratings with the rest at max → succeeds.
-///   S14 — empty comment is accepted.
+///   S3, S4, S6, S7 — varying quality/price with the rest at maximum: succeeds.
+///   S9, S10, S12, S13 — varying hygiene/service with the rest at maximum: succeeds.
+///   S14 — an empty comment is accepted.
 /// </summary>
 [TestFixture]
 public class TestRatingView : BaseLoggedClass
 {
-    private const string PlaceId = "ChIJN1t_tDeuEmsRUsoyG83frY4";
+    private const string PlaceId = "MOCK_PLACE_101";
 
     [OneTimeSetUp]
     public async Task CreateTestUser()
@@ -31,18 +29,16 @@ public class TestRatingView : BaseLoggedClass
     }
 
     [SetUp]
-    public async Task EnsureHistorialEntry()
+    public async Task EnsureHistoryEntry()
     {
         await ApiLoginAsync();
         var apiBase = Properties.GetValueOrDefault("LOCALHOST_URL", "http://localhost:8000");
-        await ApiDeleteAsync($"{apiBase}/api/valoraciones/{PlaceId}");
-        await ApiPostAsync($"{apiBase}/api/historial", new System.Text.Json.Nodes.JsonObject { ["place_id"] = PlaceId });
+        await ApiDeleteAsync($"{apiBase}/api/v1/restaurants/{PlaceId}/rating");
+        await ApiPostAsync($"{apiBase}/api/v1/history", new System.Text.Json.Nodes.JsonObject { ["place_id"] = PlaceId });
     }
 
     [OneTimeTearDown]
     public async Task CleanupTestUser() => await TeardownTestUserAsync();
-
-    // ── Navigation helpers ───────────────────────────────────────────────────
 
     private async Task<HistoryPage> LoginAndGoToHistoryAsync()
     {
@@ -51,6 +47,11 @@ public class TestRatingView : BaseLoggedClass
         await loginPage.EnterIdentifierAsync(TestEmail!);
         await loginPage.EnterPasswordAsync(TestPassword!);
         await loginPage.SubmitLoginAsync();
+        return await ReloadHistoryAsync();
+    }
+
+    private async Task<HistoryPage> ReloadHistoryAsync()
+    {
         await Page.GotoAsync($"{SutUrl}/history");
         return await HistoryPage.CreateAsync(Page);
     }
@@ -58,143 +59,115 @@ public class TestRatingView : BaseLoggedClass
     private async Task OpenRatingModalAsync(HistoryPage page)
     {
         await page.OpenCardMenuAsync(0);
-        var rateBtn = Page.Locator("xpath=//button[contains(.,'Valorar restaurante')]");
-        await rateBtn.ClickAsync();
-        await Page.Locator(".valuation-content").WaitForAsync();
+        await page.ChooseMenuActionAsync("rate");
+        await Page.Locator(TestId.Of("rating-modal")).WaitForAsync();
     }
 
     private async Task SelectStarsAsync(string aspect, int stars)
     {
         if (stars <= 0) return;
-        var row = Page.Locator(".aspect-row-premium").Filter(new LocatorFilterOptions { HasText = aspect });
-        if (await row.CountAsync() == 0)
-            throw new ElementNotFoundException($"Aspect row not found: {aspect}");
-        var starsContainer = row.First.Locator("xpath=./div[2]");
-        var svgs = starsContainer.Locator("svg");
-        var count = await svgs.CountAsync();
-        if (stars <= count) await svgs.Nth(stars - 1).ClickAsync();
+        await Page.Locator(TestId.RatingStar(aspect, stars)).ClickAsync();
     }
 
-    private async Task<bool> IsSubmitEnabledAsync()
+    private async Task<bool> IsSubmitEnabledAsync() =>
+        await Page.Locator(TestId.Of("rating-submit")).IsEnabledAsync();
+
+    private async Task FillRatingsAsync(int quality, int price, int hygiene, int service, string? comment)
     {
-        var buttons = Page.Locator("button.btn-submit-valuation");
-        if (await buttons.CountAsync() == 0) return false;
-        return await buttons.First.IsEnabledAsync();
+        await SelectStarsAsync("quality", quality);
+        await SelectStarsAsync("price", price);
+        await SelectStarsAsync("hygiene", hygiene);
+        await SelectStarsAsync("service", service);
+        await Page.Locator(TestId.Of("rating-comment")).FillAsync(comment ?? "");
     }
 
-    private async Task FillRatingsAsync(int calidad, int precio, int higiene, int trato, string? comentario)
+    private async Task SubmitRatingAndVerifySuccessAsync()
     {
-        await SelectStarsAsync("calidad", calidad);
-        await SelectStarsAsync("precio", precio);
-        await SelectStarsAsync("higiene", higiene);
-        await SelectStarsAsync("trato", trato);
-        var textarea = Page.Locator("textarea.textarea-premium");
-        await textarea.FillAsync(comentario ?? "");
+        await Page.Locator(TestId.Of("rating-submit")).ClickAsync();
+        await Page.Locator(TestId.Of("rating-modal")).WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
+        await Expect(Page.Locator(TestId.Toast("success")).First).ToBeVisibleAsync();
     }
-
-    private async Task SubmitValuationAndVerifySuccessAsync()
-    {
-        await Page.Locator("button.btn-submit-valuation").ClickAsync();
-        await Page.Locator(".valuation-content").WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
-        await Expect(Page.Locator(".toast.success")).ToBeVisibleAsync();
-        var toasts = Page.Locator(".toast.success");
-        Assert.That(await toasts.CountAsync(), Is.GreaterThan(0),
-            "A success toast must appear after a successful rating submission");
-    }
-
-    // ── 1. BASE: todos los aspectos al máximo con comentario ─────────────────
 
     [Test]
-    [Description("debe guardar la valoración con todos los aspectos al máximo y comentario (BASE)")]
-    public async Task TestGuardarValoracionCompletaBase()
+    [Description("Save a rating with all aspects at maximum and a comment (BASE)")]
+    public async Task TestSaveFullRatingBase()
     {
         var page = await LoginAndGoToHistoryAsync();
         await OpenRatingModalAsync(page);
         await FillRatingsAsync(5, 5, 5, 5, "Excelente servicio y comida deliciosa");
         Assert.That(await IsSubmitEnabledAsync(), Is.True, "Submit button must be enabled when all aspects are rated");
-        await SubmitValuationAndVerifySuccessAsync();
+        await SubmitRatingAndVerifySuccessAsync();
     }
 
-    // ── 2. S2, S5, S8, S11 + S14: 0 estrellas deshabilitan el botón; comentario vacío permitido ──
-
     [Test]
-    [Description("debe deshabilitar envío con 0 estrellas en cualquier aspecto (S2, S5, S8, S11) y aceptar comentario vacío (S14)")]
-    public async Task TestValidarCeroEstrellasYComentarioVacio()
+    [Description("Submit is disabled with 0 stars in any aspect (S2, S5, S8, S11) and an empty comment is accepted (S14)")]
+    public async Task TestZeroStarsDisableSubmitAndEmptyCommentAccepted()
     {
-        // S2: Calidad = 0
+        // S2: quality = 0
         var page = await LoginAndGoToHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(0, 5, 5, 5, "Comentario");
-        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S2: submit must be disabled when calidad has 0 stars");
+        await FillRatingsAsync(0, 5, 5, 5, "Comment");
+        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S2: submit must be disabled when quality has 0 stars");
 
-        // S5: Precio = 0
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        // S5: price = 0
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(5, 0, 5, 5, "Comentario");
-        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S5: submit must be disabled when precio has 0 stars");
+        await FillRatingsAsync(5, 0, 5, 5, "Comment");
+        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S5: submit must be disabled when price has 0 stars");
 
-        // S8: Higiene = 0
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        // S8: hygiene = 0
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(5, 5, 0, 5, "Comentario");
-        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S8: submit must be disabled when higiene has 0 stars");
+        await FillRatingsAsync(5, 5, 0, 5, "Comment");
+        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S8: submit must be disabled when hygiene has 0 stars");
 
-        // S11: Trato = 0
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        // S11: service = 0
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(5, 5, 5, 0, "Comentario");
-        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S11: submit must be disabled when trato has 0 stars");
+        await FillRatingsAsync(5, 5, 5, 0, "Comment");
+        Assert.That(await IsSubmitEnabledAsync(), Is.False, "S11: submit must be disabled when service has 0 stars");
 
         // S14: empty comment is accepted
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
         await FillRatingsAsync(5, 5, 5, 5, "");
         Assert.That(await IsSubmitEnabledAsync(), Is.True, "S14: submit must be enabled even with empty comment");
-        await SubmitValuationAndVerifySuccessAsync();
+        await SubmitRatingAndVerifySuccessAsync();
     }
 
-    // ── 3. S3, S4, S6, S7, S9, S10, S12, S13: puntuaciones variables ─────────
-
     [Test]
-    [Description("debe guardar valoraciones con puntuaciones variables de calidad, precio, higiene y trato (S3, S4, S6, S7, S9, S10, S12, S13)")]
-    public async Task TestPuntuacionesVariables()
+    [Description("Save ratings with varying quality, price, hygiene and service (S3, S4, S6, S7, S9, S10, S12, S13)")]
+    public async Task TestVariableRatings()
     {
-        // S3 & S7: Calidad = 1, Precio = 3 (resto base = 5)
+        // S3 & S7: quality = 1, price = 3 (rest at the base value 5)
         var page = await LoginAndGoToHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(1, 3, 5, 5, "Comentario");
+        await FillRatingsAsync(1, 3, 5, 5, "Comment");
         Assert.That(await IsSubmitEnabledAsync(), Is.True, "S3/S7: submit must be enabled");
-        await SubmitValuationAndVerifySuccessAsync();
+        await SubmitRatingAndVerifySuccessAsync();
 
-        // S4 & S6: Calidad = 3, Precio = 1
-        await EnsureHistorialEntry();
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        // S4 & S6: quality = 3, price = 1
+        await EnsureHistoryEntry();
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(3, 1, 5, 5, "Comentario");
+        await FillRatingsAsync(3, 1, 5, 5, "Comment");
         Assert.That(await IsSubmitEnabledAsync(), Is.True, "S4/S6: submit must be enabled");
-        await SubmitValuationAndVerifySuccessAsync();
+        await SubmitRatingAndVerifySuccessAsync();
 
-        // S9 & S13: Higiene = 1, Trato = 3
-        await EnsureHistorialEntry();
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        // S9 & S13: hygiene = 1, service = 3
+        await EnsureHistoryEntry();
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(5, 5, 1, 3, "Comentario");
+        await FillRatingsAsync(5, 5, 1, 3, "Comment");
         Assert.That(await IsSubmitEnabledAsync(), Is.True, "S9/S13: submit must be enabled");
-        await SubmitValuationAndVerifySuccessAsync();
+        await SubmitRatingAndVerifySuccessAsync();
 
-        // S10 & S12: Higiene = 3, Trato = 1
-        await EnsureHistorialEntry();
-        await Page.GotoAsync($"{SutUrl}/history");
-        page = await HistoryPage.CreateAsync(Page);
+        // S10 & S12: hygiene = 3, service = 1
+        await EnsureHistoryEntry();
+        page = await ReloadHistoryAsync();
         await OpenRatingModalAsync(page);
-        await FillRatingsAsync(5, 5, 3, 1, "Comentario");
+        await FillRatingsAsync(5, 5, 3, 1, "Comment");
         Assert.That(await IsSubmitEnabledAsync(), Is.True, "S10/S12: submit must be enabled");
-        await SubmitValuationAndVerifySuccessAsync();
+        await SubmitRatingAndVerifySuccessAsync();
     }
 }

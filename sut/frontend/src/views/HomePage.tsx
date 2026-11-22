@@ -6,14 +6,14 @@ import {
 } from 'lucide-react';
 import { useLogout } from '../controllers/hooks/useLogout';
 import { authService } from '../models/api/authService';
-import { historialService } from '../models/api/historialService';
+import { historyService } from '../models/api/historyService';
 import { savedForLaterService } from '../models/api/savedForLaterService';
-import { valoracionesService } from '../models/api/valoracionesService';
-import type { ValoracionPublica } from '../models/api/valoracionesService';
+import { ratingsService } from '../models/api/ratingsService';
+import type { PublicRating } from '../models/api/ratingsService';
 import TopBar from '../components/TopBar';
 import RestaurantCompactCard from '../components/RestaurantCompactCard';
 import RestaurantDetailView from '../components/RestaurantDetailView';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 import { env } from '../config/env';
 
 /* ─── RestaurantReviews Component ───────────────── */
@@ -36,25 +36,25 @@ const ReviewStarsRow: React.FC<ReviewStarsRowProps> = ({ label, val }) => {
 };
 
 interface RestaurantReviewsProps {
-  currResenas: ValoracionPublica[];
+  currReviews: PublicRating[];
   isLoading: boolean;
   restaurantId: string;
-  handleMeGusta: (restaurantId: string, valoracionId: number) => void;
+  handleLike: (restaurantId: string, ratingId: number) => void;
 }
 
 const RestaurantReviews: React.FC<RestaurantReviewsProps> = ({
-  currResenas,
+  currReviews,
   isLoading,
   restaurantId,
-  handleMeGusta,
+  handleLike,
 }) => {
-  const avg = { calidad: 0, precio: 0, higiene: 0, trato: 0 };
+  const avg = { quality: 0, price: 0, hygiene: 0, service: 0 };
 
-  if (currResenas.length > 0) {
-    avg.calidad = currResenas.reduce((s: number, r: any) => s + r.calidad, 0) / currResenas.length;
-    avg.precio = currResenas.reduce((s: number, r: any) => s + r.precio, 0) / currResenas.length;
-    avg.higiene = currResenas.reduce((s: number, r: any) => s + r.higiene, 0) / currResenas.length;
-    avg.trato = currResenas.reduce((s: number, r: any) => s + r.trato, 0) / currResenas.length;
+  if (currReviews.length > 0) {
+    avg.quality = currReviews.reduce((s: number, r: any) => s + r.quality, 0) / currReviews.length;
+    avg.price = currReviews.reduce((s: number, r: any) => s + r.price, 0) / currReviews.length;
+    avg.hygiene = currReviews.reduce((s: number, r: any) => s + r.hygiene, 0) / currReviews.length;
+    avg.service = currReviews.reduce((s: number, r: any) => s + r.service, 0) / currReviews.length;
   }
 
   const formatDateStr = (dateString?: string) => {
@@ -80,7 +80,7 @@ const RestaurantReviews: React.FC<RestaurantReviewsProps> = ({
       );
     }
 
-    if (currResenas.length === 0) {
+    if (currReviews.length === 0) {
       return (
         <div style={{ textAlign: 'center', padding: '1.5rem', color: 'var(--muted)', fontSize: '0.875rem', background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border)' }}>
           Aún no hay reseñas para este restaurante.
@@ -93,10 +93,10 @@ const RestaurantReviews: React.FC<RestaurantReviewsProps> = ({
         {/* Promedios Card */}
         <div style={{ background: 'var(--surface-2)', borderRadius: '12px', padding: '1.5rem', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem 2rem', border: '1px solid var(--border)' }}>
           {[
-            { label: 'Calidad', val: avg.calidad },
-            { label: 'Precio', val: avg.precio },
-            { label: 'Higiene', val: avg.higiene },
-            { label: 'Trato', val: avg.trato },
+            { label: 'Calidad', val: avg.quality },
+            { label: 'Precio', val: avg.price },
+            { label: 'Higiene', val: avg.hygiene },
+            { label: 'Trato', val: avg.service },
           ].map(item => (
             <div key={item.label} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
@@ -112,36 +112,36 @@ const RestaurantReviews: React.FC<RestaurantReviewsProps> = ({
 
         {/* Reviews Feed */}
         <div className="reviews-feed" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-          {currResenas.map((resena: any) => (
-            <div key={resena.id} className="review-item-card" style={{ background: 'var(--surface-2)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {currReviews.map((review: any) => (
+            <div key={review.id} className="review-item-card" style={{ background: 'var(--surface-2)', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: '0.9rem' }}>
-                  {resena.username?.charAt(0).toUpperCase()}
+                  {review.username?.charAt(0).toUpperCase()}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>{resena.username}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{formatDateStr(resena.fecha)}</span>
+                  <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>{review.username}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{formatDateStr(review.created_at)}</span>
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '0.6rem 1rem' }}>
-                <ReviewStarsRow label="Calidad" val={resena.calidad} />
-                <ReviewStarsRow label="Precio" val={resena.precio} />
-                <ReviewStarsRow label="Higiene" val={resena.higiene} />
-                <ReviewStarsRow label="Trato" val={resena.trato} />
+                <ReviewStarsRow label="Calidad" val={review.quality} />
+                <ReviewStarsRow label="Precio" val={review.price} />
+                <ReviewStarsRow label="Higiene" val={review.hygiene} />
+                <ReviewStarsRow label="Trato" val={review.service} />
               </div>
 
-              {resena.comentario && (
-                <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: '1.4', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>"{resena.comentario}"</p>
+              {review.comment && (
+                <p style={{ fontSize: '0.85rem', color: 'var(--text)', lineHeight: '1.4', margin: 0, fontStyle: 'italic', fontWeight: 600 }}>"{review.comment}"</p>
               )}
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem' }}>
                 <button
-                  onClick={(e) => { e.stopPropagation(); handleMeGusta(restaurantId, resena.id); }}
-                  style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.25rem 0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: resena.ha_dado_me_gusta ? '#f472b6' : 'var(--muted)', transition: 'all 0.2s' }}
+                  onClick={(e) => { e.stopPropagation(); handleLike(restaurantId, review.id); }}
+                  style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: '8px', padding: '0.25rem 0.5rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: review.liked_by_me ? '#f472b6' : 'var(--muted)', transition: 'all 0.2s' }}
                 >
-                  <Heart size={14} fill={resena.ha_dado_me_gusta ? '#f472b6' : 'transparent'} color={resena.ha_dado_me_gusta ? '#f472b6' : 'var(--muted)'} />
-                  <span style={{ fontWeight: 500, fontSize: '0.75rem' }}>{resena.me_gustas}</span>
+                  <Heart size={14} fill={review.liked_by_me ? '#f472b6' : 'transparent'} color={review.liked_by_me ? '#f472b6' : 'var(--muted)'} />
+                  <span style={{ fontWeight: 500, fontSize: '0.75rem' }}>{review.likes}</span>
                 </button>
               </div>
             </div>
@@ -158,7 +158,7 @@ const RestaurantReviews: React.FC<RestaurantReviewsProps> = ({
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
         </span>
         <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text)' }}>Reseñas de la comunidad</span>
-        {currResenas.length > 0 && (
+        {currReviews.length > 0 && (
           <span style={{
             background: 'rgba(255,255,255,0.1)',
             color: 'var(--muted)',
@@ -168,7 +168,7 @@ const RestaurantReviews: React.FC<RestaurantReviewsProps> = ({
             borderRadius: '12px',
             border: '1px solid var(--border)',
           }}>
-            {currResenas.length}
+            {currReviews.length}
           </span>
         )}
       </div>
@@ -252,22 +252,40 @@ const PopularRestaurants: React.FC<PopularRestaurantsProps> = ({
 };
 
 /* ─── HomePage ───────────────────────────────────── */
+interface PopularResult {
+  key: string;
+  data: any[];
+  error: string | null;
+}
+
+const NO_POPULAR: any[] = [];
+
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   useLogout(() => navigate('/login'));
   const { showNotification } = useNotification();
 
-  const [nombre, setNombre] = useState('');
+  const [firstName, setFirstName] = useState('');
   const [preferredLocation, setPreferredLocation] = useState('');
   const [locationMode, setLocationMode] = useState<'current' | 'preferred'>('current');
 
-  const [populares, setPopulares] = useState<any[]>([]);
-  const [loadingPopulares, setLoadingPopulares] = useState(true);
-  const [errorPopulares, setErrorPopulares] = useState<string | null>(null);
+  // Result of the last popular fetch, tagged with the request it belongs to so
+  // loading/error state can be derived during render instead of synced in effects.
+  const [popularResult, setPopularResult] = useState<PopularResult | null>(null);
 
-  const [resenasPor, setResenasPor] = useState<Record<string, ValoracionPublica[]>>({});
-  const [loadingResenasPor, setLoadingResenasPor] = useState<Record<string, boolean>>({});
+  const [reviewsBy, setReviewsBy] = useState<Record<string, PublicRating[]>>({});
+
+  const popularKey = locationMode === 'current' ? 'current' : `preferred:${preferredLocation}`;
+  const geoUnsupported = locationMode === 'current' && !('geolocation' in navigator);
+  const noPreferredLocation = locationMode === 'preferred' && !preferredLocation;
+  const settledPopular = popularResult?.key === popularKey ? popularResult : null;
+  const blockedPopular = geoUnsupported || noPreferredLocation;
+  let errorPopular: string | null = settledPopular?.error ?? null;
+  if (geoUnsupported) errorPopular = 'Geolocalización no soportada en este navegador.';
+  else if (noPreferredLocation) errorPopular = 'No tienes una ubicación preferida configurada.';
+  const loadingPopular = !blockedPopular && !settledPopular;
+  const populares = blockedPopular ? NO_POPULAR : settledPopular?.data ?? NO_POPULAR;
 
   // Derive detail view from search params
   const detailId = searchParams.get('detail');
@@ -280,43 +298,33 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     authService.getMe()
       .then(u => {
-        setNombre(u.nombre || u.username || 'Usuario');
-        if (u.ubicacion) setPreferredLocation(u.ubicacion);
+        setFirstName(u.first_name || u.username || 'Usuario');
+        if (u.location) setPreferredLocation(u.location);
       })
       .catch(() => { });
   }, []);
 
-  /* ── Fetch populares ── */
+  /* ── Fetch popular ── */
   useEffect(() => {
     let active = true;
 
+    const key = locationMode === 'current' ? 'current' : `preferred:${preferredLocation}`;
+    const finish = (data: any[], error: string | null) => {
+      if (active) setPopularResult({ key, data, error });
+    };
+
     const doFetch = async (loc: string) => {
       if (!active) return;
-      setLoadingPopulares(true);
-      setErrorPopulares(null);
       try {
-        const data = await historialService.getPopulares(loc, 5);
-        if (active) {
-          setPopulares(data);
-          setLoadingPopulares(false);
-        }
+        const data = await historyService.getPopular(loc, 5);
+        finish(data, null);
       } catch (e: any) {
-        if (active) {
-          setErrorPopulares(e.message ?? 'Error al cargar populares.');
-          setLoadingPopulares(false);
-        }
+        finish([], e.message ?? 'Error al cargar populares.');
       }
     };
 
     if (locationMode === 'current') {
-      if (!('geolocation' in navigator)) {
-        if (active) {
-          setErrorPopulares('Geolocalización no soportada en este navegador.');
-          setLoadingPopulares(false);
-        }
-        return;
-      }
-      if (active) setLoadingPopulares(true);
+      if (!('geolocation' in navigator)) return; // Derived during render
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           if (!active) return;
@@ -329,28 +337,15 @@ const HomePage: React.FC = () => {
             const loc = raw.results?.[0]?.formatted_address ?? `${lat},${lng}`;
             if (active) await doFetch(loc);
           } catch {
-            if (active) {
-              setErrorPopulares('Error al obtener la dirección actual.');
-              setLoadingPopulares(false);
-            }
+            finish([], 'Error al obtener la dirección actual.');
           }
         },
         () => {
-          if (active) {
-            setErrorPopulares('No se puede acceder a la ubicación. Activa los permisos o usa tu ubicación preferida.');
-            setLoadingPopulares(false);
-          }
+          finish([], 'No se puede acceder a la ubicación. Activa los permisos o usa tu ubicación preferida.');
         }
       );
     } else {
-      if (!preferredLocation) {
-        if (active) {
-          setErrorPopulares('No tienes una ubicación preferida configurada.');
-          setPopulares([]);
-          setLoadingPopulares(false);
-        }
-        return;
-      }
+      if (!preferredLocation) return; // Derived during render
       doFetch(preferredLocation);
     }
 
@@ -363,42 +358,40 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     if (selectedEntryForDetail) {
       const pid = selectedEntryForDetail.id;
-      if (!resenasPor[pid]) {
-        setLoadingResenasPor(p => ({ ...p, [pid]: true }));
-        valoracionesService.obtenerResenasRestaurante(pid)
-          .then(r => setResenasPor(p => ({ ...p, [pid]: r })))
-          .catch(() => setResenasPor(p => ({ ...p, [pid]: [] })))
-          .finally(() => setLoadingResenasPor(p => ({ ...p, [pid]: false })));
+      if (!reviewsBy[pid]) {
+        ratingsService.getRestaurantReviews(pid)
+          .then(r => setReviewsBy(p => ({ ...p, [pid]: r })))
+          .catch(() => setReviewsBy(p => ({ ...p, [pid]: [] })));
       }
     } else if (detailId && populares.length > 0) {
       // Invalid map search
       setSearchParams({});
     }
-  }, [selectedEntryForDetail, detailId, populares, resenasPor, setSearchParams]);
+  }, [selectedEntryForDetail, detailId, populares, reviewsBy, setSearchParams]);
 
   /* ── Like toggle ── */
-  const handleMeGusta = async (placeId: string, valoracionId: number) => {
-    const resena = resenasPor[placeId]?.find(r => r.id === valoracionId);
-    if (!resena) return;
-    const liked = resena.ha_dado_me_gusta;
-    setResenasPor(p => ({
+  const handleLike = async (placeId: string, ratingId: number) => {
+    const review = reviewsBy[placeId]?.find(r => r.id === ratingId);
+    if (!review) return;
+    const liked = review.liked_by_me;
+    setReviewsBy(p => ({
       ...p,
       [placeId]: p[placeId].map(r =>
-        r.id === valoracionId
-          ? { ...r, ha_dado_me_gusta: !liked, me_gustas: liked ? Math.max(0, r.me_gustas - 1) : r.me_gustas + 1 }
+        r.id === ratingId
+          ? { ...r, liked_by_me: !liked, likes: liked ? Math.max(0, r.likes - 1) : r.likes + 1 }
           : r
       ),
     }));
     try {
-      const updated = await valoracionesService.darMeGusta(valoracionId);
-      setResenasPor(p => ({ ...p, [placeId]: p[placeId].map(r => r.id === updated.id ? updated : r) }));
+      const updated = await ratingsService.likeReview(ratingId, liked);
+      if (updated) setReviewsBy(p => ({ ...p, [placeId]: p[placeId].map(r => r.id === updated.id ? updated : r) }));
     } catch { }
   };
 
   /* ── Actions ── */
   const handleSelect = async (place: any) => {
     try {
-      await historialService.addToHistorial(place.id);
+      await historyService.addToHistory(place.id);
       showNotification(`Has seleccionado ${place.name}`, 'success');
       navigate('/home');
     } catch (e: any) {
@@ -445,12 +438,12 @@ const HomePage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* ── Sección de reseñas ── */}
+                {/* ── Reviews section ── */}
                 <RestaurantReviews
-                  currResenas={resenasPor[selectedEntryForDetail.id] || []}
-                  isLoading={!!loadingResenasPor[selectedEntryForDetail.id]}
+                  currReviews={reviewsBy[selectedEntryForDetail.id] || []}
+                  isLoading={!reviewsBy[selectedEntryForDetail.id]}
                   restaurantId={selectedEntryForDetail.id}
-                  handleMeGusta={handleMeGusta}
+                  handleLike={handleLike}
                 />
               </>
             }
@@ -466,7 +459,7 @@ const HomePage: React.FC = () => {
       <main className="home-body">
         {/* ══ Hero ══ */}
         <section className="home-hero" aria-label="Bienvenida">
-          <p className="home-hero-sub">Bienvenido, <strong>{nombre}</strong></p>
+          <p className="home-hero-sub">Bienvenido, <strong>{firstName}</strong></p>
           <h1 className="home-hero-title">¿Qué quieres comer hoy?</h1>
           <button
             id="go-recommend-btn"
@@ -508,8 +501,8 @@ const HomePage: React.FC = () => {
 
           {/* States */}
           <PopularRestaurants
-            loading={loadingPopulares}
-            error={errorPopulares}
+            loading={loadingPopular}
+            error={errorPopular}
             populares={populares}
             locationMode={locationMode}
             setLocationMode={setLocationMode}

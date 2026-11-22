@@ -8,17 +8,17 @@ class RegisterRequest(BaseModel):
     email: str
     password: str
     username: str
-    nombre: str
-    apellidos: str
-    ubicacion: str
+    first_name: str
+    last_name: str
+    location: str
 
 class PasswordResetRequest(BaseModel):
     email: str
 
 class ProfileUpdateRequest(BaseModel):
-    nombre: str
-    apellidos: str
-    ubicacion: str = ""
+    first_name: str
+    last_name: str
+    location: str = ""
     password: str
 
 class EmailUpdateRequest(BaseModel):
@@ -35,4 +35,4 @@ class GoogleLoginRequest(BaseModel):
 class GoogleRegisterRequest(BaseModel):
     token: str
     username: str
-    ubicacion: str = ""
+    location: str = ""

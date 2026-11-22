@@ -74,8 +74,8 @@ async def test_search_restaurants_filters(mock_post, service, base_request):
 @patch("httpx.AsyncClient.post")
 async def test_bayesian_sorting(mock_post, service, base_request):
     # Definimos dos restaurantes:
-    # A: 5 estrellas, 1 reseña
-    # B: 4.8 estrellas, 1000 reseñas
+    # A: 5 stars, 1 review
+    # B: 4.8 stars, 1000 reviews
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
@@ -101,7 +101,7 @@ async def test_bayesian_sorting(mock_post, service, base_request):
     result = await service.search_restaurants(base_request)
     results = result["results"]
 
-    # Con la media bayesiana (umbral=10, media=3.5), el popular debe salir primero
+    # With the Bayesian mean (threshold=10, mean=3.5), the popular one must come first
     assert results[0]["id"] == "B"
     assert results[1]["id"] == "A"
 
@@ -252,56 +252,56 @@ async def test_search_restaurants_tags_json(mock_post, service, base_request):
     assert not any(r["id"] == "Invalid" for r in results)
 
 
-# ── Tests para métodos de scoring y helpers ───────────────────────────────────
+# ── Tests for scoring methods and helpers ───────────────────────────────────
 
 def test_haversine_mismo_punto(service):
-    """La distancia de un punto a sí mismo es 0."""
+    """The distance from a point to itself is 0."""
     dist = service._haversine(40.4168, -3.7038, 40.4168, -3.7038)
     assert dist == pytest.approx(0.0)
 
 
-def test_haversine_distancia_conocida(service):
-    """Madrid - Barcelona ≈ 504 km."""
+def test_haversine_known_distance(service):
+    """Madrid - Barcelona is about 504 km."""
     dist = service._haversine(40.4168, -3.7038, 41.3851, 2.1734)
     assert 490 < dist < 520
 
 
 def test_dist_to_score_cerca(service):
-    """Un restaurante muy cercano (0 km) debería tener score 5.0."""
+    """A very close restaurant (0 km) should score 5.0."""
     score = service._dist_to_score(0)
     assert score == pytest.approx(5.0)
 
 
 def test_dist_to_score_lejos(service):
-    """Un restaurante lejano debería tener score mínimo 1.0."""
+    """A far restaurant should get the minimum score of 1.0."""
     score = service._dist_to_score(100)
     assert score == pytest.approx(1.0)
 
 
-def test_bayesian_rating_muchas_resenas(service):
-    """Con muchas reseñas, la puntuación bayesiana se acerca a la real."""
+def test_bayesian_rating_many_reviews(service):
+    """With many reviews, the Bayesian score approaches the real one."""
     score = service._bayesian_rating(1000, 4.9)
     assert score > 4.8
 
 
-def test_bayesian_rating_pocas_resenas(service):
-    """Con pocas reseñas, la puntuación bayesiana se acerca a la media (3.5)."""
+def test_bayesian_rating_few_reviews(service):
+    """With few reviews, the Bayesian score approaches the mean (3.5)."""
     score = service._bayesian_rating(1, 5.0)
     assert score < 4.0
 
 
 def test_compute_collaborative_filtering_similitud_alta(service):
-    """Dos usuarios con ratings idénticos deben tener similitud 0 (var=0)."""
+    """Two users with identical ratings must have similarity 0 (var=0)."""
     user_direct_scores = {"p1": 4.0, "p2": 3.0}
     other_users = {"uid2": {"p1": 4.0, "p2": 3.0}}
     result = service._compute_collaborative_filtering(user_direct_scores, other_users)
-    # Correlación de pearson de [4,3] con [4,3] es indefinida (0 varianza en denominador)
-    # En el código es 0.0 cuando den <= 0
+    # Pearson correlation of [4,3] with [4,3] is undefined (zero variance in denominator)
+    # The code returns 0.0 when den <= 0
     assert isinstance(result, dict)
 
 
-def test_compute_collaborative_filtering_sin_comunes(service):
-    """Sin elementos compartidos no hay similitud."""
+def test_compute_collaborative_filtering_no_common_items(service):
+    """Without shared items there is no similarity."""
     user_direct_scores = {"p1": 4.0}
     other_users = {"uid2": {"p2": 3.0}}
     result = service._compute_collaborative_filtering(user_direct_scores, other_users)
@@ -309,7 +309,7 @@ def test_compute_collaborative_filtering_sin_comunes(service):
 
 
 def test_format_results_excluye_farmacia(service):
-    """Las farmacias sin restaurante deben ser excluidas."""
+    """Pharmacies that are not restaurants must be excluded."""
     places = [
         {"id": "farm1", "displayName": {"text": "Farmacia"}, "types": ["pharmacy", "store"]},
         {"id": "rest1", "displayName": {"text": "Bar"}, "types": ["bar", "food"]},
@@ -320,13 +320,13 @@ def test_format_results_excluye_farmacia(service):
     assert "rest1" in ids
 
 
-def test_get_photo_url_sin_fotos(service):
-    """Sin fotos debe devolver cadena vacía."""
+def test_get_photo_url_no_photos(service):
+    """Without photos it must return an empty string."""
     assert service._get_photo_url([]) == ""
 
 
-def test_get_photo_url_con_foto(service):
-    """Con fotos debe devolver URL con el nombre de la foto."""
+def test_get_photo_url_with_photo(service):
+    """With photos it must return a URL containing the photo name."""
     photos = [{"name": "places/abc/photos/def"}]
     url = service._get_photo_url(photos)
     assert "places/abc/photos/def" in url
@@ -336,7 +336,7 @@ def test_get_photo_url_con_foto(service):
 @pytest.mark.asyncio
 @patch("app.services.recommendation_service.google_places_client.get_place_details")
 async def test_get_place_details_ok(mock_details, service):
-    """get_place_details debe formatear el resultado correctamente."""
+    """get_place_details must format the result correctly."""
     mock_details.return_value = {
         "id": "p1",
         "displayName": {"text": "Lugar Bonito"},
@@ -349,8 +349,8 @@ async def test_get_place_details_ok(mock_details, service):
 
 @pytest.mark.asyncio
 @patch("app.services.recommendation_service.google_places_client.get_place_details")
-async def test_get_place_details_no_encontrado(mock_details, service):
-    """Si Google no devuelve el lugar, get_place_details devuelve dict vacío."""
+async def test_get_place_details_not_found(mock_details, service):
+    """If Google does not return the place, get_place_details returns an empty dict."""
     mock_details.return_value = None
     result = await service.get_place_details("inexistente")
     assert result == {}
@@ -359,7 +359,7 @@ async def test_get_place_details_no_encontrado(mock_details, service):
 @pytest.mark.asyncio
 @patch("app.services.recommendation_service.google_places_client.geocode")
 async def test_geocode_location_ok(mock_geocode, service):
-    """_geocode_location devuelve (lat, lng) cuando Google responde."""
+    """_geocode_location returns (lat, lng) when Google responds."""
     mock_geocode.return_value = {"lat": 43.5, "lng": -5.66}
     lat, lng = await service._geocode_location("Gijón")
     assert lat == pytest.approx(43.5)
@@ -369,7 +369,7 @@ async def test_geocode_location_ok(mock_geocode, service):
 @pytest.mark.asyncio
 @patch("app.services.recommendation_service.google_places_client.geocode")
 async def test_geocode_location_fallo(mock_geocode, service):
-    """_geocode_location devuelve (None, None) si geocode falla."""
+    """_geocode_location returns (None, None) if geocode fails."""
     mock_geocode.return_value = None
     lat, lng = await service._geocode_location("Lugar inventado")
     assert lat is None
@@ -431,8 +431,8 @@ async def test_search_restaurants_filters(mock_post, service, base_request):
 @patch("httpx.AsyncClient.post")
 async def test_bayesian_sorting(mock_post, service, base_request):
     # Definimos dos restaurantes:
-    # A: 5 estrellas, 1 reseña
-    # B: 4.8 estrellas, 1000 reseñas
+    # A: 5 stars, 1 review
+    # B: 4.8 stars, 1000 reviews
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
@@ -458,7 +458,7 @@ async def test_bayesian_sorting(mock_post, service, base_request):
     result = await service.search_restaurants(base_request)
     results = result["results"]
 
-    # Con la media bayesiana (umbral=10, media=3.5), el popular debe salir primero
+    # With the Bayesian mean (threshold=10, mean=3.5), the popular one must come first
     assert results[0]["id"] == "B"
     assert results[1]["id"] == "A"
 

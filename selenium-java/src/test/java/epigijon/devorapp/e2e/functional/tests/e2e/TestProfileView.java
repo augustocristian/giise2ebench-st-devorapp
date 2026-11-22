@@ -71,16 +71,16 @@ class TestProfileView extends BaseLoggedClass {
 
         // Cancelling the edit restores the original values
         page.editPersonalInfo()
-                .fillNombre("JuanModificado")
-                .fillApellidos("PérezModificado")
+                .fillFirstName("JuanModificado")
+                .fillLastName("PérezModificado")
                 .cancelPersonalInfo();
         Assertions.assertTrue(page.getCardText("personal").contains("UITester"),
                 "Cancel must restore original name");
 
-        // S2 & S3: save updated nombre/apellidos
+        // S2 & S3: save updated first/last name
         page.editPersonalInfo()
-                .fillNombre("Juan")
-                .fillApellidos("Pérez")
+                .fillFirstName("Juan")
+                .fillLastName("Pérez")
                 .savePersonalInfo();
         waiter.waitForToast("success");
         Assertions.assertTrue(page.hasSuccessToast(), "S2/S3: success toast must appear");

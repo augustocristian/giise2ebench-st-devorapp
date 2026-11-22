@@ -11,11 +11,11 @@ vi.mock('../models/api/authService', () => ({
     },
 }));
 
-// ── Mock historialService ─────────────────────────────────────────────────────
-vi.mock('../models/api/historialService', () => ({
-    historialService: {
-        getPopulares: vi.fn(),
-        addToHistorial: vi.fn(),
+// ── Mock historyService ─────────────────────────────────────────────────────
+vi.mock('../models/api/historyService', () => ({
+    historyService: {
+        getPopular: vi.fn(),
+        addToHistory: vi.fn(),
     },
 }));
 
@@ -26,18 +26,18 @@ vi.mock('../models/api/savedForLaterService', () => ({
     },
 }));
 
-// ── Mock valoracionesService ──────────────────────────────────────────────────
-vi.mock('../models/api/valoracionesService', () => ({
-    valoracionesService: {
-        obtenerResenasRestaurante: vi.fn(),
-        darMeGusta: vi.fn(),
+// ── Mock ratingsService ──────────────────────────────────────────────────
+vi.mock('../models/api/ratingsService', () => ({
+    ratingsService: {
+        getRestaurantReviews: vi.fn(),
+        likeReview: vi.fn(),
     },
 }));
 
 import { authService } from '../models/api/authService';
-import { historialService } from '../models/api/historialService';
+import { historyService } from '../models/api/historyService';
 
-// Mock de useNavigate para poder verificar redirecciones
+// Mock useNavigate so redirects can be verified
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async (importOriginal) => {
     const actual = await importOriginal<typeof import('react-router-dom')>();
@@ -50,7 +50,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 // Mock useNotification
 const mockShowNotification = vi.fn();
 const mockShowConfirm = vi.fn();
-vi.mock('../components/NotificationSystem', () => ({
+vi.mock('../components/useNotification', () => ({
     useNotification: () => ({
         showNotification: mockShowNotification,
         showConfirm: mockShowConfirm,
@@ -67,32 +67,32 @@ const renderHomePage = () =>
 describe('HomePage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        // Por defecto, getMe devuelve un usuario básico
+        // By default, getMe returns a basic user
         (authService.getMe as any).mockResolvedValue({
-            nombre: 'Usuario',
+            first_name: 'Usuario',
             username: 'usuario',
-            ubicacion: 'Valencia',
+            location: 'Valencia',
         });
-        // getPopulares devuelve lista vacía por defecto (evita llamadas a geolocalización)
-        (historialService.getPopulares as any).mockResolvedValue([]);
+        // getPopular returns an empty list by default (avoids geolocation calls)
+        (historyService.getPopular as any).mockResolvedValue([]);
     });
 
-    it('debe renderizar la bienvenida y el buscador', async () => {
+    it('should render the welcome message and the search box', async () => {
         renderHomePage();
         expect(screen.getByText(/¿Qué quieres comer hoy?/i)).toBeInTheDocument();
         expect(screen.getByRole('button', { name: /Buscar restaurantes/i })).toBeInTheDocument();
     });
 
-    it('debe llamar a authService.logout al cerrar sesión desde el menú', async () => {
+    it('should call authService.logout when logging out from the menu', async () => {
         (authService.logout as any).mockResolvedValue(undefined);
 
         renderHomePage();
 
-        // Abrir menú lateral
+        // Open the side menu
         const menuBtn = screen.getByLabelText(/Abrir menú/i);
         fireEvent.click(menuBtn);
 
-        // El menú se renderiza vía Portal, así que debería ser visible en el document.body
+        // The menu renders via Portal, so it should be visible in document.body
         const logoutBtn = await screen.findByRole('button', { name: /Cerrar sesión/i });
         fireEvent.click(logoutBtn);
 
@@ -102,7 +102,7 @@ describe('HomePage', () => {
         });
     });
 
-    it('debe navegar a la búsqueda al pulsar el botón principal', () => {
+    it('should navigate to search when pressing the main button', () => {
         renderHomePage();
         fireEvent.click(screen.getByRole('button', { name: /Buscar restaurantes/i }));
         expect(mockNavigate).toHaveBeenCalledWith('/recommend-restaurants');

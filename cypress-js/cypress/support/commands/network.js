@@ -3,7 +3,7 @@
 Cypress.Commands.add("stubGoogleNetwork", () => {
   // Geocoding: answered by gplaces-mock.
   cy.intercept({ hostname: "maps.googleapis.com", pathname: "/maps/api/geocode/json" }, (req) => {
-    req.url = req.url.replace("https://maps.googleapis.com", Cypress.env("placesMockUrl"));
+    req.url = req.url.replace("https://maps.googleapis.com", Cypress.expose("placesMockUrl"));
   });
 
   // Maps JS SDK: inert script that fires the loader callback (react-google-autocomplete

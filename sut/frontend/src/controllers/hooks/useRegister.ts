@@ -4,7 +4,7 @@ import { authService } from '../../models/api/authService';
 export const useRegister = (onSuccessSwitchToLogin: () => void) => {
     const [form, setForm] = useState({
         email: '', password: '', username: '',
-        nombre: '', apellidos: '', ubicacion: '',
+        first_name: '', last_name: '', location: '',
     });
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const [loading, setLoading] = useState(false);
@@ -31,12 +31,12 @@ export const useRegister = (onSuccessSwitchToLogin: () => void) => {
     const submitRegister = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!form.email.trim() || !form.username.trim() || !form.password || !form.nombre.trim() || !form.apellidos.trim()) {
+        if (!form.email.trim() || !form.username.trim() || !form.password || !form.first_name.trim() || !form.last_name.trim()) {
             setMessage({ type: 'error', text: 'Rellene todos los campos obligatorios' });
             return;
         }
 
-        if (!form.ubicacion.trim()) {
+        if (!form.location.trim()) {
             setMessage({ type: 'error', text: 'Debe seleccionar una ubicación válida de la lista' });
             return;
         }
@@ -49,9 +49,9 @@ export const useRegister = (onSuccessSwitchToLogin: () => void) => {
                 email: form.email.trim(),
                 password: form.password,
                 username: form.username.trim(),
-                nombre: form.nombre.trim(),
-                apellidos: form.apellidos.trim(),
-                ubicacion: form.ubicacion.trim(),
+                first_name: form.first_name.trim(),
+                last_name: form.last_name.trim(),
+                location: form.location.trim(),
             };
 
             await authService.register(cleanData);

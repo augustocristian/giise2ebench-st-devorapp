@@ -4,11 +4,8 @@ using NUnit.Framework;
 namespace DevorApp.E2ETests.Tests.Api;
 
 /// <summary>
-/// Port of epigijon.devorapp.e2e.functional.tests.api.TestApiRecommendBC.
 ///
-/// API Base-Choice tests for the recommendation search module. Adapts the
-/// recommendation scenarios from recommendation.spec.ts (Playwright/TS) to
-/// pure REST assertions against POST /api/recommendations/search.
+/// API Base-Choice tests for POST /api/recommendations/search.
 ///
 /// Cases covered:
 ///   BASE  — search with categories + prices + location returns HTTP 200 with results array.
@@ -35,11 +32,10 @@ public class TestApiRecommendBC : BaseApiClass
     [OneTimeTearDown]
     public async Task AuthTeardown() => await DeleteTestUserAsync();
 
-    // ── BASE: búsqueda con filtros base ─────────────────────────────────────
 
     [Test]
     [Description("BASE — search with categories, prices and location returns HTTP 200 with results array")]
-    public async Task TestBase_BusquedaFiltrosBase()
+    public async Task TestBase_SearchWithBaseFilters()
     {
         var body = SearchPayload(
             new[] { "mexican_restaurant", "italian_restaurant" },
@@ -52,11 +48,10 @@ public class TestApiRecommendBC : BaseApiClass
         Assert.That(result["results"], Is.InstanceOf<System.Text.Json.Nodes.JsonArray>(), "'results' must be a JSON array");
     }
 
-    // ── S2: categorías vacías → HTTP 200 ────────────────────────────────────
 
     [Test]
     [Description("S2 — empty categories list is accepted and returns HTTP 200")]
-    public async Task TestS2_CategoriasVacias()
+    public async Task TestS2_EmptyCategories()
     {
         var body = SearchPayload(Array.Empty<string>(), new[] { "PRICE_LEVEL_MODERATE" }, true, LocationPref, 5);
 
@@ -64,11 +59,10 @@ public class TestApiRecommendBC : BaseApiClass
         Assert.That(result.ContainsKey("results"), Is.True, "Empty categories must still return a 'results' array (S2)");
     }
 
-    // ── S4: precios vacíos → HTTP 200 ───────────────────────────────────────
 
     [Test]
     [Description("S4 — empty prices list is accepted and returns HTTP 200")]
-    public async Task TestS4_PreciosVacios()
+    public async Task TestS4_EmptyPrices()
     {
         var body = SearchPayload(new[] { "mexican_restaurant" }, Array.Empty<string>(), true, LocationPref, 5);
 
@@ -76,11 +70,10 @@ public class TestApiRecommendBC : BaseApiClass
         Assert.That(result.ContainsKey("results"), Is.True, "Empty prices must still return a 'results' array (S4)");
     }
 
-    // ── S6: include_unconfirmed_price = false ────────────────────────────────
 
     [Test]
     [Description("S6 — include_unconfirmed_price=false returns HTTP 200")]
-    public async Task TestS6_SinPrecioNoConfirmado()
+    public async Task TestS6_NoUnconfirmedPrice()
     {
         var body = SearchPayload(
             new[] { "mexican_restaurant", "italian_restaurant" },
@@ -92,11 +85,10 @@ public class TestApiRecommendBC : BaseApiClass
             "include_unconfirmed_price=false must still return results array (S6)");
     }
 
-    // ── S7: open_now = false ─────────────────────────────────────────────────
 
     [Test]
     [Description("S7 — open_now=false is accepted and returns HTTP 200")]
-    public async Task TestS7_NoAbierto()
+    public async Task TestS7_NotOpenNow()
     {
         var body = SearchPayload(new[] { "mexican_restaurant" }, new[] { "PRICE_LEVEL_MODERATE" }, true,
             LocationPref, 5, openNow: false);
@@ -105,11 +97,10 @@ public class TestApiRecommendBC : BaseApiClass
         Assert.That(result.ContainsKey("results"), Is.True, "open_now=false must return a 'results' array (S7)");
     }
 
-    // ── S8: ubicación alternativa ─────────────────────────────────────────────
 
     [Test]
     [Description("S8 — alternative location is accepted and returns HTTP 200")]
-    public async Task TestS8_UbicacionAlternativa()
+    public async Task TestS8_AlternativeLocation()
     {
         var body = SearchPayload(
             new[] { "mexican_restaurant", "italian_restaurant" },
@@ -120,11 +111,10 @@ public class TestApiRecommendBC : BaseApiClass
         Assert.That(result.ContainsKey("results"), Is.True, "Alternative location must still return a 'results' array (S8)");
     }
 
-    // ── S10: resultados pueden ser vacíos ────────────────────────────────────
 
     [Test]
     [Description("S10 — search returning 0 results returns HTTP 200 with empty results array")]
-    public async Task TestS10_ResultadosVacios()
+    public async Task TestS10_EmptyResults()
     {
         var body = SearchPayload(new[] { "some_very_obscure_cuisine_type_xyz" }, Array.Empty<string>(), false,
             "Lugar inexistente 99999", 1);

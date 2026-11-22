@@ -1,16 +1,12 @@
 using Microsoft.Playwright;
+using DevorApp.E2ETests.Common;
 
 namespace DevorApp.E2ETests.Pages;
 
-/// <summary>
-/// Page object for /home. Port of
-/// epigijon.devorapp.e2e.functional.pages.HomePage. <c>CreateAsync</c>
-/// waits until the URL contains /home and the top navigation bar is
-/// visible before returning.
-/// </summary>
+/// <summary>Page object for /home. Ready once the URL contains /home and the top bar is visible.</summary>
 public class HomePage : BasePage
 {
-    private ILocator TopBar => Page.Locator(".topbar, header, nav");
+    private ILocator TopBar => Page.Locator(TestId.Of("topbar"));
 
     private HomePage(IPage page) : base(page)
     {

@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Pruebas de Menú Lateral - Base-Choice', () => {
+test.describe('Side menu tests - Base-Choice', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Escuchamos logs de la consola del navegador para diagnóstico
+    // Forward browser console logs for diagnostics
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-    // Interceptamos la carga del script de Google GSI
+    // Stub the Google GSI script
     await page.route('**/gsi/client', async (route) => {
       await route.fulfill({
         status: 200,
@@ -15,116 +15,89 @@ test.describe('Pruebas de Menú Lateral - Base-Choice', () => {
       });
     });
 
-    // Mock de perfil /api/me para simular sesión iniciada
-    await page.route('**/api/me', async (route) => {
+    // Mock /api/v1/me: logged-in session
+    await page.route('**/api/v1/me', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           username: 'testuser',
           email: 'test@test.com',
-          nombre: 'Test',
-          apellidos: 'User',
-          ubicacion: 'Madrid, España',
+          first_name: 'Test',
+          last_name: 'User',
+          location: 'Springfield, USA',
           is_google: false,
         }),
       });
     });
 
-    // Limpiamos localStorage antes de cada test para partir de estado limpio
+    // Start every test from a clean theme/font state
     await page.addInitScript(() => {
       localStorage.removeItem('devorapp_theme');
       localStorage.removeItem('devorapp_fontsize');
     });
 
-    // Navegamos a /home donde el menú lateral está disponible
+    // /home is where the side menu is available
     await page.goto('/home');
 
-    // Abrimos el menú lateral pulsando el botón hamburguesa
-    await page.click('button[aria-label="Abrir menú"]');
-
-    // Esperamos a que el drawer esté visible
-    await expect(page.locator('.sidemenu-drawer')).toBeVisible();
+    // Open the side menu with the hamburger button
+    await page.getByTestId('side-menu-open').click();
+    await expect(page.getByTestId('side-menu-drawer')).toBeVisible();
   });
 
-  // ── BASE: Tema = Claro, Letra = M ─────────────────────────────────────────────
-  test('debe aplicar Tema Claro y Letra M por defecto (BASE)', async ({ page }) => {
-    // Pulsamos el botón "Claro"
-    const themeToggle = page.locator('.sidemenu-toggle-group').first();
-    await themeToggle.locator('button', { hasText: 'Claro' }).click();
+  // ── BASE: Theme = Light, Font = M ──
+  test('should apply Light theme and font M by default (BASE)', async ({ page }) => {
+    await page.getByTestId('theme-light').click();
 
-    // Verificamos que el botón "Claro" está activo y "Oscuro" no
-    await expect(themeToggle.locator('button', { hasText: 'Claro' })).toHaveClass(/active/);
-    await expect(themeToggle.locator('button', { hasText: 'Oscuro' })).not.toHaveClass(/active/);
+    // Light is active, Dark is not
+    await expect(page.getByTestId('theme-light')).toHaveClass(/active/);
+    await expect(page.getByTestId('theme-dark')).not.toHaveClass(/active/);
 
-    // Verificamos que el atributo data-theme="light" se aplica en <html>
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-    // Letra M: verificamos que el botón M está activo por defecto
-    const fontToggle = page.locator('.sidemenu-toggle-group').nth(1);
-    await expect(fontToggle.locator('button', { hasText: 'M' })).toHaveClass(/active/);
+    // Font M is active by default
+    await expect(page.getByTestId('font-size-m')).toHaveClass(/active/);
 
-    // Verificamos que NO hay atributo data-font-size (M es el valor por defecto)
+    // No data-font-size attribute (M is the default)
     await expect(page.locator('html')).not.toHaveAttribute('data-font-size');
   });
 
-  // ── Caso 2: Tema = Oscuro, Letra = M ──────────────────────────────────────────
-  test('debe aplicar Tema Oscuro y Letra M (Caso 2)', async ({ page }) => {
-    // Pulsamos el botón "Oscuro"
-    const themeToggle = page.locator('.sidemenu-toggle-group').first();
-    await themeToggle.locator('button', { hasText: 'Oscuro' }).click();
+  // ── Case 2: Theme = Dark, Font = M ──
+  test('should apply Dark theme and font M (Case 2)', async ({ page }) => {
+    await page.getByTestId('theme-dark').click();
 
-    // Verificamos que el botón "Oscuro" está activo y "Claro" no
-    await expect(themeToggle.locator('button', { hasText: 'Oscuro' })).toHaveClass(/active/);
-    await expect(themeToggle.locator('button', { hasText: 'Claro' })).not.toHaveClass(/active/);
+    await expect(page.getByTestId('theme-dark')).toHaveClass(/active/);
+    await expect(page.getByTestId('theme-light')).not.toHaveClass(/active/);
 
-    // Verificamos que NO hay atributo data-theme (oscuro = por defecto, sin atributo)
+    // No data-theme attribute (dark is the default)
     await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 
-    // Letra M: verificamos que el botón M está activo
-    const fontToggle = page.locator('.sidemenu-toggle-group').nth(1);
-    await expect(fontToggle.locator('button', { hasText: 'M' })).toHaveClass(/active/);
+    await expect(page.getByTestId('font-size-m')).toHaveClass(/active/);
   });
 
-  // ── Caso 3: Tema = Claro, Letra = S ───────────────────────────────────────────
-  test('debe aplicar Tema Claro y Letra S (Caso 3)', async ({ page }) => {
-    // Pulsamos el botón "Claro"
-    const themeToggle = page.locator('.sidemenu-toggle-group').first();
-    await themeToggle.locator('button', { hasText: 'Claro' }).click();
-
-    // Verificamos que data-theme="light" se aplica
+  // ── Case 3: Theme = Light, Font = S ──
+  test('should apply Light theme and font S (Case 3)', async ({ page }) => {
+    await page.getByTestId('theme-light').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-    // Pulsamos el botón "S" de tamaño de letra
-    const fontToggle = page.locator('.sidemenu-toggle-group').nth(1);
-    await fontToggle.locator('button', { hasText: 'S' }).click();
+    await page.getByTestId('font-size-s').click();
 
-    // Verificamos que el botón S está activo
-    await expect(fontToggle.locator('button', { hasText: 'S' })).toHaveClass(/active/);
-    await expect(fontToggle.locator('button', { hasText: 'M' })).not.toHaveClass(/active/);
+    await expect(page.getByTestId('font-size-s')).toHaveClass(/active/);
+    await expect(page.getByTestId('font-size-m')).not.toHaveClass(/active/);
 
-    // Verificamos que data-font-size="S" se aplica en <html>
     await expect(page.locator('html')).toHaveAttribute('data-font-size', 'S');
   });
 
-  // ── Caso 4: Tema = Claro, Letra = L ───────────────────────────────────────────
-  test('debe aplicar Tema Claro y Letra L (Caso 4)', async ({ page }) => {
-    // Pulsamos el botón "Claro"
-    const themeToggle = page.locator('.sidemenu-toggle-group').first();
-    await themeToggle.locator('button', { hasText: 'Claro' }).click();
-
-    // Verificamos que data-theme="light" se aplica
+  // ── Case 4: Theme = Light, Font = L ──
+  test('should apply Light theme and font L (Case 4)', async ({ page }) => {
+    await page.getByTestId('theme-light').click();
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 
-    // Pulsamos el botón "L" de tamaño de letra
-    const fontToggle = page.locator('.sidemenu-toggle-group').nth(1);
-    await fontToggle.locator('button', { hasText: 'L' }).click();
+    await page.getByTestId('font-size-l').click();
 
-    // Verificamos que el botón L está activo
-    await expect(fontToggle.locator('button', { hasText: 'L' })).toHaveClass(/active/);
-    await expect(fontToggle.locator('button', { hasText: 'M' })).not.toHaveClass(/active/);
+    await expect(page.getByTestId('font-size-l')).toHaveClass(/active/);
+    await expect(page.getByTestId('font-size-m')).not.toHaveClass(/active/);
 
-    // Verificamos que data-font-size="L" se aplica en <html>
     await expect(page.locator('html')).toHaveAttribute('data-font-size', 'L');
   });
 });

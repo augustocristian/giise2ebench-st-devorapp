@@ -2,9 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect } from 'vitest';
-import RestaurantDetailView, { formatTimeRange } from '../components/RestaurantDetailView';
+import RestaurantDetailView from '../components/RestaurantDetailView';
+import { formatTimeRange } from '../components/restaurantTime';
 
-// Mockeamos SideMenu (dependencia transitiva a través de TopBar)
+// Mock SideMenu (transitive dependency through TopBar)
 vi.mock('../components/SideMenu', () => ({
     default: () => <div data-testid="mock-side-menu" />,
 }));
@@ -59,7 +60,7 @@ const renderView = (
     );
 
 describe('RestaurantDetailView', () => {
-    // ── Renderizado básico y tipo ─────────────────────────────────────────────
+    // ── Basic rendering and type ─────────────────────────────────────────────
 
     const renderCases = [
         {
@@ -113,78 +114,78 @@ describe('RestaurantDetailView', () => {
 
     // ── Estado abierto / cerrado ──────────────────────────────────────────────
 
-    it('muestra "Abierto ahora" cuando open_now=true', () => {
+    it('shows "Abierto ahora" when open_now=true', () => {
         renderView({ open_now: true });
         expect(screen.getByText('Abierto ahora')).toBeInTheDocument();
     });
 
-    it('muestra "Cerrado" cuando open_now=false', () => {
+    it('shows "Cerrado" when open_now=false', () => {
         renderView({ open_now: false });
         expect(screen.getByText('Cerrado')).toBeInTheDocument();
     });
 
-    // ── Imagen del restaurante ────────────────────────────────────────────────
+    // ── Restaurant image ────────────────────────────────────────────────
 
-    it('renderiza la imagen cuando main_photo está definido', () => {
+    it('renders the image when main_photo is defined', () => {
         renderView({ main_photo: 'https://example.com/photo.jpg' });
         const img = screen.getByRole('img');
         expect(img).toHaveAttribute('src', 'https://example.com/photo.jpg');
         expect(img).toHaveAttribute('alt', 'Restaurante Test');
     });
 
-    it('no renderiza una imagen cuando no hay main_photo', () => {
+    it('does not render an image when there is no main_photo', () => {
         renderView({ main_photo: undefined });
         expect(screen.queryByRole('img')).not.toBeInTheDocument();
     });
 
-    // ── Botón de volver ───────────────────────────────────────────────────────
+    // ── Back button ───────────────────────────────────────────────────────
 
-    it('llama a onBack al hacer click en el botón de volver', () => {
+    it('calls onBack when clicking the back button', () => {
         const onBack = vi.fn();
         renderView({}, { onBack });
         fireEvent.click(screen.getByText('Atrás'));
         expect(onBack).toHaveBeenCalledTimes(1);
     });
 
-    it('usa "Atrás" como texto por defecto cuando no se pasa backText', () => {
+    it('uses "Atrás" as the default text when backText is not passed', () => {
         renderView();
         expect(screen.getByText('Atrás')).toBeInTheDocument();
     });
 
-    it('usa el backText personalizado si se proporciona', () => {
+    it('uses the custom backText if provided', () => {
         renderView({}, { backText: 'Volver a Favoritos' });
         expect(screen.getByText('Volver a Favoritos')).toBeInTheDocument();
     });
 
     // ── Subtitle ─────────────────────────────────────────────────────────────
 
-    it('muestra el subtitle cuando se proporciona', () => {
+    it('shows the subtitle when provided', () => {
         renderView({}, { subtitle: 'Visitado el 01/01/2024' });
         expect(screen.getByText('Visitado el 01/01/2024')).toBeInTheDocument();
     });
 
-    it('no muestra subtitle cuando no se proporciona', () => {
+    it('does not show subtitle when not provided', () => {
         renderView();
         expect(screen.queryByText('Visitado el')).not.toBeInTheDocument();
     });
 
-    // ── Horario de apertura ───────────────────────────────────────────────────
+    // ── Opening hours ───────────────────────────────────────────────────
 
-    it('muestra los horarios cuando hoursExpanded es true (por defecto)', () => {
+    it('shows the hours when hoursExpanded is true (default)', () => {
         renderView();
-        // Los horarios se renderan en el DOM (la tabla es visible por defecto)
+        // The hours render in the DOM (the table is visible by default)
         expect(screen.getByText('Lunes')).toBeInTheDocument();
     });
 
-    it('oculta los horarios al hacer click en el botón toggle', () => {
+    it('hides the hours when clicking the toggle button', () => {
         renderView();
-        // El botón contiene "Horario de apertura" como texto
+        // The button contains "Horario de apertura" as text
         const toggleBtn = screen.getByRole('button', { name: /horario de apertura/i });
         fireEvent.click(toggleBtn);
         expect(screen.queryByText('Lunes')).not.toBeInTheDocument();
     });
 
-    it('vuelve a mostrar los horarios al hacer click de nuevo en el toggle', () => {
+    it('shows the hours again when clicking the toggle again', () => {
         renderView();
         const toggleBtn = screen.getByRole('button', { name: /horario de apertura/i });
         fireEvent.click(toggleBtn); // colapsar
@@ -192,68 +193,68 @@ describe('RestaurantDetailView', () => {
         expect(screen.getByText('Lunes')).toBeInTheDocument();
     });
 
-    it('no muestra la tabla de horarios cuando opening_hours no está definido', () => {
+    it('does not show the hours table when opening_hours is not defined', () => {
         renderView({ opening_hours: undefined });
-        // El botón toggle existe pero la tabla está vacía
+        // The toggle button exists but the table is empty
         expect(screen.queryByText('Lunes')).not.toBeInTheDocument();
     });
 
-    // ── Enlace de teléfono ────────────────────────────────────────────────────
+    // ── Phone link ────────────────────────────────────────────────────
 
-    it('muestra el enlace de llamada cuando phone_number está definido', () => {
+    it('shows the call link when phone_number is defined', () => {
         renderView({ phone_number: '+34 985 000 000' });
         const link = screen.getByText('Llamar');
         expect(link).toBeInTheDocument();
         expect(link.closest('a')).toHaveAttribute('href', 'tel:+34985000000');
     });
 
-    it('no muestra el enlace de llamada cuando phone_number no está definido', () => {
+    it('does not show the call link when phone_number is not defined', () => {
         renderView({ phone_number: undefined });
         expect(screen.queryByText('Llamar')).not.toBeInTheDocument();
     });
 
-    // ── Enlace de sitio web ───────────────────────────────────────────────────
+    // ── Website link ───────────────────────────────────────────────────
 
-    it('muestra el enlace de sitio web cuando website_uri está definido', () => {
+    it('shows the website link when website_uri is defined', () => {
         renderView({ website_uri: 'https://restaurante-test.com' });
         const link = screen.getByText('Sitio web');
         expect(link).toBeInTheDocument();
         expect(link.closest('a')).toHaveAttribute('href', 'https://restaurante-test.com');
     });
 
-    it('no muestra el enlace de sitio web cuando website_uri no está definido', () => {
+    it('does not show the website link when website_uri is not defined', () => {
         renderView({ website_uri: undefined });
         expect(screen.queryByText('Sitio web')).not.toBeInTheDocument();
     });
 
     // ── Google Maps (siempre visible) ─────────────────────────────────────────
 
-    it('siempre muestra el enlace de Google Maps', () => {
+    it('always shows the Google Maps link', () => {
         renderView();
         expect(screen.getByText('Google Maps')).toBeInTheDocument();
     });
 
-    // ── Formateador de horarios (formatTimeRange) ──────────────────────────────
+    // ── Hours formatter (formatTimeRange) ──────────────────────────────
 
     describe('formatTimeRange', () => {
-        it('normaliza rangos de horas en formato 12h (AM/PM) a formato 24h', () => {
+        it('normalizes 12h (AM/PM) time ranges to 24h format', () => {
             expect(formatTimeRange('12:00 PM – 11:30 PM')).toBe('12:00 - 23:30');
             expect(formatTimeRange('12:00 p.m. – 11:30 p.m.')).toBe('12:00 - 23:30');
             expect(formatTimeRange('9:00 AM - 5:00 PM')).toBe('09:00 - 17:00');
             expect(formatTimeRange('9 AM - 5 PM')).toBe('09:00 - 17:00');
         });
 
-        it('reemplaza "24:00" por "00:00" y mantiene el formato 24h', () => {
+        it('replaces "24:00" with "00:00" and keeps the 24h format', () => {
             expect(formatTimeRange('12:00–24:00')).toBe('12:00 - 00:00');
             expect(formatTimeRange('24:00')).toBe('00:00');
         });
 
-        it('maneja múltiples turnos con comas de manera correcta', () => {
+        it('handles multiple comma-separated shifts correctly', () => {
             expect(formatTimeRange('12:00 PM – 4:00 PM, 7:00 PM – 12:00 AM')).toBe('12:00 - 16:00, 19:00 - 00:00');
             expect(formatTimeRange('12:00-16:00,19:00-24:00')).toBe('12:00 - 16:00, 19:00 - 00:00');
         });
 
-        it('no altera palabras descriptivas como Cerrado u Open 24 hours', () => {
+        it('does not alter descriptive words such as Cerrado or Open 24 hours', () => {
             expect(formatTimeRange('Cerrado')).toBe('Cerrado');
             expect(formatTimeRange('Closed')).toBe('Cerrado');
             expect(formatTimeRange('Abierto 24 horas')).toBe('Abierto 24 horas');

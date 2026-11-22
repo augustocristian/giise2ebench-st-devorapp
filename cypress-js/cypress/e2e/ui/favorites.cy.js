@@ -10,17 +10,17 @@ describe("Favorites", () => {
 
   /** Stubs the favorites API, logs in and opens the favorites page. */
   function openFavorites({ lists, restaurantCount }) {
-    cy.intercept("GET", "**/api/favoritos/listas/*", favoritesDetailStub(restaurantCount)).as("getDetail");
-    cy.intercept("GET", "**/api/favoritos/listas", lists).as("getListas");
+    cy.intercept("GET", "**/api/v1/favorites/lists/*", favoritesDetailStub(restaurantCount)).as("getDetail");
+    cy.intercept("GET", "**/api/v1/favorites/lists", lists).as("getLists");
     cy.loginAs(user);
     page.openFromMenu();
-    cy.wait("@getListas");
+    cy.wait("@getLists");
   }
 
   it("BASE - several lists, 0 restaurants, with search", () => {
     openFavorites({ lists: favoritesListsStub(2), restaurantCount: 0 });
     page.expectListCount(2);
-    page.openList("Lista 1").searchWithin("pizza");
+    page.openList("List 1").searchWithin("pizza");
     page.expectRestaurantCount(0);
   });
 
@@ -32,37 +32,37 @@ describe("Favorites", () => {
   it("S3 - one list, 0 restaurants, with search", () => {
     openFavorites({ lists: favoritesListsStub(1), restaurantCount: 0 });
     page.expectListCount(1);
-    page.openList("Lista 1").searchWithin("pizza");
+    page.openList("List 1").searchWithin("pizza");
     page.expectRestaurantCount(0);
   });
 
   it("S4 - one restaurant matches its search term", () => {
     openFavorites({ lists: favoritesListsStub(2), restaurantCount: 1 });
-    page.openList("Lista 1").expectRestaurantCount(1);
+    page.openList("List 1").expectRestaurantCount(1);
     page.searchWithin("Uno").expectRestaurantCount(1);
   });
 
   it("S4 - one restaurant disappears on a non-matching search", () => {
     openFavorites({ lists: favoritesListsStub(2), restaurantCount: 1 });
-    page.openList("Lista 1").searchWithin("zzz_no_match");
+    page.openList("List 1").searchWithin("zzz_no_match");
     page.expectRestaurantCount(0);
   });
 
   it("S5 - several restaurants are narrowed by search", () => {
     openFavorites({ lists: favoritesListsStub(2), restaurantCount: 2 });
-    page.openList("Lista 1").expectRestaurantCount(2);
+    page.openList("List 1").expectRestaurantCount(2);
     page.searchWithin("Dos").expectRestaurantCount(1);
   });
 
   it("S5 - several restaurants disappear on a non-matching search", () => {
     openFavorites({ lists: favoritesListsStub(2), restaurantCount: 2 });
-    page.openList("Lista 1").searchWithin("zzz_no_match");
+    page.openList("List 1").searchWithin("zzz_no_match");
     page.expectRestaurantCount(0);
   });
 
   it("S6 - several lists, 0 restaurants, no search shows the empty list state", () => {
     openFavorites({ lists: favoritesListsStub(2), restaurantCount: 0 });
     page.expectListCount(2);
-    page.openList("Lista 1").expectDetailEmpty().expectRestaurantCount(0);
+    page.openList("List 1").expectDetailEmpty().expectRestaurantCount(0);
   });
 });

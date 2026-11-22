@@ -1,6 +1,6 @@
 """
-Inicialización del Firebase Admin SDK.
-Se inicializa una sola vez en caliente (lazy singleton).
+Firebase Admin SDK initialization.
+Initialized once, lazily (lazy singleton).
 """
 from __future__ import annotations
 
@@ -30,7 +30,7 @@ def _using_emulator() -> bool:
 
 
 def get_firebase_app() -> firebase_admin.App:
-    """Devuelve la app Firebase (la inicializa si no existe)."""
+    """Return the Firebase app (initializing it if missing)."""
     global _app
     if _app is None:
         if _using_emulator():
@@ -44,12 +44,12 @@ def get_firebase_app() -> firebase_admin.App:
 
 
 def get_firestore_client():
-    """Devuelve el cliente de Firestore ya inicializado."""
+    """Return the already initialized Firestore client."""
     get_firebase_app()
     return firestore.client()
 
 
 def get_auth_client():
-    """Devuelve el módulo auth de Firebase Admin ya inicializado."""
+    """Return the already initialized Firebase Admin auth module."""
     get_firebase_app()
     return auth

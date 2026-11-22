@@ -1,8 +1,8 @@
 Welcome to EPI-DevorApp's documentation!
 =========================================
 
-Documentación técnica auto-generada del backend (FastAPI) de EPI-DevorApp,
-una aplicación de descubrimiento y recomendación de restaurantes.
+Auto-generated technical documentation for the EPI-DevorApp backend (FastAPI),
+a restaurant discovery and recommendation application.
 
 .. toctree::
    :maxdepth: 2

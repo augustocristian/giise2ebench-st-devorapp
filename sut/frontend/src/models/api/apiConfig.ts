@@ -41,9 +41,41 @@ const getBaseUrl = (): string => {
   if (customUrl) {
     return customUrl;
   }
-  return env.apiUrl || `${window.location.origin}/api`;
+  return env.apiUrl || `${window.location.origin}/api/v1`;
 };
 
 export const getApiUrl = (): string => {
   return getBaseUrl();
+};
+
+const PAGE_SIZE = 100;
+
+/**
+ * Fetches every page of a paginated collection ({items,total,limit,offset})
+ * and returns all the items as a single array.
+ * `makeError` builds the Error to throw when a page answers with a non-2xx status.
+ */
+export const fetchAllPages = async <T = any>(
+  url: string,
+  makeError: (response: Response) => Promise<Error> | Error
+): Promise<T[]> => {
+  const all: T[] = [];
+  let offset = 0;
+  const separator = url.includes('?') ? '&' : '?';
+  for (;;) {
+    const response = await fetch(`${url}${separator}limit=${PAGE_SIZE}&offset=${offset}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    if (!response.ok) {
+      throw await makeError(response);
+    }
+    const page = await response.json();
+    const items: T[] = page.items ?? [];
+    all.push(...items);
+    if (items.length === 0 || offset + PAGE_SIZE >= (page.total ?? 0)) break;
+    offset += PAGE_SIZE;
+  }
+  return all;
 };

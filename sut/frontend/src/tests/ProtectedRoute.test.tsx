@@ -12,7 +12,7 @@ vi.mock('../models/api/authService', () => ({
 
 import { authService } from '../models/api/authService';
 
-// Helper: renderiza ProtectedRoute dentro de un Router con rutas de login y protegida
+// Helper: renders ProtectedRoute inside a Router with login and protected routes
 const renderProtectedRoute = () =>
     render(
         <MemoryRouter initialEntries={['/protected']}>
@@ -33,10 +33,10 @@ const renderProtectedRoute = () =>
 describe('ProtectedRoute', () => {
     beforeEach(() => vi.clearAllMocks());
 
-    // ── 1. Estado de carga ───────────────────────────────────────────────────
+    // ── 1. Loading state ───────────────────────────────────────────────────
 
-    it('muestra "Comprobando sesión..." mientras se verifica la autenticación', () => {
-        // La promesa nunca resuelve → simula carga indefinida
+    it('shows "Comprobando sesión..." while authentication is being verified', () => {
+        // The promise never resolves → simulates an indefinite load
         (authService.getMe as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
         renderProtectedRoute();
         expect(screen.getByText('Comprobando sesión...')).toBeInTheDocument();
@@ -44,15 +44,15 @@ describe('ProtectedRoute', () => {
 
     // ── 2. Autenticado ────────────────────────────────────────────────────────
 
-    it('renderiza el contenido hijo cuando el usuario está autenticado', async () => {
-        (authService.getMe as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 1, nombre: 'Test' });
+    it('renders the child content when the user is authenticated', async () => {
+        (authService.getMe as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 1, first_name: 'Test' });
         renderProtectedRoute();
         await waitFor(() => {
             expect(screen.getByText('Protected Content')).toBeInTheDocument();
         });
     });
 
-    it('no muestra el mensaje de carga una vez autenticado', async () => {
+    it('does not show the loading message once authenticated', async () => {
         (authService.getMe as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 1 });
         renderProtectedRoute();
         await waitFor(() => {
@@ -62,7 +62,7 @@ describe('ProtectedRoute', () => {
 
     // ── 3. No autenticado ─────────────────────────────────────────────────────
 
-    it('redirige a /login cuando getMe() lanza un error', async () => {
+    it('redirects to /login when getMe() throws an error', async () => {
         (authService.getMe as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Unauthorized'));
         renderProtectedRoute();
         await waitFor(() => {
@@ -70,7 +70,7 @@ describe('ProtectedRoute', () => {
         });
     });
 
-    it('no muestra el contenido protegido cuando no está autenticado', async () => {
+    it('does not show the protected content when not authenticated', async () => {
         (authService.getMe as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Unauthorized'));
         renderProtectedRoute();
         await waitFor(() => {
@@ -80,7 +80,7 @@ describe('ProtectedRoute', () => {
 
     // ── 4. Llama a getMe ──────────────────────────────────────────────────────
 
-    it('llama a authService.getMe exactamente una vez al montar', async () => {
+    it('calls authService.getMe exactly once on mount', async () => {
         (authService.getMe as ReturnType<typeof vi.fn>).mockResolvedValue({ id: 1 });
         renderProtectedRoute();
         await waitFor(() => expect(authService.getMe).toHaveBeenCalledTimes(1));

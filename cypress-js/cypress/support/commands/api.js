@@ -1,7 +1,7 @@
 // Per-resource API client. Every method yields the full Cypress.Response (4xx/5xx do not
 // fail the command), so specs assert on `.status` / `.body` themselves.
 
-const apiUrl = (path) => `${Cypress.env("apiUrl")}/api${path}`;
+const apiUrl = (path) => `${Cypress.expose("apiUrl")}/api/v1${path}`;
 
 // ── Per-resource client ──────────────────────────────────────────────────
 
@@ -12,12 +12,13 @@ function request(method, path, { body, qs } = {}) {
 export const api = {
   auth: {
     register: (user) => {
-      const { username, email, password, nombre, apellidos, ubicacion } = user;
-      return request("POST", "/register", { body: { username, email, password, nombre, apellidos, ubicacion } });
+      const { username, email, password, first_name, last_name, location } = user;
+      return request("POST", "/users", { body: { username, email, password, first_name, last_name, location } });
     },
-    login: (identifier, password) => request("POST", "/login", { body: { identifier, password } }),
+    login: (identifier, password) => request("POST", "/sessions", { body: { identifier, password } }),
+    logout: () => request("DELETE", "/sessions/current"),
     me: () => request("GET", "/me"),
-    checkAvailability: (query) => request("GET", "/check-availability", { qs: query }),
+    checkAvailability: (query) => request("GET", "/users/availability", { qs: query }),
   },
 
   profile: {
@@ -29,33 +30,41 @@ export const api = {
     remove: (password) => request("DELETE", "/profile", { qs: { password } }),
   },
 
-  favoritos: {
-    createList: (nombre, icono = "Heart") => request("POST", "/favoritos/listas", { body: { nombre, icono } }),
-    lists: () => request("GET", "/favoritos/listas"),
-    getList: (listId) => request("GET", `/favoritos/listas/${listId}`),
-    deleteList: (listId) => request("DELETE", `/favoritos/listas/${listId}`),
-    addRestaurant: (listId, placeId) => request("POST", `/favoritos/listas/${listId}`, { body: { place_id: placeId } }),
-    removeRestaurant: (favoritoId) => request("DELETE", `/favoritos/${favoritoId}`),
+  favorites: {
+    createList: (name, icon = "Heart") => request("POST", "/favorites/lists", { body: { name, icon } }),
+    lists: () => request("GET", "/favorites/lists"),
+    getList: (listId) => request("GET", `/favorites/lists/${listId}`),
+    deleteList: (listId) => request("DELETE", `/favorites/lists/${listId}`),
+    addRestaurant: (listId, placeId) =>
+      request("POST", `/favorites/lists/${listId}/restaurants`, { body: { place_id: placeId } }),
+    removeRestaurant: (listId, favoriteId) => request("DELETE", `/favorites/lists/${listId}/restaurants/${favoriteId}`),
   },
 
-  historial: {
-    add: (placeId) => request("POST", "/historial", { body: { place_id: placeId } }),
-    list: () => request("GET", "/historial"),
-    remove: (entryId) => request("DELETE", `/historial/${entryId}`),
+  history: {
+    add: (placeId) => request("POST", "/history", { body: { place_id: placeId } }),
+    list: (qs) => request("GET", "/history", { qs }),
+    get: (entryId) => request("GET", `/history/${entryId}`),
+    popular: (qs) => request("GET", "/history/popular", { qs }),
+    remove: (entryId) => request("DELETE", `/history/${entryId}`),
   },
 
-  masTarde: {
-    add: (placeId) => request("POST", "/mas-tarde", { body: { place_id: placeId } }),
-    list: () => request("GET", "/mas-tarde"),
-    remove: (entryId) => request("DELETE", `/mas-tarde/${entryId}`),
+  savedForLater: {
+    add: (placeId) => request("POST", "/saved-for-later", { body: { place_id: placeId } }),
+    list: (qs) => request("GET", "/saved-for-later", { qs }),
+    get: (entryId) => request("GET", `/saved-for-later/${entryId}`),
+    remove: (entryId) => request("DELETE", `/saved-for-later/${entryId}`),
   },
 
-  valoraciones: {
-    // scores: { calidad, precio, higiene, trato }
-    create: (placeId, scores, comentario) =>
-      request("POST", "/valoraciones", { body: { place_id: placeId, ...scores, comentario } }),
-    list: () => request("GET", "/valoraciones"),
-    remove: (placeId) => request("DELETE", `/valoraciones/${placeId}`),
+  ratings: {
+    // scores: { quality, price, hygiene, service }. PUT upsert: 201 when created, 200 when replaced.
+    create: (placeId, scores, comment) =>
+      request("PUT", `/restaurants/${placeId}/rating`, { body: { ...scores, comment } }),
+    get: (placeId) => request("GET", `/restaurants/${placeId}/rating`),
+    list: (qs) => request("GET", "/ratings", { qs }),
+    byRestaurant: (placeId, qs) => request("GET", `/restaurants/${placeId}/ratings`, { qs }),
+    remove: (placeId) => request("DELETE", `/restaurants/${placeId}/rating`),
+    like: (ratingId) => request("POST", `/ratings/${ratingId}/likes`),
+    unlike: (ratingId) => request("DELETE", `/ratings/${ratingId}/likes`),
   },
 
   recommendations: {

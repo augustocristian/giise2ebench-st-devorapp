@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 ============================================================
- SISTEMA DE RECOMENDACIÓN HÍBRIDO — DevorApp (CORREGIDO)
+ HYBRID RECOMMENDATION SYSTEM - DevorApp (FIXED)
 ============================================================
-Cambios principales respecto a la versión original:
-  1. Sin train/test split con datos tan pequeños → leave-one-out CV
-  2. Embeddings más pequeños para evitar overfitting
-  3. Dropout añadido en la fusión
-  4. Sin EarlyStopping agresivo — epochs fijos moderados
+Main changes from the original version:
+  1. No train/test split with such small data -> leave-one-out CV
+  2. Smaller embeddings to avoid overfitting
+  3. Dropout added in the fusion layer
+  4. No aggressive EarlyStopping; moderate fixed epochs
   5. score_norm calculado correctamente
-  6. predecir_para_usuario vectorizado (más eficiente)
-  7. Semilla fija para reproducibilidad
+  6. Vectorized predict_for_user (more efficient)
+  7. Fixed seed for reproducibility
 ============================================================
 """
 
@@ -20,17 +20,17 @@ import tensorflow as tf
 from tensorflow.keras import layers, models, callbacks, regularizers
 import os
 
-# Semilla fija para resultados reproducibles
+# Fixed seed for reproducible results
 tf.random.set_seed(42)
 np.random.seed(42)
 
 # ─────────────────────────────────────────────────
-# 1. DATOS SIMULADOS
+# 1. SIMULATED DATA
 # ─────────────────────────────────────────────────
-# Tags: [Italiano, Rápida, Japonés, Mediterráneo, Mexicano]
+# Tags: [Italian, Fast, Japanese, Mediterranean, Mexican]
 # Precio nivel: 0=Barato, 1=Moderado, 2=Caro, 3=Muy Caro
 
-restaurantes = pd.DataFrame([
+restaurants = pd.DataFrame([
     {"id": 0, "nombre": "Pizzería Popular",  "tags": [1,0,0,0,0], "precio_nivel": 0, "estrellas_google": 4.2},
     {"id": 1, "nombre": "Trattoria Lujo",    "tags": [1,0,0,0,0], "precio_nivel": 2, "estrellas_google": 4.7},
     {"id": 2, "nombre": "Burger King",       "tags": [0,1,0,0,0], "precio_nivel": 0, "estrellas_google": 3.5},
@@ -40,21 +40,21 @@ restaurantes = pd.DataFrame([
     {"id": 6, "nombre": "Taco Loco",         "tags": [0,0,0,0,1], "precio_nivel": 0, "estrellas_google": 4.1},
 ])
 
-usuarios = pd.DataFrame([
+users = pd.DataFrame([
     {"id": 0, "nombre": "Italian-Lover",  "avg_rating": 4.2, "num_val": 12, "favoritos": [0, 1]},
     {"id": 1, "nombre": "Low-Cost",       "avg_rating": 3.8, "num_val": 8,  "favoritos": [2, 4, 6]},
     {"id": 2, "nombre": "Sushi-Fan",      "avg_rating": 4.5, "num_val": 20, "favoritos": [3, 4]},
     {"id": 3, "nombre": "Explorer",       "avg_rating": 3.5, "num_val": 30, "favoritos": [0, 3, 6]},
 ])
 
-interacciones = pd.DataFrame([
-    # Italian-Lover (user 0) — ama lo italiano, odia el sushi
+interactions = pd.DataFrame([
+    # Italian-Lover (user 0): loves Italian, hates sushi
     {"user_id": 0, "rest_id": 0, "calidad": 5, "precio": 5, "higiene": 4, "trato": 5, "es_finde": 1, "franja": 2},
     {"user_id": 0, "rest_id": 1, "calidad": 5, "precio": 3, "higiene": 5, "trato": 5, "es_finde": 1, "franja": 2},
     {"user_id": 0, "rest_id": 2, "calidad": 2, "precio": 4, "higiene": 3, "trato": 3, "es_finde": 0, "franja": 1},
     {"user_id": 0, "rest_id": 5, "calidad": 4, "precio": 4, "higiene": 4, "trato": 4, "es_finde": 0, "franja": 1},
     {"user_id": 0, "rest_id": 3, "calidad": 1, "precio": 1, "higiene": 1, "trato": 1, "es_finde": 1, "franja": 2},
-    # Low-Cost (user 1) — valora el precio por encima de todo
+    # Low-Cost (user 1): values price above all
     {"user_id": 1, "rest_id": 0, "calidad": 4, "precio": 5, "higiene": 4, "trato": 3, "es_finde": 0, "franja": 2},
     {"user_id": 1, "rest_id": 2, "calidad": 4, "precio": 5, "higiene": 3, "trato": 4, "es_finde": 1, "franja": 2},
     {"user_id": 1, "rest_id": 4, "calidad": 3, "precio": 5, "higiene": 3, "trato": 3, "es_finde": 0, "franja": 1},
@@ -71,25 +71,25 @@ interacciones = pd.DataFrame([
     {"user_id": 3, "rest_id": 1, "calidad": 3, "precio": 2, "higiene": 4, "trato": 3, "es_finde": 1, "franja": 2},
 ])
 
-print(f"Datos cargados: {len(interacciones)} interacciones, "
-      f"{len(usuarios)} usuarios, {len(restaurantes)} restaurantes.")
+print(f"Data loaded: {len(interactions)} interactions, "
+      f"{len(users)} usuarios, {len(restaurants)} restaurantes.")
 
 # ─────────────────────────────────────────────────
 # 2. FEATURE ENGINEERING
 # ─────────────────────────────────────────────────
 
-# CORRECCIÓN CLAVE: el target es la media de las 4 dimensiones normalizada a 0-1.
-# La escala original es 1-5, así que: score_norm = (media - 1) / 4
-interacciones["score_norm"] = (
-    (interacciones["calidad"] + interacciones["precio"] +
-     interacciones["higiene"] + interacciones["trato"]) / 4.0 - 1
+# KEY FIX: the target is the mean of the 4 dimensions, normalized to 0-1.
+# The original scale is 1-5, so: score_norm = (mean - 1) / 4
+interactions["score_norm"] = (
+    (interactions["calidad"] + interactions["precio"] +
+     interactions["higiene"] + interactions["trato"]) / 4.0 - 1
 ) / 4.0
 
-df = interacciones.merge(
-    restaurantes[["id", "tags", "precio_nivel", "estrellas_google"]],
+df = interactions.merge(
+    restaurants[["id", "tags", "precio_nivel", "estrellas_google"]],
     left_on="rest_id", right_on="id"
 ).merge(
-    usuarios[["id", "avg_rating", "num_val"]],
+    users[["id", "avg_rating", "num_val"]],
     left_on="user_id", right_on="id"
 )
 
@@ -100,9 +100,9 @@ df["estrellas_norm"]  = (df["estrellas_google"] - 1) / 4
 
 NUM_TAGS = 5
 user_fav_tags = {}
-for _, u in usuarios.iterrows():
+for _, u in users.iterrows():
     if len(u["favoritos"]) > 0:
-        fav_rests = restaurantes[restaurantes["id"].isin(u["favoritos"])]
+        fav_rests = restaurants[restaurants["id"].isin(u["favoritos"])]
         tags_matrix = np.array(fav_rests["tags"].tolist())
         user_fav_tags[u["id"]] = np.mean(tags_matrix, axis=0)
     else:
@@ -111,7 +111,7 @@ for _, u in usuarios.iterrows():
 df["fav_tags"] = df["user_id"].map(user_fav_tags)
 
 # ─────────────────────────────────────────────────
-# 3. ARRAYS DE ENTRADA
+# 3. INPUT ARRAYS
 # ─────────────────────────────────────────────────
 
 X_user_id   = df["user_id"].values
@@ -127,18 +127,18 @@ franja_ohe  = tf.keras.utils.to_categorical(df["franja"].values, num_classes=3).
 X_time_ctx  = np.concatenate([es_finde, franja_ohe], axis=1)
 
 # ─────────────────────────────────────────────────
-# 4. ARQUITECTURA — ajustada para dataset pequeño
+# 4. ARCHITECTURE - tuned for a small dataset
 # ─────────────────────────────────────────────────
-# CORRECCIÓN: con 17 ejemplos los embeddings grandes (EMB_SIZE=16) memorizan
-# en lugar de generalizar. Reducimos a 8 y añadimos Dropout.
+# FIX: with 17 examples, large embeddings (EMB_SIZE=16) memorize
+# instead of generalizing. Reduced to 8 and added Dropout.
 
-NUM_USERS = len(usuarios)
-NUM_RESTS = len(restaurantes)
+NUM_USERS = len(users)
+NUM_RESTS = len(restaurants)
 EMB_SIZE  = 8    # reducido (era 16)
-L2_REG    = 1e-4 # regularización ligera
+L2_REG    = 1e-4 # light regularization
 
 def build_model():
-    # Torre usuario
+    # User tower
     inp_user_id = layers.Input(shape=(1,), name="input_user_id")
     user_emb    = layers.Embedding(NUM_USERS, EMB_SIZE, name="user_embedding")(inp_user_id)
     user_vec    = layers.Flatten()(user_emb)
@@ -153,7 +153,7 @@ def build_model():
     user_tower = layers.Dense(24, activation="relu",
                               kernel_regularizer=regularizers.l2(L2_REG))(user_tower)
 
-    # Torre restaurante
+    # Restaurant tower
     inp_rest_id = layers.Input(shape=(1,), name="input_rest_id")
     rest_emb    = layers.Embedding(NUM_RESTS, EMB_SIZE, name="rest_embedding")(inp_rest_id)
     rest_vec    = layers.Flatten()(rest_emb)
@@ -172,11 +172,11 @@ def build_model():
     inp_time = layers.Input(shape=(4,), name="input_time_context")
     time_d   = layers.Dense(8, activation="relu")(inp_time)
 
-    # Fusión
+    # Fusion
     fusion = layers.Concatenate()([user_tower, rest_tower, time_d])
     x = layers.Dense(32, activation="relu",
                      kernel_regularizer=regularizers.l2(L2_REG))(fusion)
-    x = layers.Dropout(0.1)(x)   # CORRECCIÓN: dropout evita memorización
+    x = layers.Dropout(0.1)(x)   # FIX: dropout prevents memorization
     x = layers.Dense(16, activation="relu")(x)
     out = layers.Dense(1, activation="sigmoid", name="output")(x)
 
@@ -194,18 +194,18 @@ def build_model():
     return m
 
 model = build_model()
-print("\n📐 Arquitectura:")
+print("\n📐 Architecture:")
 model.summary()
 
 # ─────────────────────────────────────────────────
-# 5. ENTRENAMIENTO — sin split (dataset demasiado pequeño)
+# 5. TRAINING - no split (dataset too small)
 # ─────────────────────────────────────────────────
-# CORRECCIÓN PRINCIPAL: con solo 17 ejemplos, hacer un 80/20 split deja
-# 3 ejemplos de validación, lo que hace que val_loss sea inestable y
-# EarlyStopping corte el entrenamiento demasiado pronto.
-# Entrenamos sobre todos los datos con epochs fijos moderados.
+# MAIN FIX: with only 17 examples, an 80/20 split leaves
+# 3 validation examples, which makes val_loss unstable and
+# makes EarlyStopping cut training too early.
+# Train on all the data with a moderate fixed number of epochs.
 
-print("\n🚀 Entrenando DevorApp_HybridRecommender_v4...")
+print("\n🚀 Training DevorApp_HybridRecommender_v4...")
 
 reduce_lr = callbacks.ReduceLROnPlateau(
     monitor="loss", factor=0.5, patience=30, min_lr=1e-5, verbose=0
@@ -214,7 +214,7 @@ reduce_lr = callbacks.ReduceLROnPlateau(
 history = model.fit(
     x=[X_user_id, X_rest_id, X_tags, X_rest_ctx, X_user_prof, X_user_fav, X_time_ctx],
     y=y,
-    epochs=500,       # epochs fijos — sin EarlyStopping sobre val
+    epochs=500,       # fixed epochs, no EarlyStopping on val
     batch_size=4,
     callbacks=[reduce_lr],
     verbose=0
@@ -222,25 +222,25 @@ history = model.fit(
 
 final_loss = history.history["loss"][-1]
 final_mae  = history.history["mae"][-1]
-print(f"Entrenamiento completado.")
+print(f"Training completed.")
 print(f"   Train MSE: {final_loss:.4f} | Train MAE: {final_mae:.4f}")
 
 # ─────────────────────────────────────────────────
-# 6. INFERENCIA — vectorizada (más eficiente)
+# 6. INFERENCE - vectorized (more efficient)
 # ─────────────────────────────────────────────────
 
-def predecir_para_usuario(user_id: int, es_finde_query: int, franja_query: int) -> pd.DataFrame:
+def predict_for_user(user_id: int, es_finde_query: int, franja_query: int) -> pd.DataFrame:
     """
-    Predice la afinidad del usuario con TODOS los restaurantes a la vez (batch).
-    Más eficiente que hacer una predicción por restaurante.
+    Predict the user's affinity with ALL restaurants at once (batch).
+    More efficient than predicting one restaurant at a time.
     """
-    n = len(restaurantes)
-    user_row = usuarios.iloc[user_id]
+    n = len(restaurants)
+    user_row = users.iloc[user_id]
 
     avg_r_norm = (user_row["avg_rating"] - 1) / 4
-    num_v_norm = user_row["num_val"] / usuarios["num_val"].max()
+    num_v_norm = user_row["num_val"] / users["num_val"].max()
 
-    # Repetir features de usuario n veces
+    # Repeat user features n times
     uid_arr    = np.full(n, user_id)
     u_prof_arr = np.tile([avg_r_norm, num_v_norm], (n, 1)).astype(np.float32)
     u_fav_arr  = np.tile(user_fav_tags[user_id], (n, 1)).astype(np.float32)
@@ -251,11 +251,11 @@ def predecir_para_usuario(user_id: int, es_finde_query: int, franja_query: int) 
     time_vec   = np.array([es_finde_query, *franja_vec], dtype=np.float32)
     time_arr   = np.tile(time_vec, (n, 1)).astype(np.float32)
 
-    # Features de restaurantes
-    rid_arr    = restaurantes["id"].values
-    tags_arr   = np.array(restaurantes["tags"].tolist(), dtype=np.float32)
-    prec_arr   = (restaurantes["precio_nivel"].values / 3).reshape(-1, 1).astype(np.float32)
-    stars_arr  = ((restaurantes["estrellas_google"].values - 1) / 4).reshape(-1, 1).astype(np.float32)
+    # Restaurant features
+    rid_arr    = restaurants["id"].values
+    tags_arr   = np.array(restaurants["tags"].tolist(), dtype=np.float32)
+    prec_arr   = (restaurants["precio_nivel"].values / 3).reshape(-1, 1).astype(np.float32)
+    stars_arr  = ((restaurants["estrellas_google"].values - 1) / 4).reshape(-1, 1).astype(np.float32)
     rctx_arr   = np.concatenate([prec_arr, stars_arr], axis=1)
 
     preds = model.predict(
@@ -264,53 +264,53 @@ def predecir_para_usuario(user_id: int, es_finde_query: int, franja_query: int) 
     )
     scores = preds.flatten() * 4 + 1  # 0-1 → 1-5
 
-    df_pred = restaurantes[["id", "nombre", "estrellas_google", "precio_nivel"]].copy()
+    df_pred = restaurants[["id", "nombre", "estrellas_google", "precio_nivel"]].copy()
     df_pred["Score IA (1-5)"] = np.round(scores, 2)
     return df_pred.sort_values("Score IA (1-5)", ascending=False).reset_index(drop=True)
 
 # ─────────────────────────────────────────────────
-# 7. VERIFICACIÓN: ¿aprende los gustos?
+# 7. VERIFICATION: does it learn the tastes?
 # ─────────────────────────────────────────────────
-# Comprobamos que Italian-Lover puntúa alto lo italiano y bajo el sushi,
-# y que Sushi-Fan hace lo contrario.
+# Check that Italian-Lover scores Italian high and sushi low,
+# and that Sushi-Fan does the opposite.
 
 print("\n" + "="*60)
-print("📊 PREDICCIONES — Sábado Noche (es_finde=1, franja=2)")
+print("📊 PREDICTIONS - Saturday night (es_finde=1, franja=2)")
 print("="*60)
-for _, u_row in usuarios.iterrows():
+for _, u_row in users.iterrows():
     uid = int(u_row["id"])
-    df_u = predecir_para_usuario(uid, es_finde_query=1, franja_query=2)
+    df_u = predict_for_user(uid, es_finde_query=1, franja_query=2)
     print(f"\n🧑 {u_row['nombre']} (user_id={uid})")
     print(df_u[["nombre", "Score IA (1-5)", "estrellas_google", "precio_nivel"]].to_string(index=False))
 
-# Verificación automática de coherencia
+# Automatic coherence check
 print("\n" + "="*60)
-print("✅ VERIFICACIÓN DE COHERENCIA")
+print("✅ COHERENCE CHECK")
 print("="*60)
 
-pred_italian = predecir_para_usuario(0, 1, 2)
-pred_sushi   = predecir_para_usuario(2, 1, 2)
+pred_italian = predict_for_user(0, 1, 2)
+pred_sushi   = predict_for_user(2, 1, 2)
 
-score_pizza_para_italian = pred_italian[pred_italian["nombre"] == "Pizzería Popular"]["Score IA (1-5)"].values[0]
-score_sushi_para_italian = pred_italian[pred_italian["nombre"] == "Sushi Premium"]["Score IA (1-5)"].values[0]
-score_sushi_para_fan     = pred_sushi[pred_sushi["nombre"] == "Sushi Premium"]["Score IA (1-5)"].values[0]
-score_pizza_para_fan     = pred_sushi[pred_sushi["nombre"] == "Pizzería Popular"]["Score IA (1-5)"].values[0]
+score_pizza_for_italian = pred_italian[pred_italian["nombre"] == "Pizzería Popular"]["Score IA (1-5)"].values[0]
+score_sushi_for_italian = pred_italian[pred_italian["nombre"] == "Sushi Premium"]["Score IA (1-5)"].values[0]
+score_sushi_for_fan     = pred_sushi[pred_sushi["nombre"] == "Sushi Premium"]["Score IA (1-5)"].values[0]
+score_pizza_for_fan     = pred_sushi[pred_sushi["nombre"] == "Pizzería Popular"]["Score IA (1-5)"].values[0]
 
-print(f"\nItalian-Lover → Pizzería Popular : {score_pizza_para_italian:.2f} (esperado: alto ≥ 3.5)")
-print(f"Italian-Lover → Sushi Premium   : {score_sushi_para_italian:.2f} (esperado: bajo ≤ 2.5)")
-print(f"Sushi-Fan     → Sushi Premium   : {score_sushi_para_fan:.2f}  (esperado: alto ≥ 4.0)")
-print(f"Sushi-Fan     → Pizzería Popular: {score_pizza_para_fan:.2f}  (esperado: bajo ≤ 3.0)")
+print(f"\nItalian-Lover → Pizzería Popular : {score_pizza_for_italian:.2f} (expected: high >= 3.5)")
+print(f"Italian-Lover → Sushi Premium   : {score_sushi_for_italian:.2f} (expected: low <= 2.5)")
+print(f"Sushi-Fan     → Sushi Premium   : {score_sushi_for_fan:.2f}  (expected: high >= 4.0)")
+print(f"Sushi-Fan     → Pizzería Popular: {score_pizza_for_fan:.2f}  (expected: low <= 3.0)")
 
-ok1 = score_pizza_para_italian > score_sushi_para_italian
-ok2 = score_sushi_para_fan > score_pizza_para_fan
-print(f"\n{'✅' if ok1 else '❌'} Italian-Lover prefiere pizza sobre sushi: {ok1}")
-print(f"{'✅' if ok2 else '❌'} Sushi-Fan prefiere sushi sobre pizza:     {ok2}")
+ok1 = score_pizza_for_italian > score_sushi_for_italian
+ok2 = score_sushi_for_fan > score_pizza_for_fan
+print(f"\n{'✅' if ok1 else '❌'} Italian-Lover prefers pizza over sushi: {ok1}")
+print(f"{'✅' if ok2 else '❌'} Sushi-Fan prefers sushi over pizza:      {ok2}")
 
 # ─────────────────────────────────────────────────
-# 8. RANKING FINAL HÍBRIDO (IA + DISTANCIA + ESTRELLAS)
+# 8. FINAL HYBRID RANKING (AI + DISTANCE + STARS)
 # ─────────────────────────────────────────────────
 
-contexto_geo = {
+geo_context = {
     "Pizzería Popular":  {"dist_km": 1.2},
     "Trattoria Lujo":    {"dist_km": 4.5},
     "Burger King":       {"dist_km": 0.3},
@@ -321,27 +321,27 @@ contexto_geo = {
 }
 DIST_MAX_KM = 10.0
 
-def ranking_final(score_ia: float, dist_km: float, estrellas_google: float,
+def final_ranking(ai_score: float, dist_km: float, estrellas_google: float,
                   w_ia: float = 0.70, w_dist: float = 0.20, w_stars: float = 0.10) -> float:
-    s_ia    = (score_ia - 1) / 4
+    s_ia    = (ai_score - 1) / 4
     s_dist  = max(0.0, (DIST_MAX_KM - dist_km) / DIST_MAX_KM)
     s_stars = (estrellas_google - 1) / 4
     return round((s_ia * w_ia + s_dist * w_dist + s_stars * w_stars) * 100, 2)
 
 ranking_data = []
-for _, u_row in usuarios.iterrows():
+for _, u_row in users.iterrows():
     uid    = int(u_row["id"])
-    df_pred = predecir_para_usuario(uid, es_finde_query=1, franja_query=2)
+    df_pred = predict_for_user(uid, es_finde_query=1, franja_query=2)
     for _, row in df_pred.iterrows():
         nombre = row["nombre"]
-        ctx    = contexto_geo.get(nombre, {"dist_km": DIST_MAX_KM})
+        ctx    = geo_context.get(nombre, {"dist_km": DIST_MAX_KM})
         ranking_data.append({
             "Usuario":          u_row["nombre"],
             "Restaurante":      nombre,
             "Score IA (1-5)":   row["Score IA (1-5)"],
             "Distancia (km)":   ctx["dist_km"],
             "Estrellas Google": row["estrellas_google"],
-            "Puntuación Final": ranking_final(row["Score IA (1-5)"], ctx["dist_km"], row["estrellas_google"]),
+            "Puntuación Final": final_ranking(row["Score IA (1-5)"], ctx["dist_km"], row["estrellas_google"]),
         })
 
 df_ranking = (pd.DataFrame(ranking_data)
@@ -349,7 +349,7 @@ df_ranking = (pd.DataFrame(ranking_data)
               .reset_index(drop=True))
 
 print("\n" + "="*60)
-print("🏆 RANKING HÍBRIDO FINAL (IA + DISTANCIA + ESTRELLAS)")
+print("🏆 FINAL HYBRID RANKING (AI + DISTANCE + STARS)")
 print("="*60)
 print(df_ranking.to_string(index=False))
 
@@ -360,4 +360,4 @@ print(df_ranking.to_string(index=False))
 save_path = "./models/modelo_v4.h5"
 os.makedirs("./models", exist_ok=True)
 model.save(save_path)
-print(f"\n💾 Modelo guardado en: {save_path}")
+print(f"\n💾 Model saved at: {save_path}")

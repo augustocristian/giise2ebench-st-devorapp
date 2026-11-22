@@ -5,28 +5,23 @@ using static Microsoft.Playwright.Assertions;
 namespace DevorApp.E2ETests.Pages;
 
 /// <summary>
-/// Page object for /recommend-restaurants. Port of
-/// epigijon.devorapp.e2e.functional.pages.RecommendPage.
-///
-/// Covers the search form (categories, price levels, boolean toggles,
-/// location selector) and the results panel (suggestion cards).
+/// Page object for /recommend-restaurants: the search form (cuisines, price levels, toggles,
+/// location) and the results panel. Ready once the preferred location name has loaded.
 /// </summary>
 public class RecommendPage : BasePage
 {
-    // Filters
-    private ILocator CategoryInput => Page.Locator("input[placeholder='+ Añadir tipo de cocina...']");
-    private ILocator SearchBtn => ByXPath("//button[contains(.,'Buscar recomendaciones')]");
-    private ILocator LocPrefRadio => ByXPath("//label[contains(.,'Usar ubicación preferida')]//input");
-    private ILocator LocOtherRadio => ByXPath("//label[contains(.,'Escoger otra ubicación')]//input");
-    private ILocator LocOtherInput => Page.Locator("input[placeholder='Ej. Madrid, Barcelona...']");
-    private ILocator NoPriceCheck => ByXPath("//label[contains(.,'Incluir sitios sin precio confirmado')]//input");
-    private ILocator OpenNowCheck => ByXPath("//label[contains(.,'Solo lugares abiertos ahora')]//input");
-    private ILocator PrefLocLabel => ByXPath("//label[contains(.,'Usar ubicación preferida')]");
+    private ILocator CategoryInput => ByTestId("recommend-cuisine-input");
+    private ILocator SearchBtn => ByTestId("recommend-submit");
+    private ILocator LocPrefRadio => ByTestId("recommend-location-preferred");
+    private ILocator LocOtherRadio => ByTestId("recommend-location-custom");
+    private ILocator LocOtherInput => ByTestId("recommend-location-input");
+    private ILocator NoPriceCheck => ByTestId("recommend-include-no-price");
+    private ILocator OpenNowCheck => ByTestId("recommend-open-now");
+    private ILocator PreferredName => ByTestId("recommend-preferred-location-name");
 
-    // Results
-    private ILocator ResultCards => Page.Locator(".suggestion-card");
-    private ILocator ResultsTitle => ByXPath("//*[contains(text(),'Sugerencias para ti')]");
-    private ILocator ErrorMsg => Page.Locator(".message.error");
+    private ILocator ResultCards => ByTestId("recommend-result-card");
+    private ILocator ResultsTitle => ByTestId("recommend-results-title");
+    private ILocator ErrorMsg => ByTestId("recommend-error");
 
     private RecommendPage(IPage page) : base(page)
     {
@@ -37,68 +32,50 @@ public class RecommendPage : BasePage
     protected override async Task WaitReadyAsync()
     {
         await SearchBtn.WaitForAsync();
-        await PrefLocLabel.WaitForAsync();
-        // Wait until the preferred-location label no longer shows the placeholder "Desconocida"
-        await Expect(PrefLocLabel).Not.ToContainTextAsync("Desconocida");
+        await PreferredName.WaitForAsync();
+        // The label shows "Desconocida" until the user's preferred location has loaded
+        await Expect(PreferredName).Not.ToContainTextAsync("Desconocida");
     }
 
-    // ── Category tags ────────────────────────────────────────────────────────
-
-    /// <summary>Adds a cuisine category by typing <paramref name="query"/>
-    /// in the autocomplete input and clicking the option containing
-    /// <paramref name="optionLabel"/>.</summary>
-    public async Task<RecommendPage> AddCategoryAsync(string query, string optionLabel)
+    /// <summary>Types <paramref name="query"/> in the cuisine input and picks the dropdown option for
+    /// <paramref name="tagId"/> (id from the frontend tags.json, e.g. mexican_restaurant).</summary>
+    public async Task<RecommendPage> AddCategoryAsync(string query, string tagId)
     {
         await CategoryInput.ClickAsync();
         await CategoryInput.FillAsync(query);
 
-        // The dropdown renders sibling div options next to the input
-        var option = ByXPath(
-            "//input[@placeholder='+ Añadir tipo de cocina...']" +
-            $"/following-sibling::div//div[contains(text(),'{optionLabel}')]");
+        var option = Page.Locator(TestId.CuisineOption(tagId));
         await option.WaitForAsync();
         await option.ClickAsync();
         return this;
     }
 
-    // ── Price levels ─────────────────────────────────────────────────────────
-
-    /// <summary>Clicks the price button with the given label (e.g. "€", "€€", "€€€").</summary>
-    public async Task<RecommendPage> ClickPriceAsync(string label)
+    /// <param name="level">1 (cheapest) to 4.</param>
+    public async Task<RecommendPage> ClickPriceAsync(int level)
     {
-        var button = Page.Locator("button").Filter(ExactTextFilter(label));
-        if (await button.CountAsync() == 0)
-            throw new ElementNotFoundException($"Price button '{label}' not found");
-        await button.First.ClickAsync();
+        await Page.Locator(TestId.Price(level)).ClickAsync();
         return this;
     }
 
-    // ── Boolean toggles ──────────────────────────────────────────────────────
-
-    /// <summary>Sets the "Incluir sitios sin precio confirmado" checkbox to <paramref name="checkedState"/>.</summary>
     public async Task<RecommendPage> SetIncludeNoPriceAsync(bool checkedState)
     {
         if (await NoPriceCheck.IsCheckedAsync() != checkedState) await NoPriceCheck.ClickAsync();
         return this;
     }
 
-    /// <summary>Sets the "Solo lugares abiertos ahora" checkbox to <paramref name="checkedState"/>.</summary>
     public async Task<RecommendPage> SetOpenNowAsync(bool checkedState)
     {
         if (await OpenNowCheck.IsCheckedAsync() != checkedState) await OpenNowCheck.ClickAsync();
         return this;
     }
 
-    // ── Location ─────────────────────────────────────────────────────────────
-
-    /// <summary>Selects "Usar ubicación preferida".</summary>
     public async Task<RecommendPage> SelectPreferredLocationAsync()
     {
         await LocPrefRadio.ClickAsync();
         return this;
     }
 
-    /// <summary>Selects "Escoger otra ubicación" and types a location string.</summary>
+    /// <summary>Selects the "other location" option and types a location.</summary>
     public async Task<RecommendPage> SelectOtherLocationAsync(string location)
     {
         await LocOtherRadio.ClickAsync();
@@ -106,26 +83,20 @@ public class RecommendPage : BasePage
         return this;
     }
 
-    // ── Search ───────────────────────────────────────────────────────────────
-
-    /// <summary>Clicks "Buscar recomendaciones".</summary>
     public async Task<RecommendPage> SearchAsync()
     {
         await SearchBtn.ClickAsync();
         return this;
     }
 
-    // ── Results ──────────────────────────────────────────────────────────────
-
-    /// <summary>Returns the number of result suggestion-cards shown.</summary>
     public Task<int> GetResultCountAsync() => ResultCards.CountAsync();
 
-    /// <summary>Returns true if the "Sugerencias para ti" title is visible.</summary>
     public Task<bool> IsResultsTitleVisibleAsync() => ResultsTitle.IsVisibleAsync();
 
-    /// <summary>Returns the text of the visible error message, or empty string.</summary>
     public Task<string> GetErrorMessageAsync() => TextOrEmptyAsync(ErrorMsg);
 
-    /// <summary>Returns true if a validation error message is visible.</summary>
     public Task<bool> HasErrorMessageAsync() => ErrorMsg.IsVisibleAsync();
+
+    /// <summary>Waits until exactly <paramref name="count"/> result cards are rendered.</summary>
+    public Task WaitForResultCountAsync(int count) => Expect(ResultCards).ToHaveCountAsync(count);
 }

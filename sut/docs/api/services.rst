@@ -1,22 +1,22 @@
-Servicios (lógica de negocio)
-=============================
+Services (business logic)
+=========================
 
 .. automodule:: app.services.auth_service
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.services.favoritos_service
+.. automodule:: app.services.favorites_service
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.services.historial_service
+.. automodule:: app.services.history_service
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.services.mas_tarde_service
+.. automodule:: app.services.saved_for_later_service
    :members:
    :undoc-members:
    :show-inheritance:
@@ -26,7 +26,7 @@ Servicios (lógica de negocio)
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.services.valoracion_service
+.. automodule:: app.services.rating_service
    :members:
    :undoc-members:
    :show-inheritance:

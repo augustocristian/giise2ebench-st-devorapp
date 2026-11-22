@@ -34,8 +34,8 @@ describe("Register", () => {
       ["S4", "empty email", { email: "" }, "El email es obligatorio"],
       ["S2", "malformed email", { email: "correosinformato" }, "email válido"],
       ["S5", "empty username", { username: "" }, "nombre de usuario es obligatorio"],
-      ["S7", "empty first name", { nombre: "" }, "nombre es obligatorio"],
-      ["S8", "empty last name", { apellidos: "" }, "apellidos son obligatorios"],
+      ["S7", "empty first name", { first_name: "" }, "nombre es obligatorio"],
+      ["S8", "empty last name", { last_name: "" }, "apellidos son obligatorios"],
       ["S9", "empty password", { password: "" }, "contraseña es obligatoria"],
       ["S10", "6-character password", { password: "Seg123" }, "al menos 8 caracteres"],
     ];

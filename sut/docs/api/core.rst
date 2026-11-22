@@ -1,7 +1,7 @@
-Core (configuración y seguridad)
-================================
+Core (configuration and security)
+=================================
 
-Configuración
+Configuration
 -------------
 
 .. automodule:: app.core.config
@@ -9,8 +9,8 @@ Configuración
    :undoc-members:
    :show-inheritance:
 
-Seguridad (JWT)
----------------
+Security (JWT)
+--------------
 
 .. automodule:: app.core.security
    :members:

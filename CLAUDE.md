@@ -2,7 +2,7 @@
 
 ## Project overview
 
-This repository packages **DevorApp** — a restaurant discovery and recommendation app — as a **System Under Test (SUT)** together with two independent, parallel E2E/API test suites written against it. Users browse restaurants, call them, rate them, and receive personalised recommendations from a Keras neural network. The React web frontend is also packaged as an Android APK.
+This repository packages **DevorApp** — a restaurant discovery and recommendation app — as a **System Under Test (SUT)** together with two independent, parallel E2E/API test suites written against it. Users browse restaurants, call them, rate them, and receive personalized recommendations from a Keras neural network. The React web frontend is also packaged as an Android APK.
 
 The repo is organized as three top-level, mostly-independent projects sharing one Git history:
 
@@ -54,8 +54,8 @@ sut/
 │   └── pyproject.toml
 ├── keras-api/               # Standalone ML recommendation microservice (FastAPI, port 8001)
 ├── docker-compose.yml       # Production: db + backend:8000 + keras-api:8001 + frontend:80/443
-├── docker-compose.dev.override.yml   # Dev override: volumes + hot reload
-└── README.md                 # Full setup/run docs (Spanish)
+├── docker-compose.dev.override.yml   # Dev override: Firebase emulator + gplaces-mock, no credentials (docker-compose.hotreload.yml adds hot reload)
+└── README.md                 # Full setup/run docs
 ```
 
 **Important**: `sut/deploy.ps1` and `sut/deploy.sh` were removed from `sut/` and now live at the **repository root** (see below) — they were relocated so all three top-level projects (`sut`, `selenium-java`, `cypress-js`) share one deployment entry point instead of each nesting its own.
@@ -71,7 +71,7 @@ Standalone Maven project (`retorch-st-devorapp`), sibling to `sut/`. Package roo
 ```
 selenium-java/
 ├── pom.xml                   # JUnit 5, Selenium 4.44, Selema (driver lifecycle), Apache HttpClient, Gson
-├── README.md                 # Full usage docs (Spanish): prereqs, mvn test invocations, report locations
+├── README.md                 # Full usage docs: prereqs, mvn test invocations, report locations
 └── src/test/
     ├── resources/
     │   ├── test.properties    # BROWSER_USER, LOCALHOST_URL (API base), FRONTEND_URL (browser base), HEADLESS_BROWSER
@@ -176,7 +176,7 @@ poetry run alembic upgrade head
 ```bash
 cd sut
 docker compose up --build                                            # production
-docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up  # dev (hot reload)
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up  # dev (emulator + mock)
 ```
 
 ### selenium-java
@@ -200,3 +200,4 @@ npm test
 - **Test-user lifecycle**: both suites create real users via `POST /api/register` against the live backend and delete them via `DELETE /api/profile` in teardown — there is no seeded/fixture database state to reset between runs.
 - **Base-Choice testing**: scenario IDs (`BASE`, `S2`, `S3`, …) appearing in test names/comments across both suites are deliberate equivalence-class references tied to `docs/userrequirements_*.txt`, not arbitrary labels — preserve them when modifying tests.
 - **Three independent `.gitignore` files** exist for `sut/`, `selenium-java/`, and `cypress-js/`, each covering that subproject's own build artifacts/dependencies. The root `.gitignore` only covers cross-cutting IDE (Eclipse, VS Code, PyCharm, IntelliJ) and OS clutter that can appear anywhere in the tree — git applies all of them cumulatively, so avoid duplicating subproject-specific ignores at the root.
+- **Keep this file accurate**: update it whenever the layout, commands or conventions above change, and do not invent content that cannot be verified in the repository.

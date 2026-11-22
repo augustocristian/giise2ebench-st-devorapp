@@ -13,12 +13,12 @@ class RegisterPage {
   }
 
   /** Fills every step 1 field; an empty string leaves the field blank. */
-  fillStep1({ email, username, password, nombre, apellidos }) {
+  fillStep1({ email, username, password, first_name: firstName, last_name: lastName }) {
     cy.tid(R.email).fill(email);
     cy.tid(R.username).fill(username);
     cy.tid(R.password).fill(password);
-    cy.tid(R.nombre).fill(nombre);
-    cy.tid(R.apellidos).fill(apellidos);
+    cy.tid(R.firstName).fill(firstName);
+    cy.tid(R.lastName).fill(lastName);
     return this;
   }
 
@@ -29,7 +29,7 @@ class RegisterPage {
 
   /** Types a location as free text, without picking it from the autocomplete. */
   typeLocation(text) {
-    cy.tid(R.ubicacion).fill(text);
+    cy.tid(R.location).fill(text);
     return this;
   }
 

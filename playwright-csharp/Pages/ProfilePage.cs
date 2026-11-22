@@ -4,34 +4,13 @@ using DevorApp.E2ETests.Common;
 namespace DevorApp.E2ETests.Pages;
 
 /// <summary>
-/// Page object for /profile. Port of
-/// epigijon.devorapp.e2e.functional.pages.ProfilePage.
-///
-/// The profile page renders several card sections identified by their
-/// heading: Información Personal, Ubicación Preferida, Correo Electrónico,
-/// Seguridad, and Zona de Peligro. Each card exposes its own edit/save/
-/// cancel actions.
+/// Page object for /profile. The page has five cards (personal, location, email, security, danger),
+/// each with its own edit / save / cancel actions. Ready once the personal card is shown.
 /// </summary>
 public class ProfilePage : BasePage
 {
-    // Card containers (located by heading text)
-    private ILocator Cards => Page.Locator(".location-info-card");
-
-    // Toast notifications
-    private ILocator ToastSuccess => Page.Locator(".toast.success");
-    private ILocator ToastError => Page.Locator(".toast.error");
-
-    // Delete-account form
-    private ILocator DeleteInput => Page.Locator("#delete-confirm-input");
-
-    // Password change inputs
-    private ILocator CurrentPass => Page.Locator("#current-password-input");
-    private ILocator NewPass => Page.Locator("#new-password-input");
-    private ILocator ConfirmPass => Page.Locator("#confirm-password-input");
-
-    // Email change inputs
-    private ILocator EmailInput => Page.Locator("input[type='email']");
-    private ILocator EmailPass => Page.Locator("#email-password-input");
+    private ILocator ToastSuccess => ByTestId("toast-success");
+    private ILocator ToastError => ByTestId("toast-error");
 
     private ProfilePage(IPage page) : base(page)
     {
@@ -39,158 +18,84 @@ public class ProfilePage : BasePage
 
     public static Task<ProfilePage> CreateAsync(IPage page) => InitAsync(new ProfilePage(page));
 
-    protected override Task WaitReadyAsync() => Cards.First.WaitForAsync();
+    protected override Task WaitReadyAsync() => Page.Locator(TestId.ProfileCard("personal")).WaitForAsync();
 
-    // ── Card helpers ─────────────────────────────────────────────────────────
+    /// <summary>Full text of a card: personal, location, email, security or danger.</summary>
+    public async Task<string> GetCardTextAsync(string card) =>
+        await Page.Locator(TestId.ProfileCard(card)).TextContentAsync() ?? "";
 
-    /// <summary>Returns the card locator whose text contains
-    /// <paramref name="heading"/> (e.g. "Información Personal", "Seguridad").</summary>
-    private ILocator CardWith(string heading) => Cards.Filter(ContainsTextIgnoreCaseFilter(heading));
-
-    /// <summary>Returns the full text of the card with the given heading.</summary>
-    public async Task<string> GetCardTextAsync(string heading)
+    private async Task<ProfilePage> ClickIdAsync(string id)
     {
-        var card = CardWith(heading);
-        if (await card.CountAsync() == 0) throw new ElementNotFoundException($"Profile card not found: {heading}");
-        return await card.First.TextContentAsync() ?? "";
-    }
-
-    /// <summary>Clicks a button inside the card identified by <paramref name="heading"/>.</summary>
-    public async Task<ProfilePage> ClickButtonInCardAsync(string heading, string buttonText)
-    {
-        var card = CardWith(heading);
-        if (await card.CountAsync() == 0) throw new ElementNotFoundException($"Profile card not found: {heading}");
-        var button = card.First.Locator("button").Filter(ContainsTextFilter(buttonText));
-        if (await button.CountAsync() == 0)
-            throw new ElementNotFoundException($"Button '{buttonText}' not found in card: {heading}");
-        await button.First.ClickAsync();
+        await ByTestId(id).ClickAsync();
         return this;
     }
 
-    /// <summary>Fills the nth input (0-based) inside the card identified by <paramref name="heading"/>.</summary>
-    public async Task<ProfilePage> FillInputInCardAsync(string heading, int index, string value)
+    private async Task<ProfilePage> FillIdAsync(string id, string value)
     {
-        var card = CardWith(heading);
-        if (await card.CountAsync() == 0) throw new ElementNotFoundException($"Profile card not found: {heading}");
-        var inputs = card.First.Locator("input");
-        var count = await inputs.CountAsync();
-        if (index >= count) throw new ElementNotFoundException($"Input #{index} not found in card: {heading}");
-        await inputs.Nth(index).FillAsync(value);
+        await ByTestId(id).FillAsync(value);
         return this;
     }
 
-    // ── Personal info ────────────────────────────────────────────────────────
+    // Personal info
+    public Task<ProfilePage> EditPersonalInfoAsync() => ClickIdAsync("profile-personal-edit");
+    public Task<ProfilePage> SavePersonalInfoAsync() => ClickIdAsync("profile-personal-save");
+    public Task<ProfilePage> CancelPersonalInfoAsync() => ClickIdAsync("profile-personal-cancel");
+    public Task<ProfilePage> FillFirstNameAsync(string value) => FillIdAsync("profile-personal-first-name", value);
+    public Task<ProfilePage> FillLastNameAsync(string value) => FillIdAsync("profile-personal-last-name", value);
 
-    /// <summary>Clicks "Editar" in the Información Personal card.</summary>
-    public Task<ProfilePage> EditPersonalInfoAsync() => ClickButtonInCardAsync("Información Personal", "Editar");
+    // Location
+    public Task<ProfilePage> EditLocationAsync() => ClickIdAsync("profile-location-edit");
+    public Task<ProfilePage> SaveLocationAsync() => ClickIdAsync("profile-location-save");
+    public Task<ProfilePage> FillLocationAsync(string value) => FillIdAsync("profile-location-input", value);
 
-    /// <summary>Clicks "Guardar cambios" in the Información Personal card.</summary>
-    public Task<ProfilePage> SavePersonalInfoAsync() => ClickButtonInCardAsync("Información Personal", "Guardar cambios");
+    // Email change
+    public Task<ProfilePage> OpenEmailChangeAsync() => ClickIdAsync("profile-email-edit");
+    public Task<ProfilePage> FillNewEmailAsync(string email) => FillIdAsync("profile-email-input", email);
+    public Task<ProfilePage> FillEmailPasswordAsync(string password) => FillIdAsync("profile-email-password", password);
+    public Task<ProfilePage> SubmitEmailChangeAsync() => ClickIdAsync("profile-email-submit");
+    public ILocator NewEmailInput => ByTestId("profile-email-input");
+    public ILocator EmailPasswordInput => ByTestId("profile-email-password");
 
-    /// <summary>Clicks "Cancelar" in the Información Personal card.</summary>
-    public Task<ProfilePage> CancelPersonalInfoAsync() => ClickButtonInCardAsync("Información Personal", "Cancelar");
+    // Password change
+    public Task<ProfilePage> OpenPasswordChangeAsync() => ClickIdAsync("profile-security-edit");
+    public Task<ProfilePage> SubmitPasswordChangeAsync() => ClickIdAsync("profile-security-submit");
+    public ILocator CurrentPasswordInput => ByTestId("profile-security-current");
+    public ILocator NewPasswordInput => ByTestId("profile-security-new");
 
-    // ── Email change ─────────────────────────────────────────────────────────
-
-    /// <summary>Clicks "Cambiar" in the Correo Electrónico card.</summary>
-    public Task<ProfilePage> OpenEmailChangeAsync() => ClickButtonInCardAsync("Correo Electrónico", "Cambiar");
-
-    /// <summary>Fills the new-email input in the email change form.</summary>
-    public async Task<ProfilePage> FillNewEmailAsync(string email)
-    {
-        await EmailInput.FillAsync(email);
-        return this;
-    }
-
-    /// <summary>Fills the password input in the email change form.</summary>
-    public async Task<ProfilePage> FillEmailPasswordAsync(string password)
-    {
-        await EmailPass.FillAsync(password);
-        return this;
-    }
-
-    /// <summary>Clicks "Cambiar correo" button.</summary>
-    public Task<ProfilePage> SubmitEmailChangeAsync() => ClickButtonInCardAsync("Correo Electrónico", "Cambiar correo");
-
-    // ── Password change ─────────────────────────────────────────────────────
-
-    /// <summary>Clicks "Cambiar contraseña" in the Seguridad card.</summary>
-    public Task<ProfilePage> OpenPasswordChangeAsync() => ClickButtonInCardAsync("Seguridad", "Cambiar contraseña");
-
-    /// <summary>Fills all three password fields.</summary>
     public async Task<ProfilePage> FillPasswordChangeAsync(string current, string newPassword, string confirm)
     {
-        await CurrentPass.FillAsync(current);
-        await NewPass.FillAsync(newPassword);
-        await ConfirmPass.FillAsync(confirm);
-        return this;
+        await FillIdAsync("profile-security-current", current);
+        await FillIdAsync("profile-security-new", newPassword);
+        return await FillIdAsync("profile-security-confirm", confirm);
     }
 
-    /// <summary>Clicks "Actualizar contraseña" button.</summary>
-    public Task<ProfilePage> SubmitPasswordChangeAsync() => ClickButtonInCardAsync("Seguridad", "Actualizar contraseña");
+    // Delete account
+    public Task<ProfilePage> OpenDeleteAccountAsync() => ClickIdAsync("profile-danger-open");
+    public Task<ProfilePage> FillDeleteConfirmAsync(string text) => FillIdAsync("profile-danger-confirm-input", text);
+    public Task<ProfilePage> SubmitDeleteAccountAsync() => ClickIdAsync("profile-danger-submit");
+    public Task<bool> IsDeleteButtonEnabledAsync() => ByTestId("profile-danger-submit").IsEnabledAsync();
 
-    // ── Delete account ───────────────────────────────────────────────────────
-
-    /// <summary>Clicks "Eliminar cuenta permanentemente" in the Zona de Peligro card.</summary>
-    public Task<ProfilePage> OpenDeleteAccountAsync() =>
-        ClickButtonInCardAsync("Zona de Peligro", "Eliminar cuenta permanentemente");
-
-    /// <summary>Types the confirmation text in the delete-account input.</summary>
-    public async Task<ProfilePage> FillDeleteConfirmAsync(string text)
-    {
-        await DeleteInput.FillAsync(text);
-        return this;
-    }
-
-    /// <summary>Clicks the final "Eliminar permanentemente" button.</summary>
-    public Task<ProfilePage> SubmitDeleteAccountAsync() =>
-        ClickButtonInCardAsync("Zona de Peligro", "Eliminar permanentemente");
-
-    /// <summary>Returns true if the final delete button is enabled.</summary>
-    public async Task<bool> IsDeleteButtonEnabledAsync()
-    {
-        var card = CardWith("Zona de Peligro");
-        if (await card.CountAsync() == 0) throw new ElementNotFoundException("Profile card not found: Zona de Peligro");
-        var button = card.First.Locator("button").Filter(ContainsTextFilter("Eliminar permanentemente"));
-        if (await button.CountAsync() == 0) throw new ElementNotFoundException("Delete button not found");
-        return await button.First.IsEnabledAsync();
-    }
-
-    // ── Toast queries ────────────────────────────────────────────────────────
-
-    /// <summary>Returns true if a success toast is visible.</summary>
+    // Toasts
     public Task<bool> HasSuccessToastAsync() => ToastSuccess.First.IsVisibleAsync();
-
-    /// <summary>Returns the text of the last success toast, or empty string.</summary>
-    public async Task<string> GetSuccessToastTextAsync()
-    {
-        var count = await ToastSuccess.CountAsync();
-        return count == 0 ? "" : (await ToastSuccess.Nth(count - 1).TextContentAsync() ?? "");
-    }
-
-    /// <summary>Returns true if an error toast is visible.</summary>
+    public Task<string> GetSuccessToastTextAsync() => LastTextAsync(ToastSuccess);
     public Task<bool> HasErrorToastAsync() => ToastError.First.IsVisibleAsync();
+    public Task<string> GetErrorToastTextAsync() => LastTextAsync(ToastError);
+    public Task<ProfilePage> DismissSuccessToastAsync() => DismissLastAsync(ToastSuccess);
+    public Task<ProfilePage> DismissErrorToastAsync() => DismissLastAsync(ToastError);
 
-    /// <summary>Returns the text of the last error toast, or empty string.</summary>
-    public async Task<string> GetErrorToastTextAsync()
+    /// <summary>Waits for a toast of the given type: success or error.</summary>
+    public Task WaitForToastAsync(string type) => Page.Locator(TestId.Toast(type)).First.WaitForAsync();
+
+    private static async Task<string> LastTextAsync(ILocator locator)
     {
-        var count = await ToastError.CountAsync();
-        return count == 0 ? "" : (await ToastError.Nth(count - 1).TextContentAsync() ?? "");
+        var count = await locator.CountAsync();
+        return count == 0 ? "" : (await locator.Nth(count - 1).TextContentAsync() ?? "");
     }
 
-    /// <summary>Clicks the last visible success toast to dismiss it.</summary>
-    public async Task<ProfilePage> DismissSuccessToastAsync()
+    private async Task<ProfilePage> DismissLastAsync(ILocator locator)
     {
-        var count = await ToastSuccess.CountAsync();
-        if (count > 0) await ToastSuccess.Nth(count - 1).ClickAsync();
-        return this;
-    }
-
-    /// <summary>Clicks the last visible error toast to dismiss it.</summary>
-    public async Task<ProfilePage> DismissErrorToastAsync()
-    {
-        var count = await ToastError.CountAsync();
-        if (count > 0) await ToastError.Nth(count - 1).ClickAsync();
+        var count = await locator.CountAsync();
+        if (count > 0) await locator.Nth(count - 1).ClickAsync();
         return this;
     }
 }

@@ -4,18 +4,18 @@ using DevorApp.E2ETests.Common;
 namespace DevorApp.E2ETests.Pages;
 
 /// <summary>
-/// Page object for the Favorites page (/favorites). Port of
-/// epigijon.devorapp.e2e.functional.pages.FavoritesPage.
+/// Page object for /favorites: the list overview and the detail view of one list.
+/// Ready once the lists (or the empty state) are shown and the spinner is gone.
 /// </summary>
 public class FavoritesPage : BasePage
 {
-    private ILocator ListCards => Page.Locator(".fav-list-card");
-    private ILocator RestaurantCards => Page.Locator(".restaurant-compact-card");
-    private ILocator EmptyListsText => ByXPath("//*[contains(text(), 'Aún no tienes listas')]");
-    private ILocator EmptyDetailText => ByXPath("//*[contains(text(), 'Esta lista está vacía')]");
-    private ILocator SearchInput => Page.Locator("input[placeholder='Buscar en esta lista...']");
-    private ILocator LoadingSpinner => Page.Locator(".loading-spinner");
-    private ILocator DetailLoadingSpinner => Page.Locator(".fav-detail-view .loading-spinner");
+    private ILocator ListCards => ByTestId("favorites-list-card");
+    private ILocator RestaurantCards => ByTestId("restaurant-card");
+    private ILocator EmptyLists => ByTestId("favorites-empty");
+    private ILocator EmptyDetail => ByTestId("favorites-detail-empty");
+    private ILocator SearchInput => ByTestId("favorites-search");
+    private ILocator Loading => ByTestId("favorites-loading");
+    private ILocator DetailLoading => ByTestId("favorites-detail-loading");
 
     private FavoritesPage(IPage page) : base(page)
     {
@@ -25,10 +25,8 @@ public class FavoritesPage : BasePage
 
     protected override async Task WaitReadyAsync()
     {
-        await AnyOf(".fav-list-card", "xpath=//*[contains(text(),'Aún no tienes listas')]",
-            ".favorites-container, .fav-page").First.WaitForAsync();
-        // Wait for main loading spinner to disappear
-        await LoadingSpinner.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
+        await AnyOf(TestId.Of("favorites-list-card"), TestId.Of("favorites-empty")).First.WaitForAsync();
+        await WaitHiddenAsync(Loading);
     }
 
     public Task<int> GetListCountAsync() => ListCards.CountAsync();
@@ -38,28 +36,30 @@ public class FavoritesPage : BasePage
         var count = await ListCards.CountAsync();
         if (index < 0 || index >= count)
             throw new ElementNotFoundException($"Favorites list card not found at index: {index}");
-        await ListCards.Nth(index).ClickAsync();
-        // Wait for list detail view search input to appear
-        await SearchInput.WaitForAsync();
-        // Wait for list detail loading spinner to disappear
-        await DetailLoadingSpinner.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
+        await OpenListAsync(ListCards.Nth(index));
     }
 
+    /// <summary>Opens the list whose name contains <paramref name="name"/> (case-insensitive).</summary>
     public async Task OpenListByNameAsync(string name)
     {
-        var target = ListCards.Filter(ContainsTextIgnoreCaseFilter(name));
+        var target = ListCards.Filter(new LocatorFilterOptions { Has = ByTestId("favorites-list-name").Filter(new LocatorFilterOptions { HasText = name }) });
         if (await target.CountAsync() == 0)
             throw new ElementNotFoundException($"Favorites list card not found with name: {name}");
-        await target.First.ClickAsync();
+        await OpenListAsync(target.First);
+    }
+
+    private async Task OpenListAsync(ILocator card)
+    {
+        await card.Locator(TestId.Of("favorites-list-open")).ClickAsync();
         await SearchInput.WaitForAsync();
-        await DetailLoadingSpinner.WaitForAsync(new LocatorWaitForOptions { State = WaitForSelectorState.Hidden });
+        await WaitHiddenAsync(DetailLoading);
     }
 
     public Task<int> GetRestaurantCountAsync() => RestaurantCards.CountAsync();
 
-    public Task<bool> IsEmptyStateVisibleAsync() => EmptyListsText.IsVisibleAsync();
+    public Task<bool> IsEmptyStateVisibleAsync() => EmptyLists.IsVisibleAsync();
 
-    public Task<bool> IsDetailEmptyStateVisibleAsync() => EmptyDetailText.IsVisibleAsync();
+    public Task<bool> IsDetailEmptyStateVisibleAsync() => EmptyDetail.IsVisibleAsync();
 
     public Task SearchWithinAsync(string text) => SearchInput.FillAsync(text);
 }

@@ -6,11 +6,11 @@ from fastapi import Cookie, Depends, HTTPException, status
 
 from app.core.config import settings
 from app.models.entities.usuarios import Usuario
-from app.infrastructure.repositories.usuario_repo import get_usuario_by_uid
+from app.infrastructure.repositories.usuario_repo import get_user_by_uid
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
-    """Genera un JWT firmado con PyJWT."""
+    """Generate a JWT signed with PyJWT."""
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -23,8 +23,8 @@ def get_current_user(
     access_token: Optional[str] = Cookie(default=None),
 ) -> Usuario:
     """
-    Dependencia FastAPI: decodifica el JWT de la cookie y carga el usuario
-    desde Firebase Firestore.
+    FastAPI dependency: decode the JWT from the cookie and load the user
+    from Firebase Firestore.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -47,7 +47,7 @@ def get_current_user(
     except jwt.InvalidTokenError:
         raise credentials_exception
 
-    user = get_usuario_by_uid(user_id)
+    user = get_user_by_uid(user_id)
     if user is None:
         raise credentials_exception
     return user

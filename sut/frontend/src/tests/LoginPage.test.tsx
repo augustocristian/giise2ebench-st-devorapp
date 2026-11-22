@@ -17,7 +17,7 @@ vi.mock('@react-oauth/google', () => ({
 
 import { authService } from '../models/api/authService';
 
-// Helper: render LoginPage dentro de un Router (necesario por useNavigate/Link)
+// Helper: render LoginPage inside a Router (required by useNavigate/Link)
 const renderLoginPage = () =>
     render(
         <MemoryRouter initialEntries={['/login']}>
@@ -30,8 +30,8 @@ describe('LoginPage', () => {
         vi.clearAllMocks();
     });
 
-    // ── 1. Renderizado básico ────────────────────────────────────────────────
-    it('debe renderizar el formulario de login con todos sus elementos', () => {
+    // ── 1. Basic rendering ────────────────────────────────────────────────
+    it('should render the login form with all its elements', () => {
         renderLoginPage();
 
         expect(screen.getByText('Iniciar sesión')).toBeInTheDocument();
@@ -42,8 +42,8 @@ describe('LoginPage', () => {
         expect(screen.getByRole('link', { name: 'Regístrate' })).toBeInTheDocument();
     });
 
-    // ── 2. Validación: ambos campos vacíos ───────────────────────────────────
-    it('debe mostrar error si se envía el formulario con todos los campos vacíos', async () => {
+    // ── 2. Validation: both fields empty ───────────────────────────────────
+    it('should show an error if the form is submitted with all fields empty', async () => {
         renderLoginPage();
 
         fireEvent.click(screen.getByRole('button', { name: 'Entrar' }));
@@ -55,8 +55,8 @@ describe('LoginPage', () => {
         expect(authService.login).not.toHaveBeenCalled();
     });
 
-    // ── 3. Validación: solo contraseña vacía ─────────────────────────────────
-    it('debe mostrar error si falta la contraseña', async () => {
+    // ── 3. Validation: only password empty ─────────────────────────────────
+    it('should show an error if the password is missing', async () => {
         renderLoginPage();
 
         fireEvent.change(screen.getByLabelText('Email o usuario'), {
@@ -72,9 +72,9 @@ describe('LoginPage', () => {
     });
 
     // ── 4. Login exitoso ─────────────────────────────────────────────────────
-    it('debe llamar a authService.login y mostrar mensaje de bienvenida al enviar credenciales válidas', async () => {
+    it('should call authService.login and show a welcome message when submitting valid credentials', async () => {
         (authService.login as ReturnType<typeof vi.fn>).mockResolvedValue({
-            user: { nombre: 'Ana' },
+            user: { first_name: 'Ana' },
         });
 
         renderLoginPage();
@@ -97,7 +97,7 @@ describe('LoginPage', () => {
     });
 
     // ── 5. Login fallido ─────────────────────────────────────────────────────
-    it('debe mostrar el mensaje de error cuando el servicio rechaza las credenciales', async () => {
+    it('should show the error message when the service rejects the credentials', async () => {
         (authService.login as ReturnType<typeof vi.fn>).mockRejectedValue(
             new Error('Credenciales incorrectas')
         );
@@ -117,9 +117,9 @@ describe('LoginPage', () => {
         });
     });
 
-    // ── 6. El botón se deshabilita mientras carga ────────────────────────────
-    it('debe deshabilitar el botón Entrar mientras se procesa el login', async () => {
-        // Promesa que no resuelve nunca → simula carga prolongada
+    // ── 6. The button is disabled while loading ────────────────────────────
+    it('should disable the Entrar button while login is processing', async () => {
+        // Promise that never resolves → simulates a long load
         (authService.login as ReturnType<typeof vi.fn>).mockReturnValue(new Promise(() => {}));
 
         renderLoginPage();
@@ -139,22 +139,22 @@ describe('LoginPage', () => {
         });
     });
 
-    // ── 7. Formulario de recuperación de contraseña ───────────────────────────
-    it('debe mostrar el formulario de restablecimiento al hacer clic en "¿Olvidaste tu contraseña?"', () => {
+    // ── 7. Password recovery form ───────────────────────────
+    it('should show the reset form when clicking "¿Olvidaste tu contraseña?"', () => {
         renderLoginPage();
 
         fireEvent.click(screen.getByText('¿Olvidaste tu contraseña?'));
 
-        // El componente real muestra 'Recuperar contraseña'
+        // The real component shows 'Recuperar contraseña'
         expect(screen.getByText('Recuperar contraseña')).toBeInTheDocument();
         expect(screen.getByLabelText('Correo electrónico')).toBeInTheDocument();
         expect(screen.getByRole('button', { name: 'Enviar enlace' })).toBeInTheDocument();
-        // El componente real muestra 'Volver al inicio de sesión'
+        // The real component shows 'Volver al inicio de sesión'
         expect(screen.getByText('Volver al inicio de sesión')).toBeInTheDocument();
     });
 
-    // ── 8. Volver al login desde recuperación ────────────────────────────────
-    it('debe volver al formulario de login al hacer clic en "Volver al inicio de sesión"', () => {
+    // ── 8. Back to login from recovery ────────────────────────────────
+    it('should return to the login form when clicking "Volver al inicio de sesión"', () => {
         renderLoginPage();
 
         fireEvent.click(screen.getByText('¿Olvidaste tu contraseña?'));
@@ -164,8 +164,8 @@ describe('LoginPage', () => {
         expect(screen.getByText('Iniciar sesión')).toBeInTheDocument();
     });
 
-    // ── 9. El email se pre-rellena en el formulario de reset ─────────────────
-    it('debe pre-rellenar el email en el formulario de reset si ya había uno escrito', () => {
+    // ── 9. The email is pre-filled in the reset form ─────────────────
+    it('should pre-fill the email in the reset form if one was already typed', () => {
         renderLoginPage();
 
         fireEvent.change(screen.getByLabelText('Email o usuario'), {

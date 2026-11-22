@@ -1,36 +1,9 @@
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { CheckCircle, AlertCircle, Info, X, AlertTriangle } from 'lucide-react';
 
-type NotificationType = 'success' | 'error' | 'info' | 'warning';
-
-interface Notification {
-  id: number;
-  message: string;
-  type: NotificationType;
-  removing?: boolean;
-}
-
-interface ConfirmState {
-  open: boolean;
-  message: string;
-  title: string;
-  resolve?: (value: boolean) => void;
-  isDanger?: boolean;
-}
-
-interface NotificationContextType {
-  showNotification: (message: string, type?: NotificationType) => void;
-  showConfirm: (message: string, title?: string, isDanger?: boolean) => Promise<boolean>;
-}
-
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
-
-export const useNotification = () => {
-  const context = useContext(NotificationContext);
-  if (!context) throw new Error('useNotification must be used within a NotificationProvider');
-  return context;
-};
+import { NotificationContext } from './notificationContext';
+import type { Notification, ConfirmState, NotificationType } from './notificationContext';
 
 export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -62,10 +35,10 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     });
   }, []);
 
-  const handleConfirm = (value: boolean) => {
+  const handleConfirm = useCallback((value: boolean) => {
     if (confirm.resolve) confirm.resolve(value);
     setConfirm({ ...confirm, open: false });
-  };
+  }, [confirm]);
 
   useEffect(() => {
     if (!confirm.open) return;
@@ -76,7 +49,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [confirm.open]);
+  }, [confirm.open, handleConfirm]);
 
   const contextValue = useMemo(() => ({
     showNotification,

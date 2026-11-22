@@ -1,4 +1,4 @@
-"""Tests para la capa de infraestructura: GooglePlacesClient y KerasApiClient."""
+"""Tests for the infrastructure layer: GooglePlacesClient and KerasApiClient."""
 import pytest
 from unittest.mock import patch, MagicMock, AsyncMock
 import httpx
@@ -16,7 +16,7 @@ def places_client():
 
 @pytest.mark.asyncio
 async def test_geocode_ok(places_client):
-    """geocode devuelve lat/lng cuando la API responde con resultados."""
+    """geocode returns lat/lng when the API responds with results."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
@@ -28,8 +28,8 @@ async def test_geocode_ok(places_client):
 
 
 @pytest.mark.asyncio
-async def test_geocode_sin_resultados(places_client):
-    """geocode devuelve None cuando la API no encuentra resultados."""
+async def test_geocode_no_results(places_client):
+    """geocode returns None when the API finds no results."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {"results": []}
@@ -40,7 +40,7 @@ async def test_geocode_sin_resultados(places_client):
 
 @pytest.mark.asyncio
 async def test_geocode_timeout(places_client):
-    """geocode devuelve None si se produce un timeout."""
+    """geocode returns None on timeout."""
     with patch("httpx.AsyncClient.get", side_effect=httpx.TimeoutException("timeout")):
         result = await places_client.geocode("Madrid")
     assert result is None
@@ -48,11 +48,11 @@ async def test_geocode_timeout(places_client):
 
 @pytest.mark.asyncio
 async def test_search_places_ok(places_client):
-    """search_places devuelve lugares y next_page_token cuando la API responde bien."""
+    """search_places returns places and next_page_token when the API responds OK."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
-        "places": [{"id": "p1", "displayName": {"text": "Restaurante A"}}],
+        "places": [{"id": "p1", "displayName": {"text": "Restaurant A"}}],
         "nextPageToken": "tok123"
     }
     with patch("httpx.AsyncClient.post", return_value=mock_response):
@@ -63,7 +63,7 @@ async def test_search_places_ok(places_client):
 
 @pytest.mark.asyncio
 async def test_search_places_api_error(places_client):
-    """search_places devuelve listas vacías cuando la API da error."""
+    """search_places returns empty lists when the API errors."""
     mock_response = MagicMock()
     mock_response.status_code = 403
     mock_response.text = "Forbidden"
@@ -73,8 +73,8 @@ async def test_search_places_api_error(places_client):
 
 
 @pytest.mark.asyncio
-async def test_search_places_con_filtros(places_client):
-    """search_places envía los filtros de precio y open_now correctamente."""
+async def test_search_places_with_filters(places_client):
+    """search_places sends the price and open_now filters correctly."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {"places": []}
@@ -90,7 +90,7 @@ async def test_search_places_con_filtros(places_client):
 
 @pytest.mark.asyncio
 async def test_get_place_details_ok(places_client):
-    """get_place_details devuelve el JSON de Google Places correctamente."""
+    """get_place_details returns the Google Places JSON correctly."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {"id": "pid1", "displayName": {"text": "Lugar"}}
@@ -100,8 +100,8 @@ async def test_get_place_details_ok(places_client):
 
 
 @pytest.mark.asyncio
-async def test_get_place_details_no_encontrado(places_client):
-    """get_place_details devuelve None cuando el lugar no existe."""
+async def test_get_place_details_not_found(places_client):
+    """get_place_details returns None when the place does not exist."""
     mock_response = MagicMock()
     mock_response.status_code = 404
     with patch("httpx.AsyncClient.get", return_value=mock_response):
@@ -118,7 +118,7 @@ def keras_client():
 
 @pytest.mark.asyncio
 async def test_get_restaurants_info_ok(keras_client):
-    """get_restaurants_info devuelve el dict de info correctamente."""
+    """get_restaurants_info returns the info dict correctly."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
@@ -132,7 +132,7 @@ async def test_get_restaurants_info_ok(keras_client):
 
 @pytest.mark.asyncio
 async def test_get_restaurants_info_error(keras_client):
-    """get_restaurants_info devuelve dict vacío si hay error de red."""
+    """get_restaurants_info returns an empty dict on network error."""
     with patch("httpx.AsyncClient.post", side_effect=Exception("connection error")):
         result = await keras_client.get_restaurants_info(["p1"])
     assert result == {}
@@ -140,7 +140,7 @@ async def test_get_restaurants_info_error(keras_client):
 
 @pytest.mark.asyncio
 async def test_get_predictions_ok(keras_client):
-    """get_predictions devuelve mapping place_id -> predicted_rating."""
+    """get_predictions returns a place_id -> predicted_rating mapping."""
     mock_response = MagicMock()
     mock_response.status_code = 200
     mock_response.json.return_value = {
@@ -157,7 +157,7 @@ async def test_get_predictions_ok(keras_client):
 
 @pytest.mark.asyncio
 async def test_get_predictions_error(keras_client):
-    """get_predictions devuelve dict vacío si hay error de red."""
+    """get_predictions returns an empty dict on network error."""
     with patch("httpx.AsyncClient.post", side_effect=Exception("timeout")):
         result = await keras_client.get_predictions({"user_id": "u1", "candidates": []})
     assert result == {}
@@ -165,8 +165,8 @@ async def test_get_predictions_error(keras_client):
 
 # ── initialize_db ─────────────────────────────────────────────────────────────
 
-def test_init_db_crea_tablas_cuando_no_existen():
-    """init_db devuelve True y llama a create_all cuando no hay tablas."""
+def test_init_db_creates_tables_when_missing():
+    """init_db returns True and calls create_all when there are no tables."""
     from app.initialize_db import init_db
 
     mock_inspector = MagicMock()
@@ -183,12 +183,12 @@ def test_init_db_crea_tablas_cuando_no_existen():
     mock_metadata.create_all.assert_called_once()
 
 
-def test_init_db_omite_creacion_cuando_ya_existen_tablas():
-    """init_db devuelve False y NO llama a create_all cuando ya hay tablas."""
+def test_init_db_skips_creation_when_tables_exist():
+    """init_db returns False and does NOT call create_all when tables exist."""
     from app.initialize_db import init_db
 
     mock_inspector = MagicMock()
-    mock_inspector.get_table_names.return_value = ["usuarios", "restaurantes"]
+    mock_inspector.get_table_names.return_value = ["users", "restaurants"]
 
     mock_metadata = MagicMock()
 
@@ -201,8 +201,8 @@ def test_init_db_omite_creacion_cuando_ya_existen_tablas():
     mock_metadata.create_all.assert_not_called()
 
 
-def test_init_db_llama_a_inspect_con_el_engine():
-    """init_db pasa el engine de la BD al inspector de SQLAlchemy."""
+def test_init_db_calls_inspect_with_engine():
+    """init_db passes the DB engine to the SQLAlchemy inspector."""
     from app.initialize_db import init_db, engine
 
     mock_inspector = MagicMock()

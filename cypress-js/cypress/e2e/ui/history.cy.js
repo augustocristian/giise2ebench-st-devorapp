@@ -2,7 +2,7 @@
 // Base-Choice scenarios: BASE, S2, S3, S5, S6.
 import { useTestUser } from "../../support/commands/users";
 import HistoryPage from "../../support/pages/HistoryPage";
-import { historyStub } from "../../support/factories";
+import { historyStub, pageStub } from "../../support/factories";
 
 describe("History", () => {
   const user = useTestUser("hist");
@@ -11,10 +11,10 @@ describe("History", () => {
   const JUNE = "2026-06-15T12:00:00Z";
 
   function openHistory(history) {
-    cy.intercept("GET", "**/api/historial*", history).as("getHistorial");
+    cy.intercept("GET", "**/api/v1/history?*", pageStub(history)).as("getHistory");
     cy.loginAs(user);
     page.openFromMenu();
-    cy.wait("@getHistorial");
+    cy.wait("@getHistory");
   }
 
   it("BASE - two months, multiple restaurants, no search", () => {

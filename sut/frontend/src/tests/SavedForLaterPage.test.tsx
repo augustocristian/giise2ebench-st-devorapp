@@ -11,14 +11,14 @@ vi.mock('../models/api/savedForLaterService', () => ({
     },
 }));
 
-vi.mock('../models/api/historialService', () => ({
-    historialService: {
-        addToHistorial: vi.fn(),
+vi.mock('../models/api/historyService', () => ({
+    historyService: {
+        addToHistory: vi.fn(),
     },
 }));
 
 import { savedForLaterService } from '../models/api/savedForLaterService';
-import { historialService } from '../models/api/historialService';
+import { historyService } from '../models/api/historyService';
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
@@ -33,7 +33,7 @@ vi.mock('react-router-dom', async (importOriginal) => {
 // Mock useNotification
 const mockShowNotification = vi.fn();
 const mockShowConfirm = vi.fn();
-vi.mock('../components/NotificationSystem', () => ({
+vi.mock('../components/useNotification', () => ({
     useNotification: () => ({
         showNotification: mockShowNotification,
         showConfirm: mockShowConfirm,
@@ -69,7 +69,7 @@ describe('SavedForLaterPage', () => {
         vi.clearAllMocks();
     });
 
-    it('debe mostrar los restaurantes guardados para más tarde', async () => {
+    it('should show the restaurants saved for later', async () => {
         (savedForLaterService.getSaved as any).mockResolvedValue(mockSavedData);
         
         renderPage();
@@ -81,7 +81,7 @@ describe('SavedForLaterPage', () => {
         expect(screen.getByText('1 restaurante pendiente')).toBeInTheDocument();
     });
 
-    it('debe filtrar la lista por el término de búsqueda', async () => {
+    it('should filter the list by the search term', async () => {
         (savedForLaterService.getSaved as any).mockResolvedValue(mockSavedData);
         
         renderPage();
@@ -98,18 +98,18 @@ describe('SavedForLaterPage', () => {
         expect(screen.getByText('Sushi Zen')).toBeInTheDocument();
     });
 
-    it('debe seleccionar un restaurante desde el menú contextual y navegar a /home', async () => {
+    it('should select a restaurant from the context menu and navigate to /home', async () => {
         (savedForLaterService.getSaved as any).mockResolvedValue(mockSavedData);
-        (historialService.addToHistorial as any).mockResolvedValue({});
+        (historyService.addToHistory as any).mockResolvedValue({});
         (savedForLaterService.deleteSaved as any).mockResolvedValue({});
 
         renderPage();
 
         await waitFor(() => expect(screen.getByText('Sushi Zen')).toBeInTheDocument());
 
-        // Buscar el botón del menú contextual (MoreVertical) - sin aria-label específico
-        // El botón de la TopBar tiene aria-label='Ir a Inicio', el de SideMenu tiene aria-label='Abrir menú'
-        // El único botón del ItemMenu no tiene aria-label
+        // Find the context menu button (MoreVertical) - no specific aria-label
+        // The TopBar button has aria-label='Ir a Inicio', the SideMenu one has aria-label='Abrir menú'
+        // The only ItemMenu button has no aria-label
         const allButtons = screen.getAllByRole('button');
         const menuBtn = allButtons.find(btn => 
             !btn.getAttribute('aria-label') && 
@@ -123,7 +123,7 @@ describe('SavedForLaterPage', () => {
             fireEvent.click(selectBtn);
 
             await waitFor(() => {
-                expect(historialService.addToHistorial).toHaveBeenCalledWith('place_abc');
+                expect(historyService.addToHistory).toHaveBeenCalledWith('place_abc');
                 expect(savedForLaterService.deleteSaved).toHaveBeenCalledWith('101');
                 expect(mockShowNotification).toHaveBeenCalledWith(
                     expect.stringContaining('Has elegido Sushi Zen'),
@@ -134,7 +134,7 @@ describe('SavedForLaterPage', () => {
         }
     });
 
-    it('debe eliminar un restaurante tras confirmar desde el menú contextual', async () => {
+    it('should delete a restaurant after confirming from the context menu', async () => {
         (savedForLaterService.getSaved as any).mockResolvedValue(mockSavedData);
         (savedForLaterService.deleteSaved as any).mockResolvedValue({});
         mockShowConfirm.mockResolvedValue(true);
@@ -143,7 +143,7 @@ describe('SavedForLaterPage', () => {
 
         await waitFor(() => expect(screen.getByText('Sushi Zen')).toBeInTheDocument());
 
-        // Encontrar el botón del menú contextual
+        // Find the context menu button
         const allButtons = screen.getAllByRole('button');
         const menuBtn = allButtons.find(btn => 
             !btn.getAttribute('aria-label') && 
@@ -167,23 +167,23 @@ describe('SavedForLaterPage', () => {
         }
     });
 
-    it('debe expandir detalles al hacer click en la tarjeta y permitir seleccionar desde ahí', async () => {
+    it('should expand details when clicking the card and allow selecting from there', async () => {
         (savedForLaterService.getSaved as any).mockResolvedValue(mockSavedData);
-        (historialService.addToHistorial as any).mockResolvedValue({});
+        (historyService.addToHistory as any).mockResolvedValue({});
         (savedForLaterService.deleteSaved as any).mockResolvedValue({});
 
         renderPage();
 
         await waitFor(() => expect(screen.getByText('Sushi Zen')).toBeInTheDocument());
 
-        // Al hacer click en la tarjeta (nombre), navega a detalle via searchParams
-        // Con el mock de useSearchParams predeterminado, el componente no renderizará el DetailView
-        // pero podemos verificar que el click no falla
+        // Clicking the card (name) navigates to detail via searchParams
+        // With the default useSearchParams mock, the component will not render the DetailView
+        // but we can verify that the click does not fail
         fireEvent.click(screen.getByText('Sushi Zen'));
         
-        // El componente usa setSearchParams para mostrar detalles,
-        // pero con MemoryRouter sin params mockeados, no cambia a DetailView
-        // Verificamos que el componente sigue renderizando correctamente
+        // The component uses setSearchParams to show details,
+        // but with MemoryRouter and no mocked params, it does not switch to DetailView
+        // Verify the component keeps rendering correctly
         await waitFor(() => {
             expect(screen.getByText('Sushi Zen')).toBeInTheDocument();
         });

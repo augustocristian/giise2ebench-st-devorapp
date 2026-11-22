@@ -11,9 +11,9 @@ def dummy_user():
         id="test_uid",
         email="test@test.com",
         username="testuser",
-        nombre="Test",
-        apellidos="User",
-        ubicacion="Madrid"
+        first_name="Test",
+        last_name="User",
+        location="Madrid"
     )
 
 @pytest.mark.asyncio
@@ -25,7 +25,7 @@ async def test_search_recommendations_endpoint(mock_search, dummy_user):
         "next_page_token": "token123"
     }
 
-    # Sobrescribir dependencia para bypass de auth
+    # Override the dependency to bypass auth
     app.dependency_overrides[get_current_user] = lambda: dummy_user
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as ac:
@@ -37,7 +37,7 @@ async def test_search_recommendations_endpoint(mock_search, dummy_user):
             "max_results": 10,
             "open_now": False
         }
-        response = await ac.post("/api/recommendations/search", json=payload)
+        response = await ac.post("/api/v1/recommendations/search", json=payload)
 
     # Limpiar overrides
     app.dependency_overrides.clear()
@@ -52,14 +52,14 @@ async def test_search_recommendations_endpoint(mock_search, dummy_user):
 async def test_search_recommendations_unauthorized():
     from fastapi import HTTPException
     
-    # Simular fallo de autenticación
+    # Simulate an authentication failure
     def mock_get_current_user_fail():
         raise HTTPException(status_code=401, detail="Not authenticated")
     
     app.dependency_overrides[get_current_user] = mock_get_current_user_fail
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as ac:
-        response = await ac.post("/api/recommendations/search", json={})
+        response = await ac.post("/api/v1/recommendations/search", json={})
 
     app.dependency_overrides.clear()
     assert response.status_code == 401

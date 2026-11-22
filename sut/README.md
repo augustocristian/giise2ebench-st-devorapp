@@ -3,291 +3,291 @@
 [![CI/CD Pipeline](https://github.com/UO294431/EPI-DevorApp/actions/workflows/ci.yml/badge.svg)](https://github.com/UO294431/EPI-DevorApp/actions)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=UO294431_EPI-DevorApp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=UO294431_EPI-DevorApp)
 
-**DevorApp** es un ecosistema personalizado de descubrimiento y recomendación de restaurantes. El sistema sugiere locales gastronómicos basándose en la ubicación del usuario, sus preferencias culinarias, momento del día y hábitos de consumo, combinando una interfaz móvil/web moderna con un potente motor de recomendación basado en inteligencia artificial.
+**DevorApp** is a personalized restaurant discovery and recommendation ecosystem. The system suggests places to eat based on the user's location, culinary preferences, time of day and consumption habits, combining a modern mobile/web interface with a powerful AI-based recommendation engine.
 
-Este proyecto ha sido desarrollado como **Trabajo de Fin de Grado (TFG)** en la **Universidad de Oviedo**.
-
----
-
-## Características principales (Main Features)
-
-- **Recomendación Inteligente**: Motor basado en redes neuronales (Keras) que predice y ordena los restaurantes según gustos individuales y contexto temporal/geográfico.
-- **Búsqueda Geolocalizada**: Localización automática y filtros avanzados por tipo de cocina, distancia, precios y valoración.
-- **Detalle de Restaurantes Completo**: Información detallada con fotos, opiniones de otros usuarios, enlaces a Google Maps, sitio web y llamadas directas.
-- **Listas de Favoritos**: Gestión de colecciones personalizadas de restaurantes preferidos.
-- **Guardados para más tarde**: Sección específica para registrar establecimientos pendientes de visitar.
-- **Historial de Visitas**: Registro ordenado de locales visitados con acceso rápido para valorarlos.
-- **Valoraciones y Reseñas**: Sistema de opiniones con estrellas y reseñas detalladas, incluyendo likes de otros usuarios.
-- **Multiplataforma**: Disponible como aplicación web SPA y como aplicación móvil nativa para Android (a través de Capacitor).
+This project was developed as a **Bachelor's Thesis (TFG)** at the **University of Oviedo**.
 
 ---
 
-## Documentación del Proyecto (`docs`)
+## Main Features
 
-En la carpeta [`docs`](docs) se encuentran los recursos teóricos y de diseño del proyecto:
-- **Memoria del TFG**: El documento completo del proyecto se encuentra en [`docs/2026-TFG-TorreAlejandro.pdf`](docs/2026-TFG-TorreAlejandro.pdf), el cual detalla los requisitos del usuario, análisis de diseño, modelado del motor de IA y proceso de pruebas.
-- **Requisitos de Usuario**: Documentados formalmente dentro de la memoria y la estructura Sphinx de la carpeta.
-
-La documentación técnica auto-generada con **Sphinx** se despliega automáticamente en GitHub Pages mediante la integración continua en cada push a `main` y al generar un nuevo tag de versión:
-
-- **📚 Documentación técnica (API Reference)**: [https://torrealejandro.github.io/EPI-DevorApp/](https://torrealejandro.github.io/EPI-DevorApp/)
-
----
-
-## Interfaces de la Aplicación
-
-A continuación se muestra una galería de las interfaces de DevorApp:
-
-| Pantalla de Acceso | Flujo de Registro (Paso 1) | Flujo de Registro (Paso 2) |
-| :---: | :---: | :---: |
-| ![Inicio de Sesión](images/InicioSesion.jpeg) <br> **Inicio de Sesión** | ![Registro Paso 1](images/Registro1.jpeg) <br> **Registro - Credenciales** | ![Registro Paso 2](images/Registro2.jpeg) <br> **Registro - Preferencias** |
-
-| Pantalla Principal | Menú Lateral | Configurar Recomendaciones |
-| :---: | :---: | :---: |
-| ![Pantalla Principal](images/PantallaPrincipal.jpeg) <br> **Inicio / Descubrimiento** | ![Menú Lateral](images/MenuLateral.jpeg) <br> **Navegación Lateral** | ![Buscar Restaurantes](images/BuscarRestaurantes.jpeg) <br> **Filtros de Búsqueda** |
-
-| Resultados de Búsqueda | Ficha de Detalle | Reseñas de Usuarios |
-| :---: | :---: | :---: |
-| ![Resultados de Búsqueda](images/ResultadosBusqueda.jpeg) <br> **Restaurantes Recomendados** | ![Detalle Restaurante](images/DetallesRestaurante.jpeg) <br> **Ficha del Restaurante** | ![Reseñas de Usuarios](images/ReseñasUsuarios.jpeg) <br> **Sección de Opiniones** |
-
-| Valorar Establecimiento | Gestión de Listas | Listas de Favoritos |
-| :---: | :---: | :---: |
-| ![Valorar](images/Editar-PonerValoracion.jpeg) <br> **Crear/Editar Valoración** | ![Listas Favoritos](images/ListasFavoritos.jpeg) <br> **Mis Listas de Favoritos** | ![Favoritos](images/Favoritos.jpeg) <br> **Restaurantes Guardados** |
-
-| Pendientes de Visitar | Historial de Visitas | Perfil de Usuario |
-| :---: | :---: | :---: |
-| ![Guardar para más tarde](images/GuardarMasTarde.jpeg) <br> **Guardados para más Tarde** | ![Historial](images/Historial.jpeg) <br> **Historial de Visitas** | ![Perfil](images/PerfilUsuario.jpeg) <br> **Perfil y Cuenta** |
+- **Smart Recommendation**: A neural-network engine (Keras) that predicts and ranks restaurants according to individual tastes and temporal/geographic context.
+- **Geolocated Search**: Automatic location and advanced filters by cuisine type, distance, price and rating.
+- **Full Restaurant Details**: Detailed information with photos, reviews from other users, Google Maps links, website and direct calls.
+- **Favorites Lists**: Management of custom collections of preferred restaurants.
+- **Saved for Later**: A dedicated section to keep track of places you plan to visit.
+- **Visit History**: An ordered record of visited places with quick access to rate them.
+- **Ratings and Reviews**: A review system with stars and detailed reviews, including likes from other users.
+- **Cross-platform**: Available as a SPA web application and as a native Android mobile application (through Capacitor).
 
 ---
 
-## Arquitectura del Proyecto
+## Project Documentation (`docs`)
 
-Para el desarrollo de este proyecto se ha decidido implementar una arquitectura distribuida cliente-servidor basada en tres capas principales. Esta separación de responsabilidades permite aislar la lógica de negocio de la interfaz de usuario y del acceso a los datos, facilitando futuras actualizaciones o integraciones sin afectar la integridad del sistema en su conjunto.
+The [`docs`](docs) folder contains the project's theoretical and design resources:
+- **Thesis report**: The complete project document is at [`docs/2026-TFG-TorreAlejandro.pdf`](docs/2026-TFG-TorreAlejandro.pdf), which details the user requirements, design analysis, AI engine modeling and testing process.
+- **User Requirements**: Formally documented within the thesis report and the Sphinx structure of the folder.
 
-El sistema se divide en tres componentes independientes, cada uno con una arquitectura interna propia:
+The technical documentation auto-generated with **Sphinx** (sources in [`docs`](docs)) is published on GitHub Pages:
+
+- **📚 Technical documentation (API Reference)**: [https://torrealejandro.github.io/EPI-DevorApp/](https://torrealejandro.github.io/EPI-DevorApp/)
+
+---
+
+## Application Interfaces
+
+Below is a gallery of the DevorApp interfaces:
+
+| Login Screen | Registration Flow (Step 1) | Registration Flow (Step 2) |
+| :---: | :---: | :---: |
+| ![Login](images/InicioSesion.jpeg) <br> **Login** | ![Registration Step 1](images/Registro1.jpeg) <br> **Registration - Credentials** | ![Registration Step 2](images/Registro2.jpeg) <br> **Registration - Preferences** |
+
+| Main Screen | Side Menu | Configure Recommendations |
+| :---: | :---: | :---: |
+| ![Main Screen](images/PantallaPrincipal.jpeg) <br> **Home / Discovery** | ![Side Menu](images/MenuLateral.jpeg) <br> **Side Navigation** | ![Search Restaurants](images/BuscarRestaurantes.jpeg) <br> **Search Filters** |
+
+| Search Results | Detail Page | User Reviews |
+| :---: | :---: | :---: |
+| ![Search Results](images/ResultadosBusqueda.jpeg) <br> **Recommended Restaurants** | ![Restaurant Detail](images/DetallesRestaurante.jpeg) <br> **Restaurant Page** | ![User Reviews](images/ReseñasUsuarios.jpeg) <br> **Reviews Section** |
+
+| Rate a Place | List Management | Favorites Lists |
+| :---: | :---: | :---: |
+| ![Rate](images/Editar-PonerValoracion.jpeg) <br> **Create/Edit Rating** | ![Favorites Lists](images/ListasFavoritos.jpeg) <br> **My Favorites Lists** | ![Favorites](images/Favoritos.jpeg) <br> **Saved Restaurants** |
+
+| Pending Visits | Visit History | User Profile |
+| :---: | :---: | :---: |
+| ![Save for Later](images/GuardarMasTarde.jpeg) <br> **Saved for Later** | ![History](images/Historial.jpeg) <br> **Visit History** | ![Profile](images/PerfilUsuario.jpeg) <br> **Profile and Account** |
+
+---
+
+## Project Architecture
+
+For the development of this project, a distributed client-server architecture based on three main layers was chosen. This separation of responsibilities isolates the business logic from the user interface and data access, making future updates or integrations easier without affecting the integrity of the system as a whole.
+
+The system is divided into three independent components, each with its own internal architecture:
 
 ```
 epi-devorapp/
-├── frontend/      # SPA React 19 + TypeScript + Vite + Capacitor 7
-├── backend/       # API REST FastAPI + PostgreSQL + Firebase Admin SDK
-└── keras-api/     # Servicio de Recomendación con Inteligencia Artificial (Keras)
+├── frontend/      # React 19 + TypeScript + Vite + Capacitor 7 SPA
+├── backend/       # FastAPI REST API + PostgreSQL + Firebase Admin SDK
+└── keras-api/     # AI Recommendation Service (Keras)
 ```
 
-Todos los subsistemas operan de manera desacoplada y se comunican entre sí de forma bidireccional a través de una API REST. El frontend consume los servicios del backend mediante peticiones HTTP, intercambiando información de forma estructurada, y el backend envía peticiones al modelo de recomendación, recibiendo los datos solicitados de vuelta.
+All subsystems operate in a decoupled manner and communicate with each other bidirectionally through a REST API. The frontend consumes the backend services through HTTP requests, exchanging information in a structured way, and the backend sends requests to the recommendation model and receives the requested data back.
 
-![Arquitectura General](images/ArquitecturaGeneral.svg)
-
----
-
-### Arquitectura Interna del Backend
-
-El backend del sistema se ha diseñado siguiendo una arquitectura de capas. Al igual que en la arquitectura general del proyecto, el objetivo principal es la separación de responsabilidades, además de garantizar la mantenibilidad y escalabilidad del backend.
-
-- **Capa de presentación**: es la encargada de gestionar las solicitudes del cliente. En ella se encuentra la lógica necesaria para recibir las peticiones entrantes y retornar las respuestas pertinentes.
-- **Capa de servicios**: contiene la lógica de negocio del sistema. Procesa las solicitudes recibidas desde la capa de presentación y aplica las reglas de negocio y validaciones del dominio. Además, coordina el flujo de recomendación transformando los datos de la base de datos para enviarlos al modelo de recomendación y gestiona la respuesta recibida.
-- **Capa de modelo de datos**: define las estructuras de información y entidades que rigen el sistema.
-- **Capa de infraestructura**: se encarga de la comunicación con agentes externos y almacenamiento de datos. Gracias a esta capa se permite que el resto de la aplicación no dependa de la tecnología de la base de datos.
-- **Capa core**: contiene las funcionalidades transversales que dan soporte a toda la arquitectura. Centraliza la configuración global y los mecanismos de protección del sistema.
-
-![Arquitectura Interna del Backend](images/DiagramaArquiBack.png)
+![General Architecture](images/ArquitecturaGeneral.svg)
 
 ---
 
-### Arquitectura Interna del Frontend
+### Backend Internal Architecture
 
-El frontend del sistema se ha desarrollado siguiendo el patrón Modelo-Vista-Controlador. Esta estructura permite separar las responsabilidades de la aplicación en distintos componentes, facilitando la organización del código, su mantenibilidad y la reutilización de elementos.
+The system backend was designed following a layered architecture. As in the general project architecture, the main goal is the separation of responsibilities, as well as ensuring the maintainability and scalability of the backend.
 
-- **Modelo**: representa la estructura de los datos utilizados en la aplicación. Los modelos permiten definir la estructura de datos que maneja la aplicación, garantizando coherencia en el tratamiento de la información recibida del backend.
-- **Vista**: es la encargada de componer las pantallas que el usuario visualiza. No gestiona la lógica completa, sino que la delega a la capa inferior.
-- **Controlador**: actúa como intermediario entre los modelos y las vistas. Se encarga de realizar peticiones a la API, procesar las respuestas y actualizar los componentes correspondientes de la aplicación.
+- **Presentation layer**: handles client requests. It contains the logic needed to receive incoming requests and return the appropriate responses.
+- **Service layer**: contains the system's business logic. It processes the requests received from the presentation layer and applies the business rules and domain validations. It also coordinates the recommendation flow by transforming the data from the database to send it to the recommendation model and handling the response received.
+- **Data model layer**: defines the information structures and entities that govern the system.
+- **Infrastructure layer**: handles communication with external agents and data storage. Thanks to this layer, the rest of the application does not depend on the database technology.
+- **Core layer**: contains the cross-cutting functionality that supports the whole architecture. It centralizes the global configuration and the system's protection mechanisms.
 
-Además, la aplicación cuenta con un punto de entrada principal, donde se inicializa la estructura general de la interfaz.
-
-![Arquitectura Interna del Frontend](images/DiagramaArquiFront.png)
-
----
-
-### Arquitectura Interna del Microservicio de IA
-
-Dado el coste computacional y las dependencias específicas necesarias para el motor de recomendación, se ha implementado un microservicio independiente siguiendo un patrón de Servicio de Inferencia Ligero.
-
-- **Interfaz de entrada**: expone un único punto de entrada que recibe los vectores de características y valida la identidad del emisor.
-- **Gestor de modelo**: implementa un patrón Singleton para asegurar que el modelo neuronal se cargue en memoria una sola vez al iniciar el servicio, optimizando los tiempos de respuesta.
-- **Capa de Preprocesamiento**: realiza las últimas transformaciones sobre los datos entrantes para asegurar que las entradas coincidan exactamente con la arquitectura de la red neuronal entrenada.
-
-![Arquitectura Interna del Microservicio de IA](images/ArquitecturaMicroservicio.svg)
+![Backend Internal Architecture](images/DiagramaArquiBack.png)
 
 ---
 
-## Dependencias y Requisitos
+### Frontend Internal Architecture
 
-### Requisitos previos:
-- **Node.js**: Versión 22.x o superior
-- **Python**: Versión 3.12.x o superior
-- **Poetry**: Gestor de dependencias de Python (instalable mediante `pipx install poetry`)
-- **Docker & Docker Compose**: Para el despliegue simplificado
-- **Java JDK 17 & Android SDK**: (Solo si deseas compilar la APK de forma local)
+The system frontend was developed following the Model-View-Controller pattern. This structure separates the application's responsibilities into distinct components, making the code easier to organize and maintain and its elements easier to reuse.
+
+- **Model**: represents the structure of the data used in the application. Models define the data structure the application handles, ensuring consistency in how information received from the backend is processed.
+- **View**: composes the screens the user sees. It does not handle the full logic, but delegates it to the lower layer.
+- **Controller**: acts as an intermediary between the models and the views. It makes API requests, processes the responses and updates the corresponding components of the application.
+
+In addition, the application has a main entry point where the general structure of the interface is initialized.
+
+![Frontend Internal Architecture](images/DiagramaArquiFront.png)
 
 ---
 
-## Modos de despliegue: `dev` y `prod`
+### AI Microservice Internal Architecture
 
-> Guía completa de despliegue, variables y ejecución de pruebas en el [README de la raíz](../README.md). Las imágenes se construyen una vez y son las mismas en dev y prod; solo cambia el entorno con el que se arrancan (el frontend lee `VITE_GOOGLE_CLIENT_ID`, `VITE_GOOGLE_API_KEY` y `VITE_API_URL` al arrancar el contenedor).
+Given the computational cost and the specific dependencies required by the recommendation engine, an independent microservice was implemented following a Lightweight Inference Service pattern.
 
-El sistema se despliega de dos formas con los mismos servicios (PostgreSQL, Backend, Frontend y Keras API). Lo único que cambia es **a qué servicios externos** habla el backend:
+- **Input interface**: exposes a single entry point that receives the feature vectors and validates the sender's identity.
+- **Model manager**: implements a Singleton pattern to ensure the neural model is loaded into memory only once when the service starts, optimizing response times.
+- **Preprocessing layer**: performs the final transformations on the incoming data to ensure the inputs match exactly the architecture of the trained neural network.
+
+![AI Microservice Internal Architecture](images/ArquitecturaMicroservicio.svg)
+
+---
+
+## Dependencies and Requirements
+
+### Prerequisites:
+- **Node.js**: Version 22.x or later
+- **Python**: Version 3.12.x or later
+- **Poetry**: Python dependency manager (installable with `pipx install poetry`)
+- **Docker & Docker Compose**: For simplified deployment
+- **Java JDK 17 & Android SDK**: (Only if you want to build the APK locally)
+
+---
+
+## Deployment Modes: `dev` and `prod`
+
+> Full guide to deployment, variables and running the tests in the [root README](../README.md). The images are built once and are the same in dev and prod; only the environment they are started with changes (the frontend reads `VITE_GOOGLE_CLIENT_ID`, `VITE_GOOGLE_API_KEY` and `VITE_API_URL` when the container starts).
+
+The system is deployed in two ways with the same services (PostgreSQL, Backend, Frontend and Keras API). The only thing that changes is **which external services** the backend talks to:
 
 | | **dev** | **prod** |
 |---|---|---|
-| Autenticación y perfiles (Firebase Auth + Firestore) | `firebase-emulator` (contenedor local) | Proyecto real de Firebase |
-| Restaurantes y geocodificación (Google Places + Geocoding) | `gplaces-mock` (contenedor local, dataset fijo) | API real de Google |
-| Credenciales necesarias | **Ninguna** | `firebase-service-account.json`, `FIREBASE_API_KEY`, `GOOGLE_API_KEY`... |
-| Ficheros `.env` | No son necesarios | Necesarios (ver más abajo) |
+| Authentication and profiles (Firebase Auth + Firestore) | `firebase-emulator` (local container) | Real Firebase project |
+| Restaurants and geocoding (Google Places + Geocoding) | `gplaces-mock` (local container, fixed dataset) | Real Google API |
+| Required credentials | **None** | `firebase-service-account.json`, `FIREBASE_API_KEY`, `GOOGLE_API_KEY`... |
+| `.env` files | Not needed | Needed (see below) |
 | Compose | `docker-compose.yml` + `docker-compose.dev.override.yml` | `docker-compose.yml` |
-| Datos | Efímeros: se pierden al parar el emulador | Persistentes (Firebase real) |
-| Coste / cuota | Ninguno | Cuota y facturación de Google y Firebase |
+| Data | Ephemeral: lost when the emulator is stopped | Persistent (real Firebase) |
+| Cost / quota | None | Google and Firebase quota and billing |
 
-### Modo dev (emulador + mock, sin credenciales)
+### Dev Mode (emulator + mock, no credentials)
 
 ```bash
-# Desde la carpeta sut/
+# From the sut/ folder
 docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up -d --build
 
-# Parar y borrar los datos (base de datos y emulador)
+# Stop and delete the data (database and emulator)
 docker compose -f docker-compose.yml -f docker-compose.dev.override.yml down -v
 ```
 
-[`docker-compose.dev.override.yml`](docker-compose.dev.override.yml) añade dos servicios y reconfigura el backend para usarlos:
+[`docker-compose.dev.override.yml`](docker-compose.dev.override.yml) adds two services and reconfigures the backend to use them:
 
-- **[`firebase-emulator`](firebase-emulator)**: *Firebase Local Emulator Suite* (Authentication en el puerto `9099` y Firestore en el `8080`, solo dentro de la red de Docker). El backend lo usa mediante `FIREBASE_AUTH_EMULATOR_HOST`, `FIRESTORE_EMULATOR_HOST` y `FIREBASE_AUTH_BASE_URL`. Con estas variables el Firebase Admin SDK arranca **sin clave de cuenta de servicio**.
-- **[`gplaces-mock`](gplaces-mock)**: sustituto de Google Places (New) y Geocoding en el puerto `8002`, con 13 lugares ficticios fijos en Gijón, Oviedo y Avilés y una superficie de control `/__admin` (ver su [README](gplaces-mock/README.md)). El backend lo usa mediante `GOOGLE_PLACES_BASE_URL` y `GOOGLE_GEOCODE_URL`.
+- **[`firebase-emulator`](firebase-emulator)**: *Firebase Local Emulator Suite* (Authentication on port `9099` and Firestore on `8080`, only inside the Docker network). The backend uses it through `FIREBASE_AUTH_EMULATOR_HOST`, `FIRESTORE_EMULATOR_HOST` and `FIREBASE_AUTH_BASE_URL`. With these variables the Firebase Admin SDK starts **without a service account key**.
+- **[`gplaces-mock`](gplaces-mock)**: a stand-in for Google Places (New) and Geocoding on port `8002`, with 13 fixed fictitious places in Gijón, Oviedo and Avilés and an `/__admin` control surface (see its [README](gplaces-mock/README.md)). The backend uses it through `GOOGLE_PLACES_BASE_URL` and `GOOGLE_GEOCODE_URL`.
 
-Además, en dev el backend arranca con `SKIP_EMAIL_VERIFICATION=true` (no hay bandeja de entrada donde leer el correo de verificación) y `COOKIE_SECURE=false` (la cookie de sesión no es `Secure`, para que los clientes HTTP que no son navegadores puedan usarla sobre `http://`). El propio fichero aporta valores ficticios para el resto de variables, por lo que **no hace falta crear `backend/.env`, `keras-api/.env` ni `backend/firebase-service-account.json`**.
+In addition, in dev the backend starts with `SKIP_EMAIL_VERIFICATION=true` (there is no inbox to read the verification email from) and `COOKIE_SECURE=false` (the session cookie is not `Secure`, so that non-browser HTTP clients can use it over `http://`). The file itself supplies dummy values for the remaining variables, so **you do not need to create `backend/.env`, `keras-api/.env` or `backend/firebase-service-account.json`**.
 
-Para desarrollar con recarga en vivo, añade la capa de *hot reload* (sigue usando el emulador y el mock):
+To develop with live reload, add the *hot reload* layer (it still uses the emulator and the mock):
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.dev.override.yml -f docker-compose.hotreload.yml up --build
 ```
 
-> **Limitaciones de dev**: el inicio de sesión con Google no funciona con el emulador, y el autocompletado de ubicación del navegador usa el SDK de Google Maps JavaScript (configurado con `VITE_GOOGLE_API_KEY` en el frontend), que no está sustituido. Este modo es el que usan el pipeline de CI y las pruebas E2E.
+> **Dev limitations**: Google Sign-In does not work with the emulator, and the browser's location autocomplete uses the Google Maps JavaScript SDK (configured with `VITE_GOOGLE_API_KEY` in the frontend), which is not replaced. This is the mode used by the CI pipeline and the E2E tests.
 >
-> Requiere Docker Compose **2.24 o superior** (`docker-compose.dev.override.yml` usa la etiqueta `!reset` para anular los `env_file` y el montaje de credenciales del compose base).
+> Requires Docker Compose **2.24 or later** (`docker-compose.dev.override.yml` uses the `!reset` tag to clear the `env_file` entries and the credentials mount from the base compose file).
 
-### Modo prod (Firebase y Google Places reales)
+### Prod Mode (real Firebase and Google Places)
 
 ```bash
-# Desde la carpeta sut/, tras crear los ficheros de configuración
+# From the sut/ folder, after creating the configuration files
 docker compose up -d --build
 ```
 
-Sin `docker-compose.dev.override.yml` el backend habla con los servicios reales, por lo que hay que configurarlos:
+Without `docker-compose.dev.override.yml` the backend talks to the real services, so they must be configured:
 
-1. **Firebase** (Authentication + Firestore): crea un proyecto, activa *Email/Password* en Authentication y crea una base de datos Firestore. Descarga la clave de la cuenta de servicio en `backend/firebase-service-account.json` y copia `FIREBASE_PROJECT_ID` y la *Web API Key* (`FIREBASE_API_KEY`) en `backend/.env`.
-2. **Google Places y Geocoding**: habilita *Places API (New)* y *Geocoding API* en Google Cloud y pon la clave en `GOOGLE_API_KEY` (`backend/.env` y `keras-api/.env`) y en `VITE_GOOGLE_API_KEY` (`frontend/.env`).
-3. **Google Sign-In** (opcional): ver [1.1](#11-configuración-de-google-sign-in-inicio-de-sesión-con-google).
-4. Define un `SECRET_KEY` propio y seguro para los JWT.
+1. **Firebase** (Authentication + Firestore): create a project, enable *Email/Password* in Authentication and create a Firestore database. Download the service account key to `backend/firebase-service-account.json` and copy `FIREBASE_PROJECT_ID` and the *Web API Key* (`FIREBASE_API_KEY`) into `backend/.env`.
+2. **Google Places and Geocoding**: enable *Places API (New)* and *Geocoding API* in Google Cloud and set the key in `GOOGLE_API_KEY` (`backend/.env` and `keras-api/.env`) and in `VITE_GOOGLE_API_KEY` (`frontend/.env`).
+3. **Google Sign-In** (optional): see [1.1](#11-google-sign-in-configuration-sign-in-with-google).
+4. Define your own secure `SECRET_KEY` for the JWTs.
 
-El detalle de cada variable está en el apartado siguiente. Si no defines `GOOGLE_PLACES_BASE_URL`, `GOOGLE_GEOCODE_URL`, `FIREBASE_AUTH_BASE_URL` ni las variables `*_EMULATOR_HOST`, el backend usa los endpoints oficiales de Google y Firebase.
+Each variable is detailed in the next section. If you do not define `GOOGLE_PLACES_BASE_URL`, `GOOGLE_GEOCODE_URL`, `FIREBASE_AUTH_BASE_URL` or the `*_EMULATOR_HOST` variables, the backend uses the official Google and Firebase endpoints.
 
 ---
 
-## Despliegue Local
+## Local Deployment
 
-### 1. Variables de entorno (`.env`)
-> Solo en **modo prod**. En modo dev no son necesarias (ver [Modos de despliegue](#modos-de-despliegue-dev-y-prod)).
+### 1. Environment Variables (`.env`)
+> **Prod mode** only. In dev mode they are not needed (see [Deployment Modes](#deployment-modes-dev-and-prod)).
 
-Debes crear un archivo `.env` en cada uno de los directorios (`frontend/`, `backend/` y `keras-api/`) basándote en las variables de configuración reales del proyecto:
+You must create a `.env` file in each of the directories (`frontend/`, `backend/` and `keras-api/`) based on the project's actual configuration variables:
 
 #### Frontend (`frontend/.env`):
 ```ini
-VITE_GOOGLE_API_KEY=tu_api_key_de_google_places
+VITE_GOOGLE_API_KEY=your_google_places_api_key
 VITE_API_URL=/api
-VITE_GOOGLE_CLIENT_ID=tu_cliente_id_de_google_oauth
-# Si ejecutas de forma nativa sin Docker, apunta a tu backend local:
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+# If you run natively without Docker, point to your local backend:
 # VITE_API_URL=http://localhost:8000
 ```
 
 #### Backend (`backend/.env`):
 ```ini
 # Firebase
-FIREBASE_PROJECT_ID=tu_firebase_project_id
-FIREBASE_API_KEY=tu_firebase_api_key
+FIREBASE_PROJECT_ID=your_firebase_project_id
+FIREBASE_API_KEY=your_firebase_api_key
 FIREBASE_SERVICE_ACCOUNT_PATH=firebase-service-account.json
 
 # Google Maps / Places
-GOOGLE_API_KEY=tu_api_key_de_google_places
+GOOGLE_API_KEY=your_google_places_api_key
 
-# Autenticación JWT (genera uno seguro en producción)
-SECRET_KEY=tu_clave_secreta_para_jwt
+# JWT authentication (generate a secure one in production)
+SECRET_KEY=your_secret_key_for_jwt
 
-# Base de datos PostgreSQL (usa db:5432 en Docker, localhost:5432 nativo)
+# PostgreSQL database (use db:5432 in Docker, localhost:5432 native)
 DATABASE_URL=postgresql://postgres:password@db:5432/tfg_db
 
-# Integración con el motor de recomendación de IA
+# Integration with the AI recommendation engine
 KERAS_API_URL=http://keras-api:8001/predict
-KERAS_API_KEY=clave_de_acceso_recommender
+KERAS_API_KEY=recommender_access_key
 
 # Google OAuth
-GOOGLE_CLIENT_ID=tu_cliente_id_de_google_oauth
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
 ```
 
-#### Motor de Recomendación (`keras-api/.env`):
+#### Recommendation Engine (`keras-api/.env`):
 ```ini
-API_KEY_RECOMMENDER=clave_de_acceso_recommender
+API_KEY_RECOMMENDER=recommender_access_key
 MODEL_PATH=./models/modelo_prod.h5
 PORT=8001
 
-# Datos para el Pipeline de Entrenamiento del modelo
+# Data for the model Training Pipeline
 DATABASE_URL=postgresql://postgres:password@localhost:5432/tfg_db
-GOOGLE_API_KEY=tu_api_key_de_google_places
+GOOGLE_API_KEY=your_google_places_api_key
 ```
 
 > [!IMPORTANT]
-> **Credenciales de Firebase**: Para arrancar el backend es necesario colocar el archivo JSON de credenciales de tu proyecto de Firebase en `backend/firebase-service-account.json`. 
-> Si usas **Docker** y levantas los contenedores *antes* de crear este archivo, Docker creará automáticamente un directorio vacío con ese nombre en tu máquina host. Si te ocurre el error `IsADirectoryError: firebase-service-account.json`, detén el contenedor (`docker compose down`), borra el directorio erróneo (`Remove-Item -Recurse -Force backend/firebase-service-account.json` o `rm -rf`) y coloca el archivo JSON real antes de volver a construir.
+> **Firebase credentials**: To start the backend you must place your Firebase project's credentials JSON file at `backend/firebase-service-account.json`. 
+> If you use **Docker** and start the containers *before* creating this file, Docker will automatically create an empty directory with that name on your host machine. If you get the error `IsADirectoryError: firebase-service-account.json`, stop the container (`docker compose down`), delete the wrong directory (`Remove-Item -Recurse -Force backend/firebase-service-account.json` or `rm -rf`) and put the real JSON file in place before rebuilding.
 
-### 1.1 Configuración de Google Sign-In (Inicio de Sesión con Google)
+### 1.1 Google Sign-In Configuration (Sign in with Google)
 
-Para que el inicio de sesión con Google funcione tanto en el entorno web como en la aplicación móvil (APK), es necesario configurar un proyecto en **Google Cloud Console**:
+For Google sign-in to work in both the web environment and the mobile application (APK), you need to configure a project in **Google Cloud Console**:
 
-1. **Crear Credenciales de OAuth 2.0**:
-   - Accede a [Google Cloud Console](https://console.cloud.google.com/).
-   - Crea o selecciona tu proyecto de Google Cloud.
-   - Ve a **API y Servicios > Pantalla de consentimiento de OAuth** y confígurala.
-   - Ve a **Credenciales > Crear credenciales > ID de cliente de OAuth**.
-2. **Cliente Web**:
-   - Crea un ID de cliente de tipo **Aplicación web**.
-   - Añade los orígenes autorizados de JavaScript (ej. `http://localhost` y `http://localhost:5173` para desarrollo).
-   - Guarda el *ID de cliente* generado. Este valor deberá colocarse en las variables `VITE_GOOGLE_CLIENT_ID` (en el frontend) y `GOOGLE_CLIENT_ID` (en el backend).
-3. **Cliente Android (Importante para la APK)**:
-   - Para que funcione desde el dispositivo móvil, crea otro ID de cliente de tipo **Android** en la misma consola.
-   - Especifica el nombre del paquete: `com.devorapp.epi`.
-   - Añade la huella digital del certificado SHA-1 de tu firma:
-     * *Desarrollo local (Debug key)*: Obtén el SHA-1 ejecutando `./gradlew signingReport` en la carpeta `frontend/android` y copiando el SHA-1 de la clave `debug`.
-     * *Producción (Release key)*: Obtén el SHA-1 ejecutando `keytool -list -v -keystore tu_clave.jks` sobre el archivo keystore de producción (el que codificarás en Base64 para el pipeline).
-   - **Nota**: Google vincula automáticamente la autenticación en el móvil con el ID de cliente de tipo Android usando este SHA-1 y el nombre del paquete, de modo que no requiere cambios en el código de la app, pero es obligatorio registrarlo en la consola de Google Cloud para que no falle al iniciar sesión en el móvil.
+1. **Create OAuth 2.0 Credentials**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/).
+   - Create or select your Google Cloud project.
+   - Go to **APIs & Services > OAuth consent screen** and configure it.
+   - Go to **Credentials > Create credentials > OAuth client ID**.
+2. **Web Client**:
+   - Create a client ID of type **Web application**.
+   - Add the authorized JavaScript origins (e.g. `http://localhost` and `http://localhost:5173` for development).
+   - Save the generated *client ID*. This value must be set in the `VITE_GOOGLE_CLIENT_ID` (frontend) and `GOOGLE_CLIENT_ID` (backend) variables.
+3. **Android Client (Important for the APK)**:
+   - For it to work from the mobile device, create another client ID of type **Android** in the same console.
+   - Specify the package name: `com.devorapp.epi`.
+   - Add the SHA-1 certificate fingerprint of your signing key:
+     * *Local development (Debug key)*: Get the SHA-1 by running `./gradlew signingReport` in the `frontend/android` folder and copying the SHA-1 of the `debug` key.
+     * *Production (Release key)*: Get the SHA-1 by running `keytool -list -v -keystore your_key.jks` on the production keystore file (the one you will Base64-encode for the pipeline).
+   - **Note**: Google automatically links mobile authentication to the Android client ID using this SHA-1 and the package name, so no changes are needed in the app code, but it must be registered in the Google Cloud console or sign-in will fail on mobile.
 
 
-### 2. Despliegue con Docker (Recomendado)
+### 2. Docker Deployment (Recommended)
 
-Construir y arrancar todo el ecosistema (PostgreSQL, Backend, Frontend y Keras API):
+Build and start the whole ecosystem (PostgreSQL, Backend, Frontend and Keras API):
 ```bash
-# Modo prod (Firebase y Google reales; requiere los .env y las credenciales)
+# Prod mode (real Firebase and Google; requires the .env files and credentials)
 docker compose up --build
 
-# Modo dev (emulador de Firebase + mock de Google Places; sin credenciales)
+# Dev mode (Firebase emulator + Google Places mock; no credentials)
 docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up --build
 
-# Modo dev con recarga en vivo de backend y frontend (volúmenes montados)
+# Dev mode with live reload of backend and frontend (mounted volumes)
 docker compose -f docker-compose.yml -f docker-compose.dev.override.yml -f docker-compose.hotreload.yml up --build
 ```
 
-- **Frontend**: Acceso en [http://localhost](http://localhost) (o [http://localhost:5173](http://localhost:5173) en desarrollo)
-- **Backend API**: Acceso en [http://localhost:8000](http://localhost:8000) (con Swagger en [http://localhost:8000/docs](http://localhost:8000/docs) y ReDoc en [http://localhost:8000/redoc](http://localhost:8000/redoc))
-- **Motor de Recomendación (Keras API)**: Acceso en [http://localhost:8001](http://localhost:8001) (con Swagger en [http://localhost:8001/docs](http://localhost:8001/docs))
-- **Base de Datos (PostgreSQL)**: Accesible localmente en `localhost:5432` (usuario `postgres`, contraseña `password`)
+- **Frontend**: Available at [http://localhost](http://localhost) (or [http://localhost:5173](http://localhost:5173) in development)
+- **Backend API**: Available at [http://localhost:8000](http://localhost:8000) (with Swagger at [http://localhost:8000/docs](http://localhost:8000/docs) and ReDoc at [http://localhost:8000/redoc](http://localhost:8000/redoc))
+- **Recommendation Engine (Keras API)**: Available at [http://localhost:8001](http://localhost:8001) (with Swagger at [http://localhost:8001/docs](http://localhost:8001/docs))
+- **Database (PostgreSQL)**: Reachable locally at `localhost:5432` (user `postgres`, password `password`)
 
-### 3. Despliegue Nativo (Servicios Individuales)
+### 3. Native Deployment (Individual Services)
 
 #### Backend:
 ```bash
@@ -311,185 +311,191 @@ poetry install --with dev
 poetry run uvicorn main:app --reload --port 8001
 ```
 
-### 4. Scripts de Automatización de Despliegue (`deploy.ps1` / `deploy.sh`)
+### 4. Deployment Automation Scripts (`deploy.ps1` / `deploy.sh`)
 
-El proyecto incluye dos scripts ([deploy.ps1](../deploy.ps1) para Windows PowerShell y [deploy.sh](../deploy.sh) para entornos Linux/macOS) que facilitan y automatizan las tareas comunes de instalación, ejecución de linters, tests, compilación e inicio de servicios.
+The project includes two scripts ([deploy.ps1](../deploy.ps1) for Windows PowerShell and [deploy.sh](../deploy.sh) for Linux/macOS environments) that simplify and automate the common tasks of installation, running linters, tests, building and starting services.
 
-Estos scripts viven en la raíz del repositorio (un nivel por encima de `sut/`) y reflejan exactamente las etapas del pipeline de integración continua (CI) de forma local, operando sobre los proyectos dentro de `sut/`.
+These scripts live at the repository root (one level above `sut/`) and mirror the stages of the continuous integration (CI) pipeline locally, operating on the projects inside `sut/`.
 
-#### Parámetros en Windows (`deploy.ps1`):
+#### Windows Parameters (`deploy.ps1`):
 ```powershell
-# Ejecutar siempre desde la raíz del repositorio
+# Always run from the repository root
 cd ..
 
-# Levantar el stack completo en Docker tras pasar tests (modo por defecto)
+# Bring up the full stack in Docker after passing the tests (default mode)
 .\deploy.ps1
 
-# Levantar únicamente el backend y la base de datos
+# Bring up only the backend and the database
 .\deploy.ps1 -Component backend
 
-# Levantar únicamente el frontend
+# Bring up only the frontend
 .\deploy.ps1 -Component frontend
 
-# Levantar en modo dev: emulador de Firebase + mock de Google Places + recarga en caliente
+# Bring up in dev mode: Firebase emulator + Google Places mock + hot reload
 .\deploy.ps1 -Dev
 
-# Ejecutar el stack en modo nativo en lugar de Docker
+# Run the stack in native mode instead of Docker
 .\deploy.ps1 -Mode native
 
-# Omitir la suite de tests (pytest y vitest) durante la inicialización
+# Skip the test suite (pytest and vitest) during initialization
 .\deploy.ps1 -SkipTests
 
-# Compilar además la APK de depuración (Android Debug APK) al finalizar
+# Also build the Android Debug APK when finished
 .\deploy.ps1 -Apk
 
-# Detener todos los contenedores y redes asociadas
+# Stop all containers and associated networks
 .\deploy.ps1 -Stop
 ```
 
-#### Parámetros en Linux / macOS (`deploy.sh`):
+#### Linux / macOS Parameters (`deploy.sh`):
 ```bash
-# Ejecutar siempre desde la raíz del repositorio
+# Always run from the repository root
 cd ..
 chmod +x deploy.sh
 
-./deploy.sh                          # Todo el stack, Docker
-./deploy.sh --component backend      # Backend + DB únicamente
-./deploy.sh --component frontend     # Frontend únicamente
-./deploy.sh --dev                    # Docker en modo dev: emulador + mock + hot-reload
-./deploy.sh --mode native            # Procesos nativos locales
-./deploy.sh --skip-tests             # Omitir ejecución de tests
-./deploy.sh --apk                    # Compilar la APK de depuración Android
-./deploy.sh --stop                   # Detener contenedores
+./deploy.sh                          # Whole stack, Docker
+./deploy.sh --component backend      # Backend + DB only
+./deploy.sh --component frontend     # Frontend only
+./deploy.sh --dev                    # Docker in dev mode: emulator + mock + hot-reload
+./deploy.sh --mode native            # Local native processes
+./deploy.sh --skip-tests             # Skip running the tests
+./deploy.sh --apk                    # Build the Android debug APK
+./deploy.sh --stop                   # Stop containers
 ```
 
-#### Requisitos según el modo utilizado:
-| Herramienta / Requisito | Docker | Modo Nativo | Flags `--apk` o `-Apk` |
+#### Requirements by mode:
+| Tool / Requirement | Docker | Native Mode | `--apk` or `-Apk` flags |
 | --- | --- | --- | --- |
-| **Docker Desktop / Engine** | Requerido | — | — |
-| **Node.js 22 + npm** | Opcional (lint) | Requerido | Requerido |
-| **Python 3.12 + Poetry** | Opcional (tests) | Requerido | — |
-| **Java JDK 17 + ANDROID_HOME** | — | — | Requerido |
+| **Docker Desktop / Engine** | Required | — | — |
+| **Node.js 22 + npm** | Optional (lint) | Required | Required |
+| **Python 3.12 + Poetry** | Optional (tests) | Required | — |
+| **Java JDK 17 + ANDROID_HOME** | — | — | Required |
 
 ---
 
-## Ejecución de Tests
+## Running the Tests
 
-El proyecto cuenta con suites de pruebas unitarias e integración en todos sus componentes.
+The project has unit and integration test suites in all of its components.
 
-### Tests del Backend:
+### Backend Tests:
 ```bash
 cd backend
 poetry run pytest tests/ -v
 ```
 
-### Tests del Frontend (Vitest):
+### Frontend Tests (Vitest):
 ```bash
 cd frontend
 npm run test
 ```
 
-### Tests del Motor Keras API:
+### Frontend E2E Tests (Playwright, network-mocked):
+```bash
+cd frontend
+PLAYWRIGHT_PORT=<free port> npx playwright test
+```
+
+### Keras API Engine Tests:
 ```bash
 cd keras-api
 poetry run pytest test_main.py -v
 ```
 
-### Pruebas de Sistema (E2E y API)
-Las pruebas de sistema de extremo a extremo (E2E) y de API se gestionan de forma independiente y se encuentran en su propio repositorio: [retorch-st-devorapp](https://github.com/augustocristian/retorch-st-devorapp). Estas pruebas validan el comportamiento de la interfaz y la API interactuando directamente con el sistema desplegado en modo headless.
+### System Tests (E2E and API)
+The end-to-end (E2E) and API system tests live in the [`selenium-java`](../selenium-java) (Java + Selenium) and [`cypress-js`](../cypress-js) (JavaScript + Cypress) folders at the repository root. They validate the behavior of the interface and the API by interacting directly with the system deployed in dev mode. See the [root README](../README.md#running-the-tests) for how to run them.
 
 ---
 
-## Pipeline de Integración y Despliegue Continuo (CI/CD)
+## Continuous Integration and Deployment (CI/CD) Pipeline
 
-El repositorio utiliza **GitHub Actions** para automatizar el flujo de calidad y compilación mediante el flujo definido en [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+The repository uses **GitHub Actions** to automate the quality and build flow defined in [`.github/workflows/ci.yml`](../.github/workflows/ci.yml).
 
-### Flujo de GitHub Actions:
+### GitHub Actions Flow:
 ```mermaid
 graph TD
-    A[Push / Pull Request] --> B[backend-ci: Pytest & Coverage]
+    A[Push / Pull Request] --> B[backend-ci / keras-api-ci / gplaces-mock-ci: Pytest & Coverage]
     A --> C[frontend-ci: ESLint & Vitest Coverage]
     B --> D[sonar-analysis: SonarCloud Scan]
     C --> D
-    C --> H[build-android-apk: Build, Sign & Release APK]
-    D --> E[build-docker-images: Publish to GHCR]
-    D --> F[deploy-docs: Sphinx a GitHub Pages]
-    E --> G[system-tests: Run E2E & API Tests]
+    D --> H[build-android-apk: Build, Sign & Release APK]
+    D --> E[build-images: Build Docker images once]
+    E --> G[e2e-selenium-java / e2e-cypress-javascript / e2e-playwright-typescript: System tests, in parallel]
+    G --> F[publish-images: Publish to GHCR]
 ```
 
-1. **`backend-ci`**: Instala dependencias con Poetry, ejecuta los tests con pytest y genera informes de cobertura (`coverage.xml`).
-2. **`frontend-ci`**: Instala dependencias con npm, valida la sintaxis con ESLint, ejecuta los tests unitarios con Vitest y genera informes de cobertura.
-3. **`sonar-analysis`**: Descarga los resultados de cobertura de los jobs anteriores y ejecuta el escaneo estático de SonarCloud.
-4. **`build-docker-images`**: Empaqueta los tres componentes en imágenes Docker y las publica automáticamente en el registro de contenedores de GitHub (GHCR), etiquetándolas con el short SHA del commit y la marca `latest`.
-5. **`deploy-docs`**: Se activa en la rama `main` y en tags de versión. Construye la documentación HTML de Sphinx y la publica automáticamente en GitHub Pages.
-6. **`system-tests`**: Levanta de forma temporal todo el stack en contenedores Docker, clona el repositorio externo [retorch-st-devorapp](https://github.com/augustocristian/retorch-st-devorapp) y ejecuta las pruebas de sistema E2E y de API (Maven) en modo headless.
-7. **`build-android-apk`**: Se ejecuta después de pasar con éxito las pruebas del frontend. Compila la aplicación Android con Gradle. Si están configurados los secretos de firma, firma la APK y, en caso de tratarse de un tag de versión (`v*`), la publica automáticamente en GitHub Releases.
+1. **`backend-ci`, `keras-api-ci`, `gplaces-mock-ci`**: Install dependencies with Poetry, run the tests with pytest and generate coverage reports.
+2. **`frontend-ci`**: Installs dependencies with npm, validates syntax with ESLint, runs the unit tests with Vitest and generates coverage reports.
+3. **`sonar-analysis`**: Downloads the coverage results from the previous jobs and runs the SonarCloud static scan.
+4. **`build-images`**: Builds the Docker images once and shares them with the later jobs as an artifact.
+5. **`e2e-selenium-java`, `e2e-cypress-javascript`**: Each one starts its own instance of the stack in dev mode from those images and runs the system tests (E2E and API) in parallel. **`e2e-playwright-typescript`** runs the network-mocked Playwright specs in `frontend/e2e` on Chromium and Firefox against the Vite dev server, so it needs no SUT instance.
+6. **`publish-images`**: Only on `main` and version tags (`v*`), and only if all the E2E suites pass, it publishes the same images that were tested to the GitHub container registry (GHCR), tagging them with the commit's short SHA, `latest` and the version.
+7. **`build-android-apk`**: Runs after the frontend tests pass. It builds the Android application with Gradle. If the signing secrets are configured, it signs the APK and, for a version tag (`v*`), publishes it automatically to GitHub Releases.
 
 
 
-### Flujo de SonarCloud
-El análisis de calidad estática de código está delegado en **SonarCloud**.
-- En cada ciclo de CI, los tests de frontend y backend generan informes de cobertura (`lcov` y `cobertura XML` respectivamente).
-- SonarCloud procesa las métricas de duplicación de código, cobertura de tests, vulnerabilidades y "code smells", bloqueando el merge si no se cumple el Quality Gate establecido.
-
----
-
-## Descarga e Instalación de la Aplicación Móvil (APK)
-
-La aplicación móvil se empaqueta automáticamente en cada ciclo de integración continua (CI/CD) de GitHub Actions.
-
-### Cómo instalar la APK:
-1. **Descargar la APK**:
-   - **Para Releases oficiales**: Accede a la sección **Releases** en el repositorio y descarga el archivo `app-release.apk`.
-   - **Para desarrollo y pruebas**: Accede a la pestaña **Actions**, selecciona la última ejecución del pipeline de la rama `main` o `desarrollo`, y descarga el artefacto **`devorapp-release-apk`** (que contiene una versión autodebug firmada lista para instalar directamente en cualquier teléfono).
-2. **Transferir e instalar**: Transfiere el archivo `.apk` a tu dispositivo Android (o descárgalo directamente desde el navegador de tu móvil) y ábrelo. Habilita la opción de *"Permitir la instalación de aplicaciones de origen desconocido"* si el dispositivo lo solicita para completar la instalación.
-
-### Cómo conectar la APK a tu Backend Local (Ngrok / Wi-Fi)
-Dado que la aplicación móvil corre de forma nativa en tu teléfono, por defecto no puede acceder a `localhost`. Para conectarla al backend que se está ejecutando en tu ordenador de desarrollo:
-1. **Exponer el Backend local (Recomendado)**:
-   - Levanta tu backend local.
-   - Ejecuta una herramienta gratuita como **Ngrok** para abrir un túnel seguro al puerto del backend (ej: `ngrok http 8000`). Esto te proporcionará una URL pública temporal (ej: `https://xxxx.ngrok-free.app`).
-2. **Configurar la app en el móvil**:
-   - Abre la aplicación **DevorApp** en tu teléfono.
-   - En la pantalla de **Inicio de Sesión**, pulsa sobre el **icono de engranaje** (Ajustes de Servidor) situado en la esquina superior derecha de la barra de navegación.
-    - Escribe o pega la dirección URL de tu API local:
-      * **Si usas Ngrok**: ej. `https://xxxx.ngrok-free.app/api`
-      * **Si usas Wi-Fi local**: ej. `http://<IP_DE_TU_PC>:8000/api` (debes reemplazar `<IP_DE_TU_PC>` por la dirección IP local real de tu ordenador, por ejemplo `192.168.1.50`. Puedes averiguar tu IP ejecutando `ipconfig` en la terminal de Windows o `ip a` / `ifconfig` en macOS o Linux).
-    - Haz clic en **Guardar y Conectar**. La app se reiniciará sola y ya estará conectada en tiempo real a tu backend local.
-   - Puedes pulsar en **Restablecer por defecto** cuando desees restaurar la dirección original.
+### SonarCloud Flow
+Static code quality analysis is delegated to **SonarCloud**.
+- In each CI cycle, the frontend and backend tests generate coverage reports (`lcov` and `cobertura XML` respectively).
+- SonarCloud processes the metrics for code duplication, test coverage, vulnerabilities and "code smells", blocking the merge if the configured Quality Gate is not met.
 
 ---
 
-## Secretos Configurados en el Repositorio
+## Download and Installation of the Mobile Application (APK)
 
-Para que el pipeline funcione correctamente, se deben configurar los siguientes secretos en el apartado de configuración del repositorio de GitHub (**Settings → Secrets and variables → Actions**):
+The mobile application is packaged automatically in each continuous integration (CI/CD) cycle of GitHub Actions.
 
-- `SONAR_TOKEN`: Token de autenticación de SonarCloud.
-- `FIREBASE_SERVICE_ACCOUNT`: Clave privada en base64 de la cuenta de servicio de Firebase (usada para la inicialización en contenedores de staging).
-- `KEYSTORE_FILE`: Archivo de firmas `.jks` codificado en base64 (requerido si se compila la APK en el pipeline).
-- `KEYSTORE_STORE_PASSWORD` / `KEYSTORE_KEY_PASSWORD`: Contraseñas del almacén de claves para firmar la APK.
-- `KEYSTORE_KEY_ALIAS`: Alias de la clave de firma (`devorapp`).
+### How to install the APK:
+1. **Download the APK**:
+   - **For official Releases**: Go to the **Releases** section in the repository and download the `app-release.apk` file.
+   - **For development and testing**: Go to the **Actions** tab, select the latest pipeline run of the `main` or `desarrollo` branch, and download the **`devorapp-release-apk`** artifact (which contains a signed auto-debug version ready to install directly on any phone).
+2. **Transfer and install**: Transfer the `.apk` file to your Android device (or download it directly from your phone's browser) and open it. Enable the *"Allow installation of apps from unknown sources"* option if the device asks for it to complete the installation.
+
+### How to connect the APK to your Local Backend (Ngrok / Wi-Fi)
+Since the mobile application runs natively on your phone, by default it cannot reach `localhost`. To connect it to the backend running on your development computer:
+1. **Expose the local Backend (Recommended)**:
+   - Start your local backend.
+   - Run a free tool such as **Ngrok** to open a secure tunnel to the backend port (e.g. `ngrok http 8000`). This gives you a temporary public URL (e.g. `https://xxxx.ngrok-free.app`).
+2. **Configure the app on the phone**:
+   - Open the **DevorApp** application on your phone.
+   - On the **Login** screen, tap the **gear icon** (Server Settings) in the top-right corner of the navigation bar.
+    - Type or paste the URL of your local API:
+      * **If you use Ngrok**: e.g. `https://xxxx.ngrok-free.app/api`
+      * **If you use local Wi-Fi**: e.g. `http://<YOUR_PC_IP>:8000/api` (you must replace `<YOUR_PC_IP>` with your computer's actual local IP address, for example `192.168.1.50`. You can find your IP by running `ipconfig` in the Windows terminal or `ip a` / `ifconfig` on macOS or Linux).
+    - Click **Save and Connect**. The app will restart by itself and will be connected in real time to your local backend.
+   - You can tap **Reset to default** whenever you want to restore the original address.
 
 ---
 
-## Cómo Contribuir al Proyecto
+## Secrets Configured in the Repository
 
-¡Las contribuciones son bienvenidas! Si deseas aportar mejoras o corregir fallos:
+For the pipeline to work correctly, the following secrets must be configured in the GitHub repository settings (**Settings → Secrets and variables → Actions**):
 
-1. Haz un **Fork** del proyecto.
-2. Crea una rama para tu característica: `git checkout -b feature/nueva-caracteristica`.
-3. Realiza los cambios necesarios y asegúrate de que **todos los tests pasen correctamente**.
-4. Haz commit de tus cambios: `git commit -m 'Añade nueva característica'`.
-5. Sube la rama: `git push origin feature/nueva-caracteristica`.
-6. Abre un **Pull Request** explicando detalladamente tus cambios.
+- `SONAR_TOKEN`: SonarCloud authentication token.
+- `FIREBASE_SERVICE_ACCOUNT`: Base64 private key of the Firebase service account (used for initialization in staging containers).
+- `KEYSTORE_FILE`: Base64-encoded `.jks` signing file (required if the APK is built in the pipeline).
+- `KEYSTORE_STORE_PASSWORD` / `KEYSTORE_KEY_PASSWORD`: Keystore passwords used to sign the APK.
+- `KEYSTORE_KEY_ALIAS`: Alias of the signing key (`devorapp`).
 
 ---
 
-## Cómo Citar este Proyecto
+## How to Contribute
 
-Si utilizas este software o haces referencia a la investigación y desarrollo de DevorApp, por favor, cítalo usando la información descrita en el archivo [`CITATION.cff`](CITATION.cff) o haz uso del botón *"Cite this repository"* disponible en la parte superior de GitHub.
+Contributions are welcome! If you want to contribute improvements or fix bugs:
 
-### Formato de cita sugerido:
+1. **Fork** the project.
+2. Create a branch for your feature: `git checkout -b feature/new-feature`.
+3. Make the necessary changes and make sure **all tests pass**.
+4. Commit your changes: `git commit -m 'Add new feature'`.
+5. Push the branch: `git push origin feature/new-feature`.
+6. Open a **Pull Request** explaining your changes in detail.
+
+---
+
+## How to Cite this Project
+
+If you use this software or refer to the research and development of DevorApp, please cite it using the information in the [`CITATION.cff`](CITATION.cff) file or use the *"Cite this repository"* button available at the top of GitHub.
+
+### Suggested citation format:
 
 ```bibtex
 @thesis{Torre2026DevorApp,
