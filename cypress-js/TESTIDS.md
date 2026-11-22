@@ -41,20 +41,20 @@ Columns: **C** = used by the Cypress suite, **S** = used by the Selenium suite (
 
 ## Register
 
-| testid                                                                                                                          | element                                          | C   | S   |
-| ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | --- | --- |
-| `register-step1`                                                                                                                | step 1 container (step 1 is not a `<form>`)      | x   | x   |
-| `register-form`                                                                                                                 | form wrapping step 2 only                        | x   | x   |
-| `register-step-label`                                                                                                           | "Paso N de 2 ..." paragraph (check its text)     | x   | x   |
-| `register-email`, `register-username`, `register-password`, `register-nombre`, `register-apellidos`, `register-toggle-password` | step 1 fields                                    | x   | x   |
-| `register-continue`                                                                                                             | Continuar                                        | x   | x   |
-| `register-step-error`                                                                                                           | step 1 validation banner                         | x   | x   |
-| `register-email-error`, `register-username-error`                                                                               | field errors                                     | x   | x   |
-| `register-ubicacion`, `register-gps`, `register-location-name`                                                                  | step 2 location input, GPS button, detected name | x   | x   |
-| `register-submit`, `register-back`                                                                                              | step 2 buttons                                   | x   | x   |
-| `register-message-error` / `register-message-success`                                                                           | API feedback (`.message.error`)                  | x   | x   |
-| `register-verify-title`                                                                                                         | "Verifica tu correo" heading                     | x   | x   |
-| `register-login-link`                                                                                                           | link to login                                    |     |     |
+| testid                                                                                                                              | element                                          | C   | S   |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ | --- | --- |
+| `register-step1`                                                                                                                    | step 1 container (step 1 is not a `<form>`)      | x   | x   |
+| `register-form`                                                                                                                     | form wrapping step 2 only                        | x   | x   |
+| `register-step-label`                                                                                                               | "Paso N de 2 ..." paragraph (check its text)     | x   | x   |
+| `register-email`, `register-username`, `register-password`, `register-first-name`, `register-last-name`, `register-toggle-password` | step 1 fields                                    | x   | x   |
+| `register-continue`                                                                                                                 | Continuar                                        | x   | x   |
+| `register-step-error`                                                                                                               | step 1 validation banner                         | x   | x   |
+| `register-email-error`, `register-username-error`                                                                                   | field errors                                     | x   | x   |
+| `register-location`, `register-gps`, `register-location-name`                                                                       | step 2 location input, GPS button, detected name | x   | x   |
+| `register-submit`, `register-back`                                                                                                  | step 2 buttons                                   | x   | x   |
+| `register-message-error` / `register-message-success`                                                                               | API feedback (`.message.error`)                  | x   | x   |
+| `register-verify-title`                                                                                                             | "Verifica tu correo" heading                     | x   | x   |
+| `register-login-link`                                                                                                               | link to login                                    |     |     |
 
 ## Recommend
 
@@ -110,7 +110,7 @@ Restaurant cards in the detail view are `restaurant-card`.
 | -------------------------------- | ------------------------------------------------- | --- | --- |
 | `rating-overlay`, `rating-modal` | full overlay / content (was `.valuation-content`) | x   | x   |
 | `rating-back`                    | Volver                                            |     |     |
-| `rating-aspect-<aspect>`         | row for `calidad`, `precio`, `higiene`, `trato`   | x   | x   |
+| `rating-aspect-<aspect>`         | row for `quality`, `price`, `hygiene`, `service`  | x   | x   |
 | `rating-star-<aspect>-<n>`       | star n = 1..5 of that aspect                      | x   | x   |
 | `rating-comment`                 | comment textarea                                  | x   | x   |
 | `rating-submit`                  | submit button (disabled until all aspects > 0)    | x   | x   |
@@ -119,20 +119,21 @@ Success toast after submit: `toast-success`.
 
 ## Profile
 
-| testid                                                                  | element                                                        | C   | S   |
-| ----------------------------------------------------------------------- | -------------------------------------------------------------- | --- | --- |
-| `profile-header-name`, `profile-header-email`                           | name / email in the page header                                | x   | x   |
-| `profile-card-personal`, `-location`, `-email`, `-security`, `-danger`  | the five `.location-info-card`s                                | x   | x   |
-| `profile-personal-edit` / `-save` / `-cancel`                           | Editar / Guardar cambios / Cancelar                            | x   | x   |
-| `profile-personal-nombre`, `profile-personal-apellidos`                 | inputs                                                         | x   | x   |
-| `profile-location-edit` / `-save` / `-cancel`, `profile-location-input` | Cambiar / Guardar cambios / Cancelar, input                    | x   | x   |
-| `profile-email-edit` / `-submit` / `-cancel`                            | Cambiar / Cambiar correo / Cancelar                            | x   | x   |
-| `profile-email-input`, `profile-email-password`                         | new email, current password                                    | x   | x   |
-| `profile-security-edit` / `-submit` / `-cancel`                         | Cambiar contraseña / Actualizar contraseña / Cancelar          | x   | x   |
-| `profile-security-current`, `-new`, `-confirm`                          | password inputs                                                | x   | x   |
-| `profile-danger-open`                                                   | Eliminar cuenta permanentemente                                | x   | x   |
-| `profile-danger-confirm-input`                                          | type CONFIRMAR                                                 | x   | x   |
-| `profile-danger-submit`, `profile-danger-cancel`                        | Eliminar permanentemente (disabled until confirmed) / Cancelar | x   | x   |
+| testid                                                                  | element                                                              | C   | S   |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------- | --- | --- |
+| `profile-header-name`, `profile-header-email`                           | name / email in the page header                                      | x   | x   |
+| `profile-card-personal`, `-location`, `-email`, `-security`, `-danger`  | the five `.location-info-card`s                                      | x   | x   |
+| `profile-personal-edit` / `-save` / `-cancel`                           | Editar / Guardar cambios / Cancelar                                  | x   | x   |
+| `profile-personal-first-name`, `profile-personal-last-name`             | inputs                                                               | x   | x   |
+| `profile-location-edit` / `-save` / `-cancel`, `profile-location-input` | Cambiar / Guardar cambios / Cancelar, input                          | x   | x   |
+| `profile-location-error`                                                | location validation message in the profile card (used by Playwright) | x   |     |
+| `profile-email-edit` / `-submit` / `-cancel`                            | Cambiar / Cambiar correo / Cancelar                                  | x   | x   |
+| `profile-email-input`, `profile-email-password`                         | new email, current password                                          | x   | x   |
+| `profile-security-edit` / `-submit` / `-cancel`                         | Cambiar contraseña / Actualizar contraseña / Cancelar                | x   | x   |
+| `profile-security-current`, `-new`, `-confirm`                          | password inputs                                                      | x   | x   |
+| `profile-danger-open`                                                   | Eliminar cuenta permanentemente                                      | x   | x   |
+| `profile-danger-confirm-input`                                          | type CONFIRMAR                                                       | x   | x   |
+| `profile-danger-submit`, `profile-danger-cancel`                        | Eliminar permanentemente (disabled until confirmed) / Cancelar       | x   | x   |
 
 ## Selenium-only notes
 

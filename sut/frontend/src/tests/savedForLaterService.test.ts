@@ -39,16 +39,16 @@ describe('savedForLaterService', () => {
 
     // ── getSaved ──────────────────────────────────────────────────────────────
 
-    it('getSaved debe hacer GET a /mas-tarde y mapear la respuesta', async () => {
+    it('getSaved should GET to /saved-for-later and map the response', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
-            json: async () => [mockBackendItem],
+            json: async () => ({ items: [mockBackendItem], total: 1, limit: 100, offset: 0 }),
         });
 
         const result = await savedForLaterService.getSaved();
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/mas-tarde'),
+            expect.stringContaining('/saved-for-later?limit=100&offset=0'),
             expect.objectContaining({ method: 'GET' })
         );
         expect(result).toHaveLength(1);
@@ -57,10 +57,10 @@ describe('savedForLaterService', () => {
         expect(result[0].place_id).toBe('place1');
     });
 
-    it('getSaved devuelve caché si existe (sin segunda llamada a fetch)', async () => {
+    it('getSaved returns cache if present (no second fetch call)', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
-            json: async () => [mockBackendItem],
+            json: async () => ({ items: [mockBackendItem], total: 1, limit: 100, offset: 0 }),
         });
 
         await savedForLaterService.getSaved();
@@ -69,7 +69,7 @@ describe('savedForLaterService', () => {
         expect(globalThis.fetch).toHaveBeenCalledTimes(1);
     });
 
-    it('getSaved lanza error si la respuesta no es ok', async () => {
+    it('getSaved throws if the response is not ok', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: false,
             json: async () => ({ detail: 'No autorizado' }),
@@ -80,7 +80,7 @@ describe('savedForLaterService', () => {
 
     // ── saveForLater ──────────────────────────────────────────────────────────
 
-    it('saveForLater debe hacer POST a /mas-tarde con place_id', async () => {
+    it('saveForLater should POST to /saved-for-later with place_id', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ ...mockBackendItem, already_saved: false }),
@@ -89,7 +89,7 @@ describe('savedForLaterService', () => {
         const result = await savedForLaterService.saveForLater({ place_id: 'place1' });
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/mas-tarde'),
+            expect.stringContaining('/saved-for-later'),
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ place_id: 'place1' }),
@@ -99,7 +99,7 @@ describe('savedForLaterService', () => {
         expect(result.already_saved).toBe(false);
     });
 
-    it('saveForLater indica already_saved=true si ya estaba guardado', async () => {
+    it('saveForLater sets already_saved=true if it was already saved', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ ...mockBackendItem, already_saved: true }),
@@ -110,7 +110,7 @@ describe('savedForLaterService', () => {
         expect(result.already_saved).toBe(true);
     });
 
-    it('saveForLater lanza error si la respuesta no es ok', async () => {
+    it('saveForLater throws if the response is not ok', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: false,
             json: async () => ({ detail: 'Error al guardar' }),
@@ -121,18 +121,18 @@ describe('savedForLaterService', () => {
 
     // ── deleteSaved ───────────────────────────────────────────────────────────
 
-    it('deleteSaved debe hacer DELETE a /mas-tarde/:id', async () => {
+    it('deleteSaved should DELETE to /saved-for-later/:id', async () => {
         (globalThis.fetch as any).mockResolvedValue({ ok: true });
 
         await savedForLaterService.deleteSaved('1');
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/mas-tarde/1'),
+            expect.stringContaining('/saved-for-later/1'),
             expect.objectContaining({ method: 'DELETE' })
         );
     });
 
-    it('deleteSaved lanza error si la respuesta no es ok', async () => {
+    it('deleteSaved throws if the response is not ok', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: false,
             json: async () => ({ detail: 'No encontrado' }),

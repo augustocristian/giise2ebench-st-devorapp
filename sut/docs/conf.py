@@ -13,18 +13,18 @@ extensions = [
     'sphinx.ext.viewcode',
 ]
 
-# firebase_admin requiere credenciales reales en el import; se simula para
-# que autodoc pueda importar los módulos de la app sin secretos en CI.
+# firebase_admin requires real credentials at import time; it is mocked so
+# autodoc can import the app modules without secrets in CI.
 autodoc_mock_imports = ['firebase_admin']
 
-# Pre-importa toda la app antes de que autodoc procese ningún módulo.
-# Si autodoc importa los módulos uno a uno, la introspección de la clase
-# pydantic `Settings` corrompe la creación de clases pydantic posteriores
-# (p. ej. el import de fastapi falla con NameError: 'Dict'); con la app ya
-# en sys.modules, autodoc reutiliza los módulos sanos en caché.
+# Pre-import the whole app before autodoc processes any module.
+# If autodoc imports the modules one by one, introspecting the pydantic
+# `Settings` class corrupts the creation of later pydantic classes
+# (e.g. the fastapi import fails with NameError: 'Dict'); with the app already
+# in sys.modules, autodoc reuses the healthy cached modules.
 from sphinx.ext.autodoc.mock import mock
 with mock(autodoc_mock_imports):
-    import app.main  # noqa: F401  (importa en cadena todos los módulos documentados)
+    import app.main  # noqa: F401  (imports all documented modules transitively)
 
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 

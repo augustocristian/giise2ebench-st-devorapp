@@ -7,7 +7,7 @@ const API_URL = getApiUrl();
 
 export const authService = {
     login: async (identifier: string, password: string): Promise<LoginResponse> => {
-        const response = await fetch(`${API_URL}/login`, {
+        const response = await fetch(`${API_URL}/sessions`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -23,7 +23,7 @@ export const authService = {
     },
 
     loginWithGoogle: async (token: string): Promise<any> => {
-        const response = await fetch(`${API_URL}/auth/google`, {
+        const response = await fetch(`${API_URL}/sessions/google`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
@@ -41,12 +41,12 @@ export const authService = {
         return data;
     },
 
-    registerWithGoogle: async (token: string, username: string, ubicacion: string = ''): Promise<any> => {
-        const response = await fetch(`${API_URL}/register/google`, {
+    registerWithGoogle: async (token: string, username: string, location: string = ''): Promise<any> => {
+        const response = await fetch(`${API_URL}/users/google`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include',
-            body: JSON.stringify({ token, username, ubicacion }),
+            body: JSON.stringify({ token, username, location }),
         });
 
         const data = await response.json();
@@ -57,8 +57,8 @@ export const authService = {
     },
 
     logout: async (): Promise<void> => {
-        const response = await fetch(`${API_URL}/logout`, {
-            method: 'POST',
+        const response = await fetch(`${API_URL}/sessions/current`, {
+            method: 'DELETE',
             credentials: 'include',
         });
         if (!response.ok) {
@@ -82,7 +82,7 @@ export const authService = {
     },
 
     register: async (userData: any): Promise<RegisterResponse> => {
-        const response = await fetch(`${API_URL}/register`, {
+        const response = await fetch(`${API_URL}/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(userData),
@@ -97,7 +97,7 @@ export const authService = {
     },
 
     requestPasswordReset: async (email: string): Promise<void> => {
-        const response = await fetch(`${API_URL}/password-reset`, {
+        const response = await fetch(`${API_URL}/password-resets`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email }),
@@ -109,7 +109,7 @@ export const authService = {
     },
 
     checkEmailVerification: async (email: string): Promise<boolean> => {
-        const response = await fetch(`${API_URL}/check-verification/${email}`);
+        const response = await fetch(`${API_URL}/email-verification?email=${encodeURIComponent(email)}`);
         if (!response.ok) {
             return false;
         }
@@ -125,9 +125,9 @@ export const authService = {
         if (email)    params.append('email', email);
         if (username) params.append('username', username);
 
-        const response = await fetch(`${API_URL}/check-availability?${params}`);
+        const response = await fetch(`${API_URL}/users/availability?${params}`);
         if (!response.ok) {
-            // Si falla la red, no bloqueamos el flujo
+            // If the network fails, do not block the flow
             return { email_taken: false, username_taken: false };
         }
         return response.json();

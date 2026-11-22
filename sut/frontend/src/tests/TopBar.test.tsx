@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect } from 'vitest';
 import TopBar from '../components/TopBar';
 
-// Mockeamos SideMenu para aislar TopBar de sus dependencias (authService, hooks, etc.)
+// Mock SideMenu to isolate TopBar from its dependencies (authService, hooks, etc.)
 vi.mock('../components/SideMenu', () => ({
     default: () => <div data-testid="mock-side-menu" />,
 }));
@@ -17,38 +17,38 @@ const renderTopBar = (props: React.ComponentProps<typeof TopBar> = {}) =>
     );
 
 describe('TopBar', () => {
-    // ── Renderizado básico ────────────────────────────────────────────────────
+    // ── Basic rendering ────────────────────────────────────────────────────
 
-    it('renderiza el nombre de la aplicación "DevorApp"', () => {
+    it('renders the application name "DevorApp"', () => {
         renderTopBar();
         expect(screen.getByText('DevorApp')).toBeInTheDocument();
     });
 
-    it('renderiza el header con role correcto', () => {
+    it('renders the header with the correct role', () => {
         renderTopBar();
         expect(screen.getByRole('banner')).toBeInTheDocument();
     });
 
     // ── showMenu ──────────────────────────────────────────────────────────────
 
-    it('muestra el SideMenu cuando showMenu=true', () => {
+    it('shows the SideMenu when showMenu=true', () => {
         renderTopBar({ showMenu: true });
         expect(screen.getByTestId('mock-side-menu')).toBeInTheDocument();
     });
 
-    it('no muestra el SideMenu cuando showMenu=false', () => {
+    it('does not show the SideMenu when showMenu=false', () => {
         renderTopBar({ showMenu: false });
         expect(screen.queryByTestId('mock-side-menu')).not.toBeInTheDocument();
     });
 
-    it('no muestra el SideMenu cuando showMenu no se especifica', () => {
+    it('does not show the SideMenu when showMenu is not specified', () => {
         renderTopBar({});
         expect(screen.queryByTestId('mock-side-menu')).not.toBeInTheDocument();
     });
 
     // ── leftSlot ─────────────────────────────────────────────────────────────
 
-    it('renderiza el leftSlot cuando showMenu=false y se pasa leftSlot', () => {
+    it('renders the leftSlot when showMenu=false and leftSlot is passed', () => {
         renderTopBar({
             showMenu: false,
             leftSlot: <button>Atrás</button>,
@@ -56,37 +56,37 @@ describe('TopBar', () => {
         expect(screen.getByText('Atrás')).toBeInTheDocument();
     });
 
-    it('el leftSlot no aparece si showMenu=true (SideMenu tiene prioridad)', () => {
+    it('the leftSlot does not appear if showMenu=true (SideMenu takes priority)', () => {
         renderTopBar({
             showMenu: true,
             leftSlot: <button>Atrás</button>,
         });
-        // SideMenu se muestra pero el leftSlot también está en DOM (showMenu=true → SideMenu, el slot se ignora)
+        // SideMenu is shown but the leftSlot is also in the DOM (showMenu=true → SideMenu, the slot is ignored)
         expect(screen.getByTestId('mock-side-menu')).toBeInTheDocument();
     });
 
     // ── rightSlot ────────────────────────────────────────────────────────────
 
-    it('renderiza el rightSlot cuando se proporciona', () => {
+    it('renders the rightSlot when provided', () => {
         renderTopBar({ rightSlot: <button>Perfil</button> });
         expect(screen.getByText('Perfil')).toBeInTheDocument();
     });
 
-    it('no renderiza el rightSlot si no se proporciona', () => {
+    it('does not render the rightSlot if not provided', () => {
         renderTopBar({});
-        // No debe haber ningún botón extra aparte del de DevorApp
+        // There must be no extra button besides the DevorApp one
         const buttons = screen.getAllByRole('button');
-        expect(buttons).toHaveLength(1); // solo el botón "DevorApp"
+        expect(buttons).toHaveLength(1); // only the "DevorApp" button
     });
 
-    // ── Botón principal (Ir a Inicio) ─────────────────────────────────────────
+    // ── Main button (Ir a Inicio) ─────────────────────────────────────────
 
-    it('el botón central tiene aria-label "Ir a Inicio"', () => {
+    it('the central button has aria-label "Ir a Inicio"', () => {
         renderTopBar();
         expect(screen.getByRole('button', { name: 'Ir a Inicio' })).toBeInTheDocument();
     });
 
-    it('hacer click en DevorApp no lanza errores', () => {
+    it('clicking DevorApp does not throw errors', () => {
         renderTopBar();
         const btn = screen.getByRole('button', { name: 'Ir a Inicio' });
         expect(() => fireEvent.click(btn)).not.toThrow();

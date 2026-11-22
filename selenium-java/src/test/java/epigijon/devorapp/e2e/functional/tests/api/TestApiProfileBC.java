@@ -37,7 +37,7 @@ class TestApiProfileBC extends BaseApiClass {
     }
 
     @Test
-    @DisplayName("BASE — GET /api/me returns the authenticated user's username and email")
+    @DisplayName("BASE — GET /api/v1/me returns the authenticated user's username and email")
     void testBase_GetMe() throws IOException {
         JsonObject me = getJsonObject(authUrl("/me"));
 
@@ -50,26 +50,26 @@ class TestApiProfileBC extends BaseApiClass {
     }
 
     @Test
-    @DisplayName("S2+S3 — PATCH /api/profile updates nombre and apellidos; GET /api/me reflects them")
+    @DisplayName("S2+S3 — PATCH /api/v1/profile updates first_name and last_name; GET /api/v1/me reflects them")
     void testS2S3_UpdateNameAndSurname() throws IOException {
-        String newNombre    = "NuevoNombre" + unique();
-        String newApellidos = "NuevosApellidos";
+        String newFirstName    = "NewFirstName" + unique();
+        String newLastName = "NewLastName";
 
         int status = patch(authUrl("/profile"),
-                profileUpdatePayload(newNombre, newApellidos, "", testPassword));
-        Assertions.assertEquals(200, status, "PATCH /api/profile must return 200");
+                profileUpdatePayload(newFirstName, newLastName, "", testPassword));
+        Assertions.assertEquals(200, status, "PATCH /api/v1/profile must return 200");
 
         JsonObject me = getJsonObject(authUrl("/me"));
         Assertions.assertAll(
-                () -> Assertions.assertEquals(newNombre, me.get("nombre").getAsString(),
+                () -> Assertions.assertEquals(newFirstName, me.get("first_name").getAsString(),
                         "nombre must be updated"),
-                () -> Assertions.assertEquals(newApellidos, me.get("apellidos").getAsString(),
+                () -> Assertions.assertEquals(newLastName, me.get("last_name").getAsString(),
                         "apellidos must be updated")
         );
     }
 
     @Test
-    @DisplayName("S8 — PATCH /api/profile/email with wrong password returns HTTP 401")
+    @DisplayName("S8 — PATCH /api/v1/profile/email with wrong password returns HTTP 401")
     void testS8_WrongPasswordForEmail() throws IOException {
         JsonObject payload = new JsonObject();
         payload.addProperty("new_email", "nuevo" + unique() + "@devorapp.test");
@@ -81,7 +81,7 @@ class TestApiProfileBC extends BaseApiClass {
     }
 
     @Test
-    @DisplayName("S10 — PATCH /api/profile/password with wrong current password is rejected with HTTP 400 or 401")
+    @DisplayName("S10 — PATCH /api/v1/profile/password with wrong current password is rejected with HTTP 400 or 401")
     void testS10_WrongCurrentPassword() throws IOException {
         JsonObject payload = new JsonObject();
         payload.addProperty("old_password", "WrongCurrent99!");
@@ -93,19 +93,19 @@ class TestApiProfileBC extends BaseApiClass {
     }
 
     @Test
-    @DisplayName("S13 — PATCH /api/profile/password with new password < 8 chars returns HTTP 400")
+    @DisplayName("S13 — PATCH /api/v1/profile/password with new password < 8 chars returns HTTP 422")
     void testS13_NewPasswordTooShort() throws IOException {
         JsonObject payload = new JsonObject();
         payload.addProperty("old_password", testPassword);
         payload.addProperty("new_password", "Sh1!"); // 4 chars
 
         int status = patch(authUrl("/profile/password"), payload.toString());
-        Assertions.assertEquals(400, status,
-                "New password shorter than 8 chars must return HTTP 400");
+        Assertions.assertEquals(422, status,
+                "New password shorter than 8 chars must return HTTP 422");
     }
 
     @Test
-    @DisplayName("S14 — PATCH /api/profile/password with valid credentials returns HTTP 200")
+    @DisplayName("S14 — PATCH /api/v1/profile/password with valid credentials returns HTTP 200")
     void testS14_PasswordChangeOk() throws IOException {
         String newPass = "NuevaPassword1234!";
         JsonObject payload = new JsonObject();
@@ -124,7 +124,7 @@ class TestApiProfileBC extends BaseApiClass {
     }
 
     @Test
-    @DisplayName("S17 — DELETE /api/profile removes the account; subsequent GET /api/me returns 401")
+    @DisplayName("S17 — DELETE /api/v1/profile removes the account; subsequent GET /api/v1/me returns 401")
     void testS17_DeleteAccount() throws IOException {
         // Create and login a separate user dedicated to deletion
         long ts = unique();
@@ -135,7 +135,7 @@ class TestApiProfileBC extends BaseApiClass {
         BasicCookieStore localCookieStore = new BasicCookieStore();
         try (CloseableHttpClient localClient = HttpClients.custom().setDefaultCookieStore(localCookieStore).build()) {
             // Register using local client
-            HttpPost registerReq = new HttpPost(authUrl("/register"));
+            HttpPost registerReq = new HttpPost(authUrl("/users"));
             registerReq.setEntity(new StringEntity(
                     registerPayload(username, email, password, "Del", "User", ""),
                     ContentType.APPLICATION_JSON));
@@ -145,7 +145,7 @@ class TestApiProfileBC extends BaseApiClass {
             }
 
             // Login using local client to populate localCookieStore
-            HttpPost loginReq = new HttpPost(authUrl("/login"));
+            HttpPost loginReq = new HttpPost(authUrl("/sessions"));
             loginReq.setEntity(new StringEntity(
                     loginPayload(email, password),
                     ContentType.APPLICATION_JSON));
@@ -168,9 +168,9 @@ class TestApiProfileBC extends BaseApiClass {
                 throw new IOException("Invalid URI", e);
             }
             Assertions.assertEquals(200, deleteStatus,
-                    "DELETE /api/profile must return HTTP 200");
+                    "DELETE /api/v1/profile must return HTTP 200");
 
-            // After deletion, GET /api/me for the same session should return 401
+            // After deletion, GET /api/v1/me for the same session should return 401
             int meStatus;
             HttpGet meReq = new HttpGet(authUrl("/me"));
             meReq.addHeader("Accept", "application/json");
@@ -179,7 +179,7 @@ class TestApiProfileBC extends BaseApiClass {
                 EntityUtils.consume(response.getEntity());
             }
             Assertions.assertEquals(401, meStatus,
-                    "After account deletion GET /api/me must return 401");
+                    "After account deletion GET /api/v1/me must return 401");
         }
     }
 }

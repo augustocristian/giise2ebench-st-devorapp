@@ -33,22 +33,22 @@ Clientes externos
 Repositorios
 ------------
 
-.. automodule:: app.infrastructure.repositories.favoritos_repo
+.. automodule:: app.infrastructure.repositories.favorites_repo
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.infrastructure.repositories.historial_repo
+.. automodule:: app.infrastructure.repositories.history_repo
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.infrastructure.repositories.mas_tarde_repo
+.. automodule:: app.infrastructure.repositories.saved_for_later_repo
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.infrastructure.repositories.restaurante_repo
+.. automodule:: app.infrastructure.repositories.restaurant_repo
    :members:
    :undoc-members:
    :show-inheritance:
@@ -58,7 +58,7 @@ Repositorios
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.infrastructure.repositories.valoracion_repo
+.. automodule:: app.infrastructure.repositories.rating_repo
    :members:
    :undoc-members:
    :show-inheritance:

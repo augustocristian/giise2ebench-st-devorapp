@@ -24,27 +24,32 @@ export function nthRestaurantStub(n, overrides = {}) {
   return restaurantStub({ ...RESTAURANTS[n % RESTAURANTS.length], address: `Calle Ficticia ${n + 1}`, ...overrides });
 }
 
-/** One favorites list; GET /api/favoritos/listas returns an array of these. */
+/** One favorites list; GET /api/v1/favorites/lists returns an array of these. */
 export function favoritesListStub(overrides = {}) {
-  return { id: 1, user_id: "uid", nombre: "Lista 1", icono: "Heart", ...overrides };
+  return { id: 1, user_id: "uid", name: "List 1", icon: "Heart", ...overrides };
 }
 
 export function favoritesListsStub(count) {
-  return Array.from({ length: count }, (_, i) => favoritesListStub({ id: i + 1, nombre: `Lista ${i + 1}` }));
+  return Array.from({ length: count }, (_, i) => favoritesListStub({ id: i + 1, name: `List ${i + 1}` }));
 }
 
-/** GET /api/favoritos/listas/<id>: the list plus `restaurantCount` restaurants. */
+/** GET /api/v1/favorites/lists/<id>: the list plus `restaurantCount` restaurants. */
 export function favoritesDetailStub(restaurantCount, list = favoritesListStub()) {
-  const restaurantes = Array.from({ length: restaurantCount }, (_, i) => {
+  const restaurants = Array.from({ length: restaurantCount }, (_, i) => {
     const restaurant = nthRestaurantStub(i);
-    return { id: i + 1, lista_id: list.id, place_id: restaurant.id, restaurant };
+    return { id: i + 1, list_id: list.id, place_id: restaurant.id, restaurant };
   });
-  return { lista: list, restaurantes };
+  return { list, restaurants };
 }
 
 /** One history entry; `date` is the ISO access timestamp that decides its month group. */
 export function historyEntryStub({ id = 1, date, restaurant = restaurantStub() } = {}) {
-  return { id, user_id: "uid", place_id: restaurant.id, fecha_acceso: date, restaurant };
+  return { id, user_id: "uid", place_id: restaurant.id, accessed_at: date, restaurant };
+}
+
+/** Paginated envelope returned by the list endpoints (history, saved-for-later, ratings). */
+export function pageStub(items) {
+  return { items, total: items.length, limit: 100, offset: 0 };
 }
 
 /** Two entries (Uno, Dos) accessed on the given dates. */
@@ -55,7 +60,7 @@ export function historyStub(dateUno, dateDos) {
   ];
 }
 
-/** POST /api/recommendations/search response. */
+/** POST /api/v1/recommendations/search response. */
 export function searchResponseStub(results = []) {
   return { results, next_page_token: null };
 }

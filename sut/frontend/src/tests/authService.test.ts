@@ -16,7 +16,7 @@ describe('authService', () => {
 
     // ── login ─────────────────────────────────────────────────────────────────
 
-    it('login debe hacer POST a /login y retornar la respuesta si es correcta', async () => {
+    it('login should POST to /sessions and return the response on success', async () => {
         const mockResponse = { message: 'Ok', user: { username: 'test' } };
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
@@ -26,7 +26,7 @@ describe('authService', () => {
         const result = await authService.login('test@test.com', 'password');
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/login'),
+            expect.stringContaining('/sessions'),
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ identifier: 'test@test.com', password: 'password' }),
@@ -35,7 +35,7 @@ describe('authService', () => {
         expect(result).toEqual(mockResponse);
     });
 
-    it('login debe lanzar error si la respuesta no es ok', async () => {
+    it('login should throw if the response is not ok', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: false,
             json: async () => ({ detail: 'Credenciales inválidas' }),
@@ -46,7 +46,7 @@ describe('authService', () => {
 
     // ── loginWithGoogle ───────────────────────────────────────────────────────
 
-    it('loginWithGoogle debe retornar { require_username: true } si el estado es 202', async () => {
+    it('loginWithGoogle should return { require_username: true } if the status is 202', async () => {
         const mockResponse = { require_username: true, email: 'g@g.com' };
         (globalThis.fetch as any).mockResolvedValue({
             status: 202,
@@ -57,7 +57,7 @@ describe('authService', () => {
         const result = await authService.loginWithGoogle('google-token');
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/auth/google'),
+            expect.stringContaining('/sessions/google'),
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ token: 'google-token' }),
@@ -66,9 +66,9 @@ describe('authService', () => {
         expect(result).toEqual(mockResponse);
     });
 
-    it('loginWithGoogle debe lanzar error si la respuesta no es ok y no es 202', async () => {
+    it('loginWithGoogle should throw if the response is not ok and not 202', async () => {
         (globalThis.fetch as any).mockResolvedValue({
-            status: 400,
+            status: 401,
             ok: false,
             json: async () => ({ detail: 'Token inválido' }),
         });
@@ -78,7 +78,7 @@ describe('authService', () => {
 
     // ── registerWithGoogle ────────────────────────────────────────────────────
 
-    it('registerWithGoogle debe hacer POST a /register/google', async () => {
+    it('registerWithGoogle should POST to /users/google', async () => {
         const mockResponse = { message: 'Cuenta creada' };
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
@@ -88,10 +88,10 @@ describe('authService', () => {
         const result = await authService.registerWithGoogle('token', 'username', 'Madrid');
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/register/google'),
+            expect.stringContaining('/users/google'),
             expect.objectContaining({
                 method: 'POST',
-                body: JSON.stringify({ token: 'token', username: 'username', ubicacion: 'Madrid' }),
+                body: JSON.stringify({ token: 'token', username: 'username', location: 'Madrid' }),
             })
         );
         expect(result).toEqual(mockResponse);
@@ -99,20 +99,20 @@ describe('authService', () => {
 
     // ── logout ────────────────────────────────────────────────────────────────
 
-    it('logout debe hacer POST a /logout', async () => {
+    it('logout should DELETE /sessions/current', async () => {
         (globalThis.fetch as any).mockResolvedValue({ ok: true });
 
         await authService.logout();
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/logout'),
-            expect.objectContaining({ method: 'POST' })
+            expect.stringContaining('/sessions/current'),
+            expect.objectContaining({ method: 'DELETE' })
         );
     });
 
     // ── getMe ─────────────────────────────────────────────────────────────────
 
-    it('getMe debe hacer GET a /me', async () => {
+    it('getMe should GET to /me', async () => {
         const mockUser = { username: 'testuser' };
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
@@ -128,7 +128,7 @@ describe('authService', () => {
         expect(result).toEqual(mockUser);
     });
 
-    it('getMe lanza error si la respuesta no es ok', async () => {
+    it('getMe throws if the response is not ok', async () => {
         (globalThis.fetch as any).mockResolvedValue({ ok: false });
 
         await expect(authService.getMe()).rejects.toThrow('No autorizado');
@@ -136,7 +136,7 @@ describe('authService', () => {
 
     // ── register ──────────────────────────────────────────────────────────────
 
-    it('register debe hacer POST a /register', async () => {
+    it('register should POST to /users', async () => {
         const userData = { email: 'a@a.com', password: 'password', username: 'user' };
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
@@ -146,7 +146,7 @@ describe('authService', () => {
         const result = await authService.register(userData);
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/register'),
+            expect.stringContaining('/users'),
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify(userData),
@@ -157,13 +157,13 @@ describe('authService', () => {
 
     // ── requestPasswordReset ──────────────────────────────────────────────────
 
-    it('requestPasswordReset debe hacer POST a /password-reset', async () => {
+    it('requestPasswordReset should POST to /password-resets', async () => {
         (globalThis.fetch as any).mockResolvedValue({ ok: true });
 
         await authService.requestPasswordReset('test@test.com');
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('/password-reset'),
+            expect.stringContaining('/password-resets'),
             expect.objectContaining({
                 method: 'POST',
                 body: JSON.stringify({ email: 'test@test.com' }),
@@ -173,7 +173,7 @@ describe('authService', () => {
 
     // ── checkEmailVerification ───────────────────────────────────────────────
 
-    it('checkEmailVerification debe retornar true si es verificado', async () => {
+    it('checkEmailVerification should return true if verified', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ verified: true }),
@@ -182,11 +182,14 @@ describe('authService', () => {
         const result = await authService.checkEmailVerification('test@test.com');
 
         expect(result).toBe(true);
+        expect(globalThis.fetch).toHaveBeenCalledWith(
+            expect.stringContaining('/email-verification?email=test%40test.com')
+        );
     });
 
     // ── checkAvailability ────────────────────────────────────────────────────
 
-    it('checkAvailability debe retornar el estado de disponibilidad', async () => {
+    it('checkAvailability should return the availability status', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ email_taken: true, username_taken: false }),
@@ -196,25 +199,25 @@ describe('authService', () => {
 
         expect(result).toEqual({ email_taken: true, username_taken: false });
         expect(globalThis.fetch).toHaveBeenCalledWith(
-            expect.stringContaining('email=taken%40test.com&username=free')
+            expect.stringContaining('/users/availability?email=taken%40test.com&username=free')
         );
     });
 
     // ── updateProfile ─────────────────────────────────────────────────────────
 
-    it('updateProfile debe hacer PATCH a /profile', async () => {
+    it('updateProfile should PATCH to /profile', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ message: 'Actualizado' }),
         });
 
-        const result = await authService.updateProfile({ nombre: 'Nuevo' });
+        const result = await authService.updateProfile({ first_name: 'Nuevo' });
 
         expect(globalThis.fetch).toHaveBeenCalledWith(
             expect.stringContaining('/profile'),
             expect.objectContaining({
                 method: 'PATCH',
-                body: JSON.stringify({ nombre: 'Nuevo' }),
+                body: JSON.stringify({ first_name: 'Nuevo' }),
             })
         );
         expect(result.message).toBe('Actualizado');
@@ -222,7 +225,7 @@ describe('authService', () => {
 
     // ── updateEmail ───────────────────────────────────────────────────────────
 
-    it('updateEmail debe hacer PATCH a /profile/email', async () => {
+    it('updateEmail should PATCH to /profile/email', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ message: 'Email enviado' }),
@@ -235,7 +238,7 @@ describe('authService', () => {
 
     // ── updatePassword ────────────────────────────────────────────────────────
 
-    it('updatePassword debe hacer PATCH a /profile/password', async () => {
+    it('updatePassword should PATCH to /profile/password', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ message: 'Password ok' }),
@@ -248,7 +251,7 @@ describe('authService', () => {
 
     // ── deleteAccount ─────────────────────────────────────────────────────────
 
-    it('deleteAccount debe hacer DELETE a /profile', async () => {
+    it('deleteAccount should DELETE to /profile', async () => {
         (globalThis.fetch as any).mockResolvedValue({
             ok: true,
             json: async () => ({ message: 'Deleted' }),

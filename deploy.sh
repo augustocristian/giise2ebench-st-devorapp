@@ -45,7 +45,7 @@ done
 RUN_BACKEND=false;  [[ "$COMPONENT" =~ ^(all|backend)$  ]] && RUN_BACKEND=true
 RUN_FRONTEND=false; [[ "$COMPONENT" =~ ^(all|frontend)$ ]] && RUN_FRONTEND=true
 
-# ─── Colours ──────────────────────────────────────────────────────────────────
+# ─── Colors ──────────────────────────────────────────────────────────────────
 CYAN='\033[0;36m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
 step() { echo -e "\n${CYAN}══ $* ══${NC}"; }
 ok()   { echo -e "  ${GREEN}✔ $*${NC}"; }

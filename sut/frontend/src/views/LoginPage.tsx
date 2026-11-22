@@ -155,7 +155,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         noValidate
         aria-label="Formulario de inicio de sesión"
       >
-        {/* Email / usuario */}
+        {/* Email / username */}
         <div className="form-group">
           <label htmlFor="identifier" className="form-label">
             Email o usuario
@@ -180,7 +180,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
           </div>
         </div>
 
-        {/* Contraseña */}
+        {/* Password */}
         <div className="form-group">
           <div className="form-label-row">
             <label htmlFor="password" className="form-label">
@@ -295,8 +295,8 @@ interface GoogleUsernameModalProps {
   onClose: () => void;
   newUsername: string;
   setNewUsername: (v: string) => void;
-  newUbicacion: string;
-  setNewUbicacion: (v: string) => void;
+  newLocation: string;
+  setNewLocation: (v: string) => void;
   googleError: string | null;
   googleLoading: boolean;
   submitGoogleUsername: () => void;
@@ -307,8 +307,8 @@ const GoogleUsernameModal: React.FC<GoogleUsernameModalProps> = ({
   onClose,
   newUsername,
   setNewUsername,
-  newUbicacion,
-  setNewUbicacion,
+  newLocation,
+  setNewLocation,
   googleError,
   googleLoading,
   submitGoogleUsername,
@@ -339,19 +339,19 @@ const GoogleUsernameModal: React.FC<GoogleUsernameModalProps> = ({
           />
         </div>
         <div className="form-group" style={{ marginTop: '0.75rem' }}>
-          <label className="form-label" htmlFor="modal-ubicacion-input">Ubicación preferida <span style={{color:'var(--error)'}}>*</span></label>
+          <label className="form-label" htmlFor="modal-location-input">Ubicación preferida <span style={{color:'var(--error)'}}>*</span></label>
           <Autocomplete
             apiKey={env.googleApiKey}
             onPlaceSelected={(place) => {
               if (place?.formatted_address) {
-                setNewUbicacion(place.formatted_address);
+                setNewLocation(place.formatted_address);
               }
             }}
-            onChange={(e: any) => setNewUbicacion(e.target.value)}
+            onChange={(e: any) => setNewLocation(e.target.value)}
             options={{ types: [] }}
             className="form-input"
             placeholder="Ciudad, barrio o dirección..."
-            defaultValue={newUbicacion}
+            defaultValue={newLocation}
             style={{ position: 'relative', zIndex: 10001 }}
           />
         </div>
@@ -362,7 +362,7 @@ const GoogleUsernameModal: React.FC<GoogleUsernameModalProps> = ({
         )}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
           <button className="btn-back" onClick={onClose} disabled={googleLoading}>Cancelar</button>
-          <button className={`btn-primary${googleLoading ? ' loading' : ''}`} onClick={submitGoogleUsername} disabled={googleLoading || !newUsername.trim() || !newUbicacion.trim()}>
+          <button className={`btn-primary${googleLoading ? ' loading' : ''}`} onClick={submitGoogleUsername} disabled={googleLoading || !newUsername.trim() || !newLocation.trim()}>
             {!googleLoading && 'Completar registro'}
           </button>
         </div>
@@ -476,7 +476,7 @@ const LoginPage: React.FC = () => {
   const [googleError, setGoogleError] = useState<string | null>(null);
   const [showUsernameModal, setShowUsernameModal] = useState(false);
   const [newUsername, setNewUsername] = useState('');
-  const [newUbicacion, setNewUbicacion] = useState('');
+  const [newLocation, setNewLocation] = useState('');
   const [googleToken, setGoogleToken] = useState<string | null>(null);
 
   const handleGoogleLogin = useGoogleLogin({
@@ -502,14 +502,14 @@ const LoginPage: React.FC = () => {
 
   const submitGoogleUsername = async () => {
     if (!newUsername.trim() || !googleToken) return;
-    if (!newUbicacion.trim()) {
+    if (!newLocation.trim()) {
       setGoogleError('La ubicación es obligatoria para completar el registro.');
       return;
     }
     setGoogleLoading(true);
     setGoogleError(null);
     try {
-      await authService.registerWithGoogle(googleToken, newUsername.trim(), newUbicacion.trim());
+      await authService.registerWithGoogle(googleToken, newUsername.trim(), newLocation.trim());
       setShowUsernameModal(false);
       handleLoginSuccess();
     } catch (err: any) {
@@ -535,7 +535,7 @@ const LoginPage: React.FC = () => {
       <main className="auth-screen-body" role="main">
         <div className="auth-content">
 
-          {/* ── Título de sección ── */}
+          {/* ── Section title ── */}
           <div className="auth-heading">
             {isResettingPassword ? (
               <>
@@ -584,8 +584,8 @@ const LoginPage: React.FC = () => {
         onClose={() => setShowUsernameModal(false)}
         newUsername={newUsername}
         setNewUsername={setNewUsername}
-        newUbicacion={newUbicacion}
-        setNewUbicacion={setNewUbicacion}
+        newLocation={newLocation}
+        setNewLocation={setNewLocation}
         googleError={googleError}
         googleLoading={googleLoading}
         submitGoogleUsername={submitGoogleUsername}

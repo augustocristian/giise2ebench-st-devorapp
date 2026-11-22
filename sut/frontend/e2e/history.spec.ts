@@ -1,12 +1,19 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Pruebas de Historial - Base-Choice', () => {
+// Paginated collection envelope used by the API (limit/offset pagination)
+const paginated = (items: unknown[]) => ({ items, total: items.length, limit: 100, offset: 0 });
+
+// Month group labels as rendered by the app (es-ES locale); they are the grouping behavior under test.
+const MAY_LABEL = 'MAYO 2026';
+const APRIL_LABEL = 'ABRIL 2026';
+
+test.describe('History - Base-Choice', () => {
 
   test.beforeEach(async ({ page }) => {
-    // Escuchamos logs de la consola del navegador para diagnóstico
+    // Browser console logs help diagnose failures
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-    // Interceptamos la carga del script de Google GSI
+    // Stub the Google GSI script
     await page.route('**/gsi/client', async (route) => {
       await route.fulfill({
         status: 200,
@@ -15,51 +22,51 @@ test.describe('Pruebas de Historial - Base-Choice', () => {
       });
     });
 
-    // Mock de perfil /api/me para simular sesión iniciada
-    await page.route('**/api/me', async (route) => {
+    // Mock /api/v1/me to simulate a signed-in session
+    await page.route('**/api/v1/me', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           username: 'testuser',
           email: 'test@test.com',
-          nombre: 'Test',
-          apellidos: 'User',
-          ubicacion: 'Madrid, España',
+          first_name: 'Test',
+          last_name: 'User',
+          location: 'Madrid, Spain',
           is_google: false,
         }),
       });
     });
 
-    // Mock de las valoraciones (vacío)
-    await page.route('**/api/valoraciones', async (route) => {
+    // Mock the ratings (empty)
+    await page.route(url => url.pathname === '/api/v1/ratings', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([]),
+        body: JSON.stringify(paginated([])),
       });
     });
   });
 
-  // ── 1. BASE: Meses = Varios, Restaurantes = Varios, Búsqueda = No ────────────────
-  test('debe mostrar múltiples meses y múltiples restaurantes sin búsqueda (BASE)', async ({ page }) => {
-    // Mock de historial con 3 restaurantes repartidos en 2 meses (Mayo 2026 y Abril 2026)
-    await page.route('**/api/historial', async (route) => {
+  // ── 1. BASE: Months = Several, Restaurants = Several, Search = No ────────────────
+  test('should show several months and several restaurants without search (BASE)', async ({ page }) => {
+    // History mock: 3 restaurants spread over 2 months (May 2026 and April 2026)
+    await page.route(url => url.pathname === '/api/v1/history', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
+        body: JSON.stringify(paginated([
           {
             id: 1,
             user_id: 'test-user-1',
             place_id: 'place_1',
-            fecha_acceso: '2026-05-28T10:00:00Z',
+            accessed_at: '2026-05-28T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice 1',
+              name: 'Base Choice Restaurant 1',
               rating: 4.5,
               user_ratings_total: 120,
               types: ['restaurant'],
-              address: 'Calle Falsa 123',
+              address: 'Fake Street 123',
               main_photo: null,
             },
           },
@@ -67,13 +74,13 @@ test.describe('Pruebas de Historial - Base-Choice', () => {
             id: 2,
             user_id: 'test-user-1',
             place_id: 'place_2',
-            fecha_acceso: '2026-05-27T10:00:00Z',
+            accessed_at: '2026-05-27T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice 2',
+              name: 'Base Choice Restaurant 2',
               rating: 4.0,
               user_ratings_total: 80,
               types: ['restaurant'],
-              address: 'Calle Falsa 456',
+              address: 'Fake Street 456',
               main_photo: null,
             },
           },
@@ -81,122 +88,121 @@ test.describe('Pruebas de Historial - Base-Choice', () => {
             id: 3,
             user_id: 'test-user-1',
             place_id: 'place_3',
-            fecha_acceso: '2026-04-15T10:00:00Z',
+            accessed_at: '2026-04-15T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice 3',
+              name: 'Base Choice Restaurant 3',
               rating: 4.2,
               user_ratings_total: 95,
               types: ['restaurant'],
-              address: 'Calle Falsa 789',
+              address: 'Fake Street 789',
               main_photo: null,
             },
           },
-        ]),
+        ])),
       });
     });
 
     await page.goto('/history');
 
-    // Verificamos que se muestran los encabezados de los meses
-    const mayoHeader = page.locator('.history-group-title', { hasText: 'MAYO 2026' });
-    const abrilHeader = page.locator('.history-group-title', { hasText: 'ABRIL 2026' });
-    await expect(mayoHeader).toBeVisible();
-    await expect(abrilHeader).toBeVisible();
+    // Both month headers are shown
+    const mayHeader = page.getByTestId('history-group-title').filter({ hasText: MAY_LABEL });
+    const aprilHeader = page.getByTestId('history-group-title').filter({ hasText: APRIL_LABEL });
+    await expect(mayHeader).toBeVisible();
+    await expect(aprilHeader).toBeVisible();
 
-    // Mayo se expande solo por defecto, mostrando 2 restaurantes
-    const cards = page.locator('.restaurant-compact-card');
+    // Only May is expanded by default, showing 2 restaurants
+    const cards = page.getByTestId('restaurant-card');
     await expect(cards).toHaveCount(2);
 
-    // Expandimos Abril
-    const abrilGroupHeader = page.locator('.history-group-header', { hasText: 'ABRIL 2026' });
-    await abrilGroupHeader.click();
+    // Expand April
+    await page.getByTestId('history-group-header').filter({ hasText: APRIL_LABEL }).click();
 
-    // Ahora deben mostrarse 3 restaurantes en total
+    // Now all 3 restaurants are shown
     await expect(cards).toHaveCount(3);
 
-    // Comprobar que la barra de búsqueda está vacía
-    const searchInput = page.getByPlaceholder('Buscar en historial...');
+    // The search box is empty
+    const searchInput = page.getByTestId('history-search');
     await expect(searchInput).toHaveValue('');
   });
 
-  // ── 2. Historial vacío (Caso 2, Caso 4) ──────────────────────────────────────────
-  test('debe mostrar estado vacío si no hay meses ni restaurantes (Caso 2, Caso 4)', async ({ page }) => {
-    await page.route('**/api/historial', async (route) => {
+  // ── 2. Empty history (Caso 2, Caso 4) ──────────────────────────────────────────
+  test('should show the empty state when there are no months or restaurants (Caso 2, Caso 4)', async ({ page }) => {
+    await page.route(url => url.pathname === '/api/v1/history', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([]),
+        body: JSON.stringify(paginated([])),
       });
     });
 
     await page.goto('/history');
 
-    // Verificamos que no hay grupos de meses
-    const headers = page.locator('.history-group-title');
+    // No month groups
+    const headers = page.getByTestId('history-group-title');
     await expect(headers).toHaveCount(0);
 
-    // Verificamos que se muestra "0 restaurantes"
-    const countText = page.locator('span', { hasText: '0 restaurantes' }).first();
-    await expect(countText).toBeVisible();
+    // The history list container is rendered (no spinner) with no cards
+    await expect(page.getByTestId('history-loading')).toHaveCount(0);
+    await expect(page.getByTestId('history-search')).toBeVisible();
 
-    // No hay tarjetas de restaurantes
-    const cards = page.locator('.restaurant-compact-card');
+    // No restaurant cards
+    const cards = page.getByTestId('restaurant-card');
     await expect(cards).toHaveCount(0);
   });
 
-  // ── 3. Historial unitario (Caso 3, Caso 5) ───────────────────────────────────────
-  test('debe mostrar un único mes con uno o varios restaurantes (Caso 3, Caso 5)', async ({ page }) => {
-    // 3.1. Caso 5: Restaurantes = 1
-    await page.route('**/api/historial', async (route) => {
+  // ── 3. Single-item history (Caso 3, Caso 5) ───────────────────────────────────────
+  test('should show a single month with one or several restaurants (Caso 3, Caso 5)', async ({ page }) => {
+    // 3.1. Caso 5: Restaurants = 1
+    await page.route(url => url.pathname === '/api/v1/history', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
+        body: JSON.stringify(paginated([
           {
             id: 1,
             user_id: 'test-user-1',
             place_id: 'place_1',
-            fecha_acceso: '2026-05-28T10:00:00Z',
+            accessed_at: '2026-05-28T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice 1',
+              name: 'Base Choice Restaurant 1',
               rating: 4.5,
               user_ratings_total: 120,
               types: ['restaurant'],
-              address: 'Calle Falsa 123',
+              address: 'Fake Street 123',
               main_photo: null,
             },
           },
-        ]),
+        ])),
       });
     });
 
     await page.goto('/history');
 
-    const headers = page.locator('.history-group-title');
+    const headers = page.getByTestId('history-group-title');
     await expect(headers).toHaveCount(1);
-    await expect(headers.first()).toHaveText('MAYO 2026');
+    await expect(headers.first()).toHaveText(MAY_LABEL);
 
-    const cards = page.locator('.restaurant-compact-card');
+    const cards = page.getByTestId('restaurant-card');
     await expect(cards).toHaveCount(1);
-    await expect(cards.first().locator('.compact-name')).toHaveText('Restaurante Base Choice 1');
+    await expect(cards.first().getByTestId('restaurant-card-name')).toHaveText('Base Choice Restaurant 1');
 
-    // 3.2. Caso 3: Meses = 1, Restaurantes = Varios
-    await page.route('**/api/historial', async (route) => {
+    // 3.2. Caso 3: Months = 1, Restaurants = Several
+    await page.route(url => url.pathname === '/api/v1/history', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
+        body: JSON.stringify(paginated([
           {
             id: 1,
             user_id: 'test-user-1',
             place_id: 'place_1',
-            fecha_acceso: '2026-05-28T10:00:00Z',
+            accessed_at: '2026-05-28T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice 1',
+              name: 'Base Choice Restaurant 1',
               rating: 4.5,
               user_ratings_total: 120,
               types: ['restaurant'],
-              address: 'Calle Falsa 123',
+              address: 'Fake Street 123',
               main_photo: null,
             },
           },
@@ -204,44 +210,44 @@ test.describe('Pruebas de Historial - Base-Choice', () => {
             id: 2,
             user_id: 'test-user-1',
             place_id: 'place_2',
-            fecha_acceso: '2026-05-27T10:00:00Z',
+            accessed_at: '2026-05-27T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice 2',
+              name: 'Base Choice Restaurant 2',
               rating: 4.0,
               user_ratings_total: 80,
               types: ['restaurant'],
-              address: 'Calle Falsa 456',
+              address: 'Fake Street 456',
               main_photo: null,
             },
           },
-        ]),
+        ])),
       });
     });
 
     await page.goto('/history');
     await expect(headers).toHaveCount(1);
-    await expect(headers.first()).toHaveText('MAYO 2026');
+    await expect(headers.first()).toHaveText(MAY_LABEL);
     await expect(cards).toHaveCount(2);
   });
 
-  // ── 4. Búsqueda en historial (Caso 6) ────────────────────────────────────────────
-  test('debe filtrar dinámicamente y ocultar meses sin coincidencias al buscar (Caso 6)', async ({ page }) => {
-    await page.route('**/api/historial', async (route) => {
+  // ── 4. History search (Caso 6) ────────────────────────────────────────────
+  test('should filter dynamically and hide months without matches when searching (Caso 6)', async ({ page }) => {
+    await page.route(url => url.pathname === '/api/v1/history', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
+        body: JSON.stringify(paginated([
           {
             id: 1,
             user_id: 'test-user-1',
             place_id: 'place_1',
-            fecha_acceso: '2026-05-28T10:00:00Z',
+            accessed_at: '2026-05-28T10:00:00Z',
             restaurant: {
-              name: 'Pizzería Bella Vista',
+              name: 'Pizzeria Bella Vista',
               rating: 4.5,
               user_ratings_total: 120,
               types: ['restaurant'],
-              address: 'Calle Falsa 123',
+              address: 'Fake Street 123',
               main_photo: null,
             },
           },
@@ -249,13 +255,13 @@ test.describe('Pruebas de Historial - Base-Choice', () => {
             id: 2,
             user_id: 'test-user-1',
             place_id: 'place_2',
-            fecha_acceso: '2026-05-27T10:00:00Z',
+            accessed_at: '2026-05-27T10:00:00Z',
             restaurant: {
               name: 'Taco Loco',
               rating: 4.0,
               user_ratings_total: 80,
               types: ['restaurant'],
-              address: 'Calle Falsa 456',
+              address: 'Fake Street 456',
               main_photo: null,
             },
           },
@@ -263,37 +269,37 @@ test.describe('Pruebas de Historial - Base-Choice', () => {
             id: 3,
             user_id: 'test-user-1',
             place_id: 'place_3',
-            fecha_acceso: '2026-04-15T10:00:00Z',
+            accessed_at: '2026-04-15T10:00:00Z',
             restaurant: {
               name: 'Burger Bar',
               rating: 4.2,
               user_ratings_total: 95,
               types: ['restaurant'],
-              address: 'Calle Falsa 789',
+              address: 'Fake Street 789',
               main_photo: null,
             },
           },
-        ]),
+        ])),
       });
     });
 
     await page.goto('/history');
 
-    // Rellenamos el cuadro de búsqueda con "Pizz"
-    const searchInput = page.getByPlaceholder('Buscar en historial...');
+    // Type "Pizz" in the search box
+    const searchInput = page.getByTestId('history-search');
     await searchInput.fill('Pizz');
 
-    // Comprobamos que el mes "ABRIL 2026" (que no tiene coincidencias) desaparece del DOM
-    const abrilHeader = page.locator('.history-group-title', { hasText: 'ABRIL 2026' });
-    await expect(abrilHeader).not.toBeVisible();
+    // April has no matches, so its header disappears
+    const aprilHeader = page.getByTestId('history-group-title').filter({ hasText: APRIL_LABEL });
+    await expect(aprilHeader).toHaveCount(0);
 
-    // Comprobamos que el mes "MAYO 2026" sigue visible
-    const mayoHeader = page.locator('.history-group-title', { hasText: 'MAYO 2026' });
-    await expect(mayoHeader).toBeVisible();
+    // May stays visible
+    const mayHeader = page.getByTestId('history-group-title').filter({ hasText: MAY_LABEL });
+    await expect(mayHeader).toBeVisible();
 
-    // Sólo se muestra la tarjeta de "Pizzería Bella Vista"
-    const cards = page.locator('.restaurant-compact-card');
+    // Only the "Pizzeria Bella Vista" card remains
+    const cards = page.getByTestId('restaurant-card');
     await expect(cards).toHaveCount(1);
-    await expect(cards.first().locator('.compact-name')).toHaveText('Pizzería Bella Vista');
+    await expect(cards.first().getByTestId('restaurant-card-name')).toHaveText('Pizzeria Bella Vista');
   });
 });

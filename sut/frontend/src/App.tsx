@@ -6,7 +6,7 @@ import RestaurantRecommendationPage from './views/RestaurantRecommendationPage';
 import HistoryPage from './views/HistoryPage';
 import FavoritesPage from './views/FavoritesPage';
 import SavedForLaterPage from './views/SavedForLaterPage';
-import ValoracionesPage from './views/ValoracionesPage';
+import RatingsPage from './views/RatingsPage';
 import ProfilePage from './views/ProfilePage';
 import ProtectedRoute from './components/ProtectedRoute';
 import { NotificationProvider } from './components/NotificationSystem';
@@ -44,9 +44,9 @@ function App() {
               <SavedForLaterPage />
             </ProtectedRoute>
           } />
-          <Route path="/mis-valoraciones" element={
+          <Route path="/my-ratings" element={
             <ProtectedRoute>
-              <ValoracionesPage />
+              <RatingsPage />
             </ProtectedRoute>
           } />
           <Route path="/profile" element={

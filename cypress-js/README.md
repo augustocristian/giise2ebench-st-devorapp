@@ -5,6 +5,7 @@ Browser (UI) and API tests for **DevorApp**, written with Cypress 13 and JavaScr
 ## Prerequisites
 
 - Node.js 22 or newer (`.nvmrc` pins `22`).
+- Google Chrome. Cypress 16 deprecates the Electron browser, so the `npm` scripts run with `--browser chrome` (preinstalled on GitHub-hosted Ubuntu runners).
 - A running SUT: frontend (`http://localhost`), backend (`http://localhost:8000`) and the Google Places mock (`http://localhost:8002`). The suite does not start it; use `deploy.ps1` / `deploy.sh` from the repository root.
 
 ## Install
@@ -19,13 +20,13 @@ npm run cypress:install   # downloads the Cypress binary
 
 Defaults live in [`cypress.config.js`](cypress.config.js):
 
-| Setting             | Default                 | Purpose            |
-| :------------------ | :---------------------- | :----------------- |
-| `baseUrl`           | `http://localhost`      | Frontend           |
-| `env.apiUrl`        | `http://localhost:8000` | Backend API        |
-| `env.placesMockUrl` | `http://localhost:8002` | Google Places mock |
+| Setting                | Default                 | Purpose            |
+| :--------------------- | :---------------------- | :----------------- |
+| `baseUrl`              | `http://localhost`      | Frontend           |
+| `expose.apiUrl`        | `http://localhost:8000` | Backend API        |
+| `expose.placesMockUrl` | `http://localhost:8002` | Google Places mock |
 
-Override with `cypress.env.json` (gitignored, see `cypress.env.json.example`) or environment variables:
+Override with environment variables:
 
 ```bash
 CYPRESS_BASE_URL=http://localhost:8080 CYPRESS_apiUrl=http://localhost:8000 npm run cypress:run

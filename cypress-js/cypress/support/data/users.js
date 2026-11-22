@@ -9,9 +9,9 @@ export function newUser(prefix = "testuser", overrides = {}) {
     email: `${prefix}${id}@devorapp.test`,
     username: `${prefix}${id}`.slice(-30),
     password: DEFAULT_PASSWORD,
-    nombre: "Test",
-    apellidos: "User",
-    ubicacion: "Gijón",
+    first_name: "Test",
+    last_name: "User",
+    location: "Gijón",
     ...overrides,
   };
 }

@@ -1,6 +1,6 @@
 import { TID } from "../testids";
 
-const SEARCH_URL = "**/api/recommendations/search";
+const SEARCH_URL = "**/api/v1/recommendations/search";
 
 class RecommendPage {
   visit(options) {

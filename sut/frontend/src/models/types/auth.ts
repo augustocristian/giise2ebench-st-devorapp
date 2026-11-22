@@ -11,8 +11,8 @@ export interface RegisterResponse {
 export interface User {
     username: string;
     email: string;
-    nombre: string;
-    apellidos: string;
+    first_name: string;
+    last_name: string;
     ubicacion?: string;
     is_google?: boolean;
 }

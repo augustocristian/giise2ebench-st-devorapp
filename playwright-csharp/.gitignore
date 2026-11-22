@@ -1,0 +1,55 @@
+# ── .NET build output ────────────────────────────────────────────────────
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ── Test / coverage output ───────────────────────────────────────────────
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage.xml
+coverage-report/
+
+# Playwright
+playwright-report/
+playwright/.cache/
+blob-report/
+
+# Suite-specific output (mirrors selenium-java/target and puppeteer-python/target)
+target/
+logs/
+
+# ── Environment / secrets ────────────────────────────────────────────────
+.env
+.env.*
+local.env
+firebase-service-account.json
+appsettings.*.local.json
+
+# ── Visual Studio ────────────────────────────────────────────────────────
+.vs/
+*.VC.db
+*.VC.VC.opendb
+
+# ── JetBrains Rider / IntelliJ ───────────────────────────────────────────
+.idea/
+*.sln.iml
+
+# ── VS Code ───────────────────────────────────────────────────────────────
+.vscode/
+*.code-workspace
+
+# ── Eclipse (unlikely for C#, kept for parity with the other suites) ─────
+.project
+.settings/
+.metadata/
+
+# ── OS junk ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -12,7 +12,7 @@ from app.infrastructure.database import SessionLocal
 from app.infrastructure.google_places_client import google_places_client
 from app.infrastructure.keras_api_client import keras_api_client
 
-# Tipos demasiado genéricos para usarlos como señal de preferencia
+# Types too generic to be used as a preference signal
 GENERIC_TYPES = {'restaurant', 'food', 'establishment', 'point_of_interest', 'meal_takeaway', 'meal_delivery', 'store', 'lodging'}
 
 class RecommendationService:
@@ -28,7 +28,7 @@ class RecommendationService:
         except Exception:
             return {"restaurant": "restaurante"}
 
-    # ── Helpers de Cálculo (Lógica de Dominio) ────────────────────────────────
+    # ── Calculation helpers (domain logic) ────────────────────────────────
     @staticmethod
     def _haversine(lat1, lon1, lat2, lon2):
         R = 6371.0
@@ -53,7 +53,7 @@ class RecommendationService:
             return num/den if den > 0 else 0.0
         return 0.4 if abs(c[0]-o[0]) < 0.5 else 0.0
 
-    # ── Flujo Principal de Búsqueda ───────────────────────────────────────────
+    # ── Main search flow ───────────────────────────────────────────
     async def search_restaurants(self, request: RecommendationRequest, user_id: str = None) -> Dict[str, Any]:
         # 1. Preparar consulta
         query_parts = []
@@ -62,7 +62,7 @@ class RecommendationService:
             query_parts.append(" OR ".join(labels))
         query_parts.append(f"restaurantes en {request.location}")
         
-        # 2. Geocodificación (Delegada a Infraestructura)
+        # 2. Geocoding (delegated to infrastructure)
         lat, lng = None, None
         geo_res = await google_places_client.geocode(request.location)
         if geo_res:
@@ -88,7 +88,7 @@ class RecommendationService:
 
         formatted = self._format_results(search_res["places"])
 
-        # 4. Ordenación y Scoring
+        # 4. Sorting and scoring
         sort_type = getattr(request, 'sort_by', 'recommended')
         if sort_type == 'distance' and lat:
             formatted.sort(key=lambda r: self._haversine(lat, lng, r.get("latitude") or lat, r.get("longitude") or lng))
@@ -100,12 +100,12 @@ class RecommendationService:
         return {"results": formatted, "next_page_token": search_res["next_page_token"]}
 
     def _fetch_user_db_features(self, db, user_id: str):
-        res = db.execute(text("SELECT r.place_id, AVG((v.calidad+v.precio+v.higiene+v.trato)/4.0), AVG(v.precio) FROM valoraciones v JOIN restaurantes r ON v.restaurante_id = r.id WHERE v.user_id = :uid GROUP BY r.place_id"), {"uid": user_id}).fetchall()
+        res = db.execute(text("SELECT r.place_id, AVG((v.quality+v.price+v.hygiene+v.service)/4.0), AVG(v.price) FROM ratings v JOIN restaurants r ON v.restaurant_id = r.id WHERE v.user_id = :uid GROUP BY r.place_id"), {"uid": user_id}).fetchall()
         user_direct_scores = {row[0]: float(row[1]) for row in res}
         user_direct_price = {row[0]: float(row[2]) for row in res}
-        user_favs = {row[0] for row in db.execute(text("SELECT r.place_id FROM favoritos f JOIN listas_favoritos l ON f.lista_id = l.id JOIN restaurantes r ON f.restaurante_id = r.id WHERE l.user_id = :uid"), {"uid": user_id}).fetchall()}
+        user_favs = {row[0] for row in db.execute(text("SELECT r.place_id FROM favorites f JOIN favorite_lists l ON f.list_id = l.id JOIN restaurants r ON f.restaurant_id = r.id WHERE l.user_id = :uid"), {"uid": user_id}).fetchall()}
         
-        res_cf = db.execute(text("SELECT v.user_id, r.place_id, AVG((v.calidad+v.precio+v.higiene+v.trato)/4.0) FROM valoraciones v JOIN restaurantes r ON v.restaurante_id = r.id WHERE v.user_id != :uid GROUP BY v.user_id, r.place_id"), {"uid": user_id}).fetchall()
+        res_cf = db.execute(text("SELECT v.user_id, r.place_id, AVG((v.quality+v.price+v.hygiene+v.service)/4.0) FROM ratings v JOIN restaurants r ON v.restaurant_id = r.id WHERE v.user_id != :uid GROUP BY v.user_id, r.place_id"), {"uid": user_id}).fetchall()
         other_users = {}
         for row in res_cf:
             if row[0] not in other_users:
@@ -221,28 +221,28 @@ class RecommendationService:
         return final, f"hybrid({len(type_matches)}types)"
 
     async def _sort_recommended(self, formatted: list, user_id: str, search_lat=None, search_lng=None):
-        # ── PASO 1: Cargar datos del usuario (Capa DB)
+        # ── STEP 1: Load user data (DB layer)
         db = SessionLocal()
         try:
             user_direct_scores, user_direct_price, user_favs, other_users = self._fetch_user_db_features(db, user_id)
         finally:
             db.close()
 
-        # ── PASO 2: Obtener Info de Keras/Google
+        # ── STEP 2: Get Keras/Google info
         all_info = await self._fetch_missing_place_infos(user_direct_scores)
 
-        # ── PASO 3: Construir perfiles
+        # ── STEP 3: Build profiles
         user_type_profile, is_price_sensitive = self._build_user_profiles(
             user_direct_scores, user_direct_price, all_info
         )
 
-        # ── PASO 4: Collaborative Filtering
+        # ── STEP 4: Collaborative filtering
         user_similarities = self._compute_collaborative_filtering(user_direct_scores, other_users)
 
-        # ── PASO 5: Keras Scores
+        # ── STEP 5: Keras scores
         keras_norm = await self._fetch_keras_normalized_scores(user_id, user_direct_scores, user_favs, formatted)
 
-        # ── PASO 6: Scoring Final
+        # ── STEP 6: Final scoring
         for r in formatted:
             final, source = self._calculate_restaurant_score(
                 r, user_direct_scores, user_type_profile, user_similarities,
@@ -284,10 +284,10 @@ class RecommendationService:
         return f"{places_root}/{photos[0]['name']}/media?maxHeightPx=400&maxWidthPx=400&key={settings.GOOGLE_API_KEY}"
 
     async def _geocode_location(self, location: str):
-        """Geocodifica una cadena de texto a coordenadas (lat, lng).
+        """Geocode a text string to coordinates (lat, lng).
         
         Returns:
-            Tuple (lat, lng) si la geocodificación fue exitosa, (None, None) en caso contrario.
+            Tuple (lat, lng) if geocoding succeeded, otherwise (None, None).
         """
         geo_res = await google_places_client.geocode(location)
         if geo_res:

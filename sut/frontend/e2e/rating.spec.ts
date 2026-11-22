@@ -1,17 +1,20 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Pruebas de Valoración - Base-Choice', () => {
+// Paginated collection envelope used by the API (limit/offset pagination)
+const paginated = (items: unknown[]) => ({ items, total: items.length, limit: 100, offset: 0 });
+
+test.describe('Rating - Base-Choice', () => {
 
   let lastRatingPayload: any = null;
 
   test.beforeEach(async ({ page }) => {
-    // Escuchamos logs de la consola del navegador para diagnóstico
+    // Browser console logs help diagnose failures
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
 
-    // Reset del payload
+    // Reset the payload
     lastRatingPayload = null;
 
-    // Interceptamos la carga del script de Google GSI
+    // Stub the Google GSI script
     await page.route('**/gsi/client', async (route) => {
       await route.fulfill({
         status: 200,
@@ -20,266 +23,265 @@ test.describe('Pruebas de Valoración - Base-Choice', () => {
       });
     });
 
-    // Mock de perfil /api/me para simular sesión iniciada
-    await page.route('**/api/me', async (route) => {
+    // Mock /api/v1/me to simulate a signed-in session
+    await page.route('**/api/v1/me', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           username: 'testuser',
           email: 'test@test.com',
-          nombre: 'Test',
-          apellidos: 'User',
-          ubicacion: 'Madrid, España',
+          first_name: 'Test',
+          last_name: 'User',
+          location: 'Madrid, Spain',
           is_google: false,
         }),
       });
     });
 
-    // Mock del historial para devolver un restaurante "Sin reseñar"
-    await page.route('**/api/historial', async (route) => {
+    // History mock with one unreviewed restaurant
+    await page.route(url => url.pathname === '/api/v1/history', async (route) => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify([
+        body: JSON.stringify(paginated([
           {
             id: 1,
             user_id: 'test-user-1',
             place_id: 'place_base_choice',
-            fecha_acceso: '2026-05-28T10:00:00Z',
+            accessed_at: '2026-05-28T10:00:00Z',
             restaurant: {
-              name: 'Restaurante Base Choice',
+              name: 'Base Choice Restaurant',
               rating: 4.5,
               user_ratings_total: 120,
               types: ['restaurant'],
-              address: 'Calle de la Prueba 123',
+              address: 'Test Street 123',
               main_photo: null,
             },
           },
-        ]),
+        ])),
       });
     });
 
-    // Mock de mis valoraciones (vacío inicialmente para que el badge de reseña aparezca como "Sin reseñar")
-    await page.route('**/api/valoraciones', async (route) => {
-      if (route.request().method() === 'POST') {
-        lastRatingPayload = JSON.parse(route.request().postData() || '{}');
-        await route.fulfill({
-          status: 201,
-          contentType: 'application/json',
-          body: JSON.stringify({
-            id: 101,
-            place_id: lastRatingPayload.place_id,
-            calidad: lastRatingPayload.calidad,
-            precio: lastRatingPayload.precio,
-            higiene: lastRatingPayload.higiene,
-            trato: lastRatingPayload.trato,
-            comentario: lastRatingPayload.comentario,
-            fecha: new Date().toISOString(),
-          }),
-        });
-      } else if (route.request().method() === 'GET') {
+    // Ratings mock (empty, so the restaurant counts as unreviewed)
+    await page.route(url => url.pathname === '/api/v1/ratings', async (route) => {
+      if (route.request().method() === 'GET') {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([]),
+          body: JSON.stringify(paginated([])),
         });
       } else {
         await route.fallback();
       }
     });
 
-    // Mock de obtener valoración individual
-    await page.route('**/api/valoraciones/place_base_choice', async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({}),
-      });
+    // Rating upsert: PUT /restaurants/{place_id}/rating (place_id lives in the path, not in the body)
+    await page.route('**/api/v1/restaurants/*/rating', async (route) => {
+      if (route.request().method() === 'PUT') {
+        lastRatingPayload = JSON.parse(route.request().postData() || '{}');
+        lastRatingPayload.place_id = decodeURIComponent(new URL(route.request().url()).pathname.split('/')[4]);
+        await route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 101,
+            place_id: lastRatingPayload.place_id,
+            quality: lastRatingPayload.quality,
+            price: lastRatingPayload.price,
+            hygiene: lastRatingPayload.hygiene,
+            service: lastRatingPayload.service,
+            comment: lastRatingPayload.comment,
+            created_at: new Date().toISOString(),
+          }),
+        });
+      } else if (route.request().method() === 'GET') {
+        // The caller has no rating for this restaurant yet
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({}),
+        });
+      } else {
+        await route.fallback();
+      }
     });
 
-    // Navegar a la página del historial
+    // Go to the history page
     await page.goto('/history');
   });
 
-  // Helper para abrir el modal de valoración de un restaurante específico
+  // Open the rating modal for the mocked restaurant
   async function openRatingModal(page: any) {
-    // Localizamos la tarjeta por el nombre del restaurante
-    const card = page.locator('.restaurant-compact-card', { hasText: 'Restaurante Base Choice' });
+    const card = page.getByTestId('restaurant-card').filter({ hasText: 'Base Choice Restaurant' });
     await expect(card).toBeVisible();
 
-    // Hacemos clic en el botón de tres puntos (ItemMenu) de la tarjeta
-    const menuBtn = card.locator('button').first();
-    await menuBtn.click();
+    // The card has two buttons: the first opens the details view, the menu has its own testid.
+    await card.getByTestId('history-card-menu').click();
 
-    // Hacemos clic en "Valorar restaurante"
-    const ratingBtn = page.locator('button', { hasText: 'Valorar restaurante' });
+    const ratingBtn = page.getByTestId('history-menu-rate');
     await expect(ratingBtn).toBeVisible();
     await ratingBtn.click();
 
-    // Verificamos que se muestre el contenido del modal
-    await expect(page.locator('.valuation-content')).toBeVisible();
+    await expect(page.getByTestId('rating-modal')).toBeVisible();
   }
 
-  // Helper para seleccionar la puntuación (estrellas) de un aspecto
+  // Pick the star score of one aspect
   async function selectStars(page: any, aspect: string, rating: number) {
     if (rating <= 0) return;
-    const aspectRow = page.locator('.aspect-row-premium', { hasText: aspect });
-    const starsContainer = aspectRow.locator('div').last();
-    const star = starsContainer.locator('svg').nth(rating - 1);
-    await star.click();
+    await page.getByTestId(`rating-star-${aspect}-${rating}`).click();
   }
 
-  // Helper común para rellenar los valores base en el modal
+  // Fill the base values in the modal
   async function fillBaseRatings(page: any, {
-    calidad = 5,
-    precio = 5,
-    higiene = 5,
-    trato = 5,
-    comentario = 'Excelente servicio y comida deliciosa',
+    quality = 5,
+    price = 5,
+    hygiene = 5,
+    service = 5,
+    comment = 'Excellent service and delicious food',
   } = {}) {
-    await selectStars(page, 'calidad', calidad);
-    await selectStars(page, 'precio', precio);
-    await selectStars(page, 'higiene', higiene);
-    await selectStars(page, 'trato', trato);
+    await selectStars(page, 'quality', quality);
+    await selectStars(page, 'price', price);
+    await selectStars(page, 'hygiene', hygiene);
+    await selectStars(page, 'service', service);
 
-    const textarea = page.locator('textarea.textarea-premium');
-    if (comentario) {
-      await textarea.fill(comentario);
+    const textarea = page.getByTestId('rating-comment');
+    if (comment) {
+      await textarea.fill(comment);
     } else {
       await textarea.fill('');
     }
   }
 
-  // ── 1. Guardar valoración completa - Caso BASE (BASE) ─────────────────────────────
-  test('debe guardar la valoración con todos los aspectos al máximo y comentario (BASE)', async ({ page }) => {
+  // ── 1. Save a complete rating - BASE case (BASE) ─────────────────────────────
+  test('should save the rating with every aspect at max and a comment (BASE)', async ({ page }) => {
     await openRatingModal(page);
     await fillBaseRatings(page);
 
-    const submitBtn = page.locator('button.btn-submit-valuation');
+    const submitBtn = page.getByTestId('rating-submit');
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
 
-    // Comprobamos la llamada a la API
+    // Check the API call
     await expect.poll(() => lastRatingPayload).not.toBeNull();
-    expect(lastRatingPayload.calidad).toBe(5);
-    expect(lastRatingPayload.precio).toBe(5);
-    expect(lastRatingPayload.higiene).toBe(5);
-    expect(lastRatingPayload.trato).toBe(5);
-    expect(lastRatingPayload.comentario).toBe('Excelente servicio y comida deliciosa');
+    expect(lastRatingPayload.quality).toBe(5);
+    expect(lastRatingPayload.price).toBe(5);
+    expect(lastRatingPayload.hygiene).toBe(5);
+    expect(lastRatingPayload.service).toBe(5);
+    expect(lastRatingPayload.comment).toBe('Excellent service and delicious food');
 
-    // El modal debe cerrarse y mostrarse la notificación de éxito
-    await expect(page.locator('.valuation-content')).not.toBeVisible();
-    await expect(page.locator('.toast.success')).toBeVisible();
+    // The modal closes and the success toast shows
+    await expect(page.getByTestId('rating-modal')).not.toBeVisible();
+    await expect(page.getByTestId('toast-success')).toBeVisible();
   });
 
-  // ── 2. Validación de 0 estrellas deshabilitada (S2, S5, S8, S11) ─────────────────
-  test('debe deshabilitar el botón de enviar si algún aspecto tiene 0 estrellas (S2, S5, S8, S11)', async ({ page }) => {
-    const submitBtn = page.locator('button.btn-submit-valuation');
+  // ── 2. Submit disabled with 0 stars (S2, S5, S8, S11) ─────────────────
+  test('should disable submit if any aspect has 0 stars (S2, S5, S8, S11)', async ({ page }) => {
+    const submitBtn = page.getByTestId('rating-submit');
 
     // 2.1. S2: Calidad = 0
     await openRatingModal(page);
-    await fillBaseRatings(page, { calidad: 0 });
+    await fillBaseRatings(page, { quality: 0 });
     await expect(submitBtn).toBeDisabled();
 
     // 2.2. S5: Precio = 0
     await page.goto('/history');
     await openRatingModal(page);
-    await fillBaseRatings(page, { precio: 0 });
+    await fillBaseRatings(page, { price: 0 });
     await expect(submitBtn).toBeDisabled();
 
     // 2.3. S8: Higiene = 0
     await page.goto('/history');
     await openRatingModal(page);
-    await fillBaseRatings(page, { higiene: 0 });
+    await fillBaseRatings(page, { hygiene: 0 });
     await expect(submitBtn).toBeDisabled();
 
     // 2.4. S11: Trato = 0
     await page.goto('/history');
     await openRatingModal(page);
-    await fillBaseRatings(page, { trato: 0 });
+    await fillBaseRatings(page, { service: 0 });
     await expect(submitBtn).toBeDisabled();
   });
 
-  // ── 3. Puntuaciones variables de Calidad y Precio (S3, S4, S6, S7) ───────────────
-  test('debe guardar la valoración con diferentes puntuaciones de calidad y precio (S3, S4, S6, S7)', async ({ page }) => {
-    const submitBtn = page.locator('button.btn-submit-valuation');
+  // ── 3. Varying Quality and Price scores (S3, S4, S6, S7) ───────────────
+  test('should save the rating with different quality and price scores (S3, S4, S6, S7)', async ({ page }) => {
+    const submitBtn = page.getByTestId('rating-submit');
 
-    // 3.1. Sub-caso A: Calidad = 1, Precio = 3
+    // 3.1. Sub-case A: Calidad = 1, Precio = 3
     await openRatingModal(page);
-    await fillBaseRatings(page, { calidad: 1, precio: 3 });
+    await fillBaseRatings(page, { quality: 1, price: 3 });
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
     await expect.poll(() => lastRatingPayload).not.toBeNull();
-    expect(lastRatingPayload.calidad).toBe(1);
-    expect(lastRatingPayload.precio).toBe(3);
-    expect(lastRatingPayload.higiene).toBe(5);
-    expect(lastRatingPayload.trato).toBe(5);
+    expect(lastRatingPayload.quality).toBe(1);
+    expect(lastRatingPayload.price).toBe(3);
+    expect(lastRatingPayload.hygiene).toBe(5);
+    expect(lastRatingPayload.service).toBe(5);
 
-    // Esperamos a que se oculte el modal tras enviar
-    await expect(page.locator('.valuation-content')).not.toBeVisible();
-    lastRatingPayload = null; // Reset payload
+    // Wait for the modal to close after submitting
+    await expect(page.getByTestId('rating-modal')).not.toBeVisible();
+    lastRatingPayload = null; // Reset the payload
 
-    // 3.2. Sub-caso B: Calidad = 3, Precio = 1
+    // 3.2. Sub-case B: Calidad = 3, Precio = 1
     await page.goto('/history');
     await openRatingModal(page);
-    await fillBaseRatings(page, { calidad: 3, precio: 1 });
+    await fillBaseRatings(page, { quality: 3, price: 1 });
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
     await expect.poll(() => lastRatingPayload).not.toBeNull();
-    expect(lastRatingPayload.calidad).toBe(3);
-    expect(lastRatingPayload.precio).toBe(1);
-    expect(lastRatingPayload.higiene).toBe(5);
-    expect(lastRatingPayload.trato).toBe(5);
+    expect(lastRatingPayload.quality).toBe(3);
+    expect(lastRatingPayload.price).toBe(1);
+    expect(lastRatingPayload.hygiene).toBe(5);
+    expect(lastRatingPayload.service).toBe(5);
   });
 
-  // ── 4. Puntuaciones variables de Higiene y Trato (S9, S10, S12, S13) ──────────────
-  test('debe guardar la valoración con diferentes puntuaciones de higiene y trato (S9, S10, S12, S13)', async ({ page }) => {
-    const submitBtn = page.locator('button.btn-submit-valuation');
+  // ── 4. Varying Hygiene and Service scores (S9, S10, S12, S13) ──────────────
+  test('should save the rating with different hygiene and service scores (S9, S10, S12, S13)', async ({ page }) => {
+    const submitBtn = page.getByTestId('rating-submit');
 
-    // 4.1. Sub-caso A: Higiene = 1, Trato = 3
+    // 4.1. Sub-case A: Higiene = 1, Trato = 3
     await openRatingModal(page);
-    await fillBaseRatings(page, { higiene: 1, trato: 3 });
+    await fillBaseRatings(page, { hygiene: 1, service: 3 });
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
     await expect.poll(() => lastRatingPayload).not.toBeNull();
-    expect(lastRatingPayload.calidad).toBe(5);
-    expect(lastRatingPayload.precio).toBe(5);
-    expect(lastRatingPayload.higiene).toBe(1);
-    expect(lastRatingPayload.trato).toBe(3);
+    expect(lastRatingPayload.quality).toBe(5);
+    expect(lastRatingPayload.price).toBe(5);
+    expect(lastRatingPayload.hygiene).toBe(1);
+    expect(lastRatingPayload.service).toBe(3);
 
-    // Esperamos a que se oculte el modal tras enviar
-    await expect(page.locator('.valuation-content')).not.toBeVisible();
-    lastRatingPayload = null; // Reset payload
+    // Wait for the modal to close after submitting
+    await expect(page.getByTestId('rating-modal')).not.toBeVisible();
+    lastRatingPayload = null; // Reset the payload
 
-    // 4.2. Sub-caso B: Higiene = 3, Trato = 1
+    // 4.2. Sub-case B: Higiene = 3, Trato = 1
     await page.goto('/history');
     await openRatingModal(page);
-    await fillBaseRatings(page, { higiene: 3, trato: 1 });
+    await fillBaseRatings(page, { hygiene: 3, service: 1 });
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
     await expect.poll(() => lastRatingPayload).not.toBeNull();
-    expect(lastRatingPayload.calidad).toBe(5);
-    expect(lastRatingPayload.precio).toBe(5);
-    expect(lastRatingPayload.higiene).toBe(3);
-    expect(lastRatingPayload.trato).toBe(1);
+    expect(lastRatingPayload.quality).toBe(5);
+    expect(lastRatingPayload.price).toBe(5);
+    expect(lastRatingPayload.hygiene).toBe(3);
+    expect(lastRatingPayload.service).toBe(1);
   });
 
-  // ── 5. Guardar valoración sin comentario (S14) ───────────────────────────────────
-  test('debe guardar la valoración si se deja el comentario vacío (S14)', async ({ page }) => {
+  // ── 5. Save a rating without a comment (S14) ───────────────────────────────────
+  test('should save the rating when the comment is left empty (S14)', async ({ page }) => {
     await openRatingModal(page);
-    await fillBaseRatings(page, { comentario: '' });
+    await fillBaseRatings(page, { comment: '' });
 
-    const submitBtn = page.locator('button.btn-submit-valuation');
+    const submitBtn = page.getByTestId('rating-submit');
     await expect(submitBtn).toBeEnabled();
     await submitBtn.click();
 
     await expect.poll(() => lastRatingPayload).not.toBeNull();
-    expect(lastRatingPayload.calidad).toBe(5);
-    expect(lastRatingPayload.precio).toBe(5);
-    expect(lastRatingPayload.higiene).toBe(5);
-    expect(lastRatingPayload.trato).toBe(5);
-    expect(lastRatingPayload.comentario || '').toBe('');
+    expect(lastRatingPayload.quality).toBe(5);
+    expect(lastRatingPayload.price).toBe(5);
+    expect(lastRatingPayload.hygiene).toBe(5);
+    expect(lastRatingPayload.service).toBe(5);
+    expect(lastRatingPayload.comment || '').toBe('');
   });
 
 });

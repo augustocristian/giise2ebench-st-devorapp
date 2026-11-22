@@ -12,23 +12,25 @@ from app.models.entities.usuarios import Usuario
 from sqlalchemy.orm import Session
 from app.infrastructure.database import get_db
 
-router = APIRouter(prefix="/api", tags=["Auth"])
+router = APIRouter(prefix=settings.API_V1_STR, tags=["Auth"])
+
+SESSION_LOCATION = f"{settings.API_V1_STR}/sessions/current"
 
 
 def _user_dict(user: Usuario) -> dict:
-    """Construye el dict de usuario para las respuestas de autenticación."""
+    """Build the user dict for authentication responses."""
     return {
         "username": user.username,
         "email": user.email,
-        "nombre": user.nombre,
-        "apellidos": user.apellidos,
-        "ubicacion": user.ubicacion,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "location": user.location,
         "is_google": user.is_google,
     }
 
 
 def _set_auth_cookie(response: Response, token: str) -> None:
-    """Configura la cookie de sesión con el JWT de acceso."""
+    """Set the session cookie with the access JWT."""
     response.set_cookie(
         key="access_token",
         value=token,
@@ -38,13 +40,36 @@ def _set_auth_cookie(response: Response, token: str) -> None:
         max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
-@router.post("/login")
+@router.post(
+    "/sessions",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a session (log in)",
+    description="Authenticates with `identifier` (email or username) and `password`, sets the "
+                "`access_token` cookie and answers 201 with `Location: /api/v1/sessions/current`.",
+    responses={
+        401: {"description": "Credenciales incorrectas"},
+        403: {"description": "Email no verificado"},
+        422: {"description": "Faltan credenciales"},
+    },
+)
 def login(login_data: LoginRequest, response: Response):
     user, access_token = auth_service.login(login_data.identifier, login_data.password)
     _set_auth_cookie(response, access_token)
+    response.headers["Location"] = SESSION_LOCATION
     return {"message": "Login exitoso", "user": _user_dict(user)}
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/users",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a user account (register)",
+    description="Creates the account and its default favorites list. Documented exception: the "
+                "201 response carries NO `Location` header because the new account is only "
+                "addressable by its owner as the singleton `/me`.",
+    responses={
+        409: {"description": "Username o email ya en uso"},
+        422: {"description": "Email, contraseña o username inválidos"},
+    },
+)
 def register(data: RegisterRequest, db: Annotated[Session, Depends(get_db)]):
     user = auth_service.register(data)
     
@@ -52,14 +77,22 @@ def register(data: RegisterRequest, db: Annotated[Session, Depends(get_db)]):
     uid = get_uid_by_username(user.username)
     if uid:
         try:
-            from app.services import favoritos_service
-            favoritos_service.create_lista(db, uid, "Favoritos")
+            from app.services import favorites_service
+            favorites_service.create_list(db, uid, "Favoritos")
         except Exception as e:
             print(f"Error creating default favorites list for {user.username}: {e}")
 
     return {"message": "Cuenta creada correctamente", "user": _user_dict(user)}
 
-@router.post("/auth/google")
+@router.post(
+    "/sessions/google",
+    summary="Create a session with a Google token",
+    description="Returns 200 and sets the cookie when the Google account is already registered; "
+                "returns 202 with `require_username: true` (and no cookie) when the account "
+                "still needs to be registered through `POST /users/google`.",
+    responses={202: {"description": "La cuenta de Google necesita registro (require_username)"},
+               401: {"description": "Token de Google inválido"}},
+)
 def login_with_google(data: GoogleLoginRequest, response: Response):
     result = auth_service.login_with_google(data.token)
     
@@ -68,8 +101,8 @@ def login_with_google(data: GoogleLoginRequest, response: Response):
         return {
             "require_username": True, 
             "email": result.get("email"), 
-            "nombre": result.get("nombre"), 
-            "apellidos": result.get("apellidos")
+            "first_name": result.get("first_name"), 
+            "last_name": result.get("last_name")
         }
     
     user = result["user"]
@@ -77,16 +110,24 @@ def login_with_google(data: GoogleLoginRequest, response: Response):
     _set_auth_cookie(response, access_token)
     return {"message": "Login con Google exitoso", "user": _user_dict(user)}
 
-@router.post("/register/google", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/users/google",
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a user account from a Google token",
+    description="Creates the account, its default favorites list and the session cookie. Like "
+                "`POST /users` it has no `Location` header (the account is only addressable as `/me`).",
+    responses={409: {"description": "Username o email ya en uso"},
+               422: {"description": "Username inválido"}},
+)
 def register_with_google(data: GoogleRegisterRequest, db: Annotated[Session, Depends(get_db)], response: Response):
-    user, access_token = auth_service.register_with_google(data.token, data.username, data.ubicacion)
+    user, access_token = auth_service.register_with_google(data.token, data.username, data.location)
     
     from app.infrastructure.repositories.usuario_repo import get_uid_by_username
     uid = get_uid_by_username(user.username)
     if uid:
         try:
-            from app.services import favoritos_service
-            favoritos_service.create_lista(db, uid, "Favoritos")
+            from app.services import favorites_service
+            favorites_service.create_list(db, uid, "Favoritos")
         except Exception as e:
             print(f"Error creating default favorites list for {user.username}: {e}")
 
@@ -94,46 +135,53 @@ def register_with_google(data: GoogleRegisterRequest, db: Annotated[Session, Dep
     return {"message": "Cuenta creada correctamente con Google", "user": _user_dict(user)}
 
 
-@router.post("/logout")
+@router.delete(
+    "/sessions/current",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="End the current session (log out)",
+)
 def logout(response: Response):
     response.delete_cookie(key="access_token")
-    return {"message": "Sesión cerrada"}
 
 @router.get("/me")
 def get_me(current_user: Annotated[Usuario, Depends(get_current_user)]):
     return {
         "username": current_user.username,
         "email": current_user.email,
-        "nombre": current_user.nombre,
-        "apellidos": current_user.apellidos,
-        "ubicacion": current_user.ubicacion,
+        "first_name": current_user.first_name,
+        "last_name": current_user.last_name,
+        "location": current_user.location,
         "is_google": current_user.is_google,
     }
 
-@router.get("/check-verification/{email}")
+@router.get("/email-verification", summary="Check whether an email is verified")
 def check_verification(email: str):
     is_verified = auth_service.check_email_verification(email)
     return {"verified": is_verified}
 
-@router.post("/password-reset")
+@router.post(
+    "/password-resets",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Request a password reset email",
+)
 def password_reset(data: PasswordResetRequest):
     auth_service.request_password_reset(data.email)
     return {"message": "Si el correo está registrado, se enviará un enlace de recuperación."}
 
-@router.get("/check-availability")
+@router.get("/users/availability", summary="Check whether an email/username is taken")
 def check_availability(email: str = "", username: str = ""):
     """
-    Comprueba si un email y/o username ya están en uso.
-    Devuelve { email_taken: bool, username_taken: bool }.
-    No crea ni modifica nada.
+    Check whether an email and/or username are already in use.
+    Returns { email_taken: bool, username_taken: bool }.
+    Creates and modifies nothing.
     """
-    from app.infrastructure.repositories.usuario_repo import get_uid_by_username, get_usuario_by_email
+    from app.infrastructure.repositories.usuario_repo import get_uid_by_username, get_user_by_email
 
     email_taken = False
     username_taken = False
 
     if email:
-        email_taken = get_usuario_by_email(email) is not None
+        email_taken = get_user_by_email(email) is not None
 
     if username:
         username_taken = get_uid_by_username(username) is not None
@@ -151,9 +199,9 @@ def update_profile(
         "user": {
             "username": user.username,
             "email": user.email,
-            "nombre": user.nombre,
-            "apellidos": user.apellidos,
-            "ubicacion": user.ubicacion,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "location": user.location,
         },
     }
 

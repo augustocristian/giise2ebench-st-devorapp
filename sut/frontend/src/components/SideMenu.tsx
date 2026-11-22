@@ -34,7 +34,7 @@ const SideMenu: React.FC = () => {
     return (localStorage.getItem('devorapp_fontsize') as 'S' | 'M' | 'L') || 'M';
   });
 
-  // Aplicar tema real al documento
+  // Apply the actual theme to the document
   useEffect(() => {
     if (theme === 'light') {
       document.documentElement.dataset.theme = 'light';
@@ -44,7 +44,7 @@ const SideMenu: React.FC = () => {
     localStorage.setItem('devorapp_theme', theme);
   }, [theme]);
 
-  // Aplicar tamaño de letra real al documento
+  // Apply the actual font size to the document
   useEffect(() => {
     if (fontSize === 'M') {
       delete document.documentElement.dataset.fontSize;
@@ -55,12 +55,12 @@ const SideMenu: React.FC = () => {
   }, [fontSize]);
 
   useEffect(() => {
-    // Carga inicial ansiosa para actualizar cache y estado
+    // Eager initial load to refresh cache and state
     authService.getMe().then(data => {
       setUser(data);
       localStorage.setItem('devorapp_user_cache', JSON.stringify(data));
     }).catch(() => {
-      // Si falla (ej. sesión expirada), limpiamos caché
+      // On failure (e.g. expired session), clear the cache
       localStorage.removeItem('devorapp_user_cache');
     });
   }, []);
@@ -106,11 +106,11 @@ const SideMenu: React.FC = () => {
              style={{ cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left', padding: 0 }}
            >
              <div className="sidemenu-avatar">
-               {getInitials(user.nombre, user.username)}
+               {getInitials(user.first_name, user.username)}
              </div>
              <div className="sidemenu-user-info">
                <span className="sidemenu-user-name">
-                 {user.nombre ? `${user.nombre} ${user.apellidos || ''}`.trim() : user.username}
+                 {user.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user.username}
                </span>
                <span className="sidemenu-user-email">{user.email}</span>
              </div>
@@ -133,12 +133,12 @@ const SideMenu: React.FC = () => {
            <button data-testid="side-menu-history" className={`sidemenu-item ${location.pathname==='/history'?'active':''}`} onClick={()=>goTo('/history')} style={{ '--idx': 4 } as React.CSSProperties}>
              <Clock size={18} /> Historial
            </button>
-           <button data-testid="side-menu-ratings" className={`sidemenu-item ${location.pathname==='/mis-valoraciones'?'active':''}`} onClick={()=>goTo('/mis-valoraciones')} style={{ '--idx': 5 } as React.CSSProperties}>
+           <button data-testid="side-menu-ratings" className={`sidemenu-item ${location.pathname==='/my-ratings'?'active':''}`} onClick={()=>goTo('/my-ratings')} style={{ '--idx': 5 } as React.CSSProperties}>
              <MessageSquare size={18} /> Valoraciones
            </button>
          </nav>
 
-         {/* Controles de apariencia abstractos */}
+         {/* Abstract appearance controls */}
          <div className="sidemenu-settings">
            <div className="sidemenu-setting">
              <span className="sidemenu-setting-label">Tema</span>
@@ -176,7 +176,7 @@ const SideMenu: React.FC = () => {
       <button data-testid="side-menu-open" className="topbar-menu-btn" onClick={() => setIsOpen(true)} aria-label="Abrir menú">
         <Menu size={24} />
       </button>
-      {/* Mapea el menú al final del body para no ser clip-eado por contadores */}
+      {/* Portal the menu to the end of body so counters do not clip it */}
       {createPortal(menuContent, document.body)}
     </>
   );

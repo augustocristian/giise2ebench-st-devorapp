@@ -22,7 +22,7 @@ describe("Recommend", () => {
    * panel collapsed with the search form gone.
    */
   function stubNextSearch(results) {
-    cy.intercept({ method: "POST", url: "**/api/recommendations/search", times: 1 }, searchResponseStub(results));
+    cy.intercept({ method: "POST", url: "**/api/v1/recommendations/search", times: 1 }, searchResponseStub(results));
   }
 
   it("BASE - preferred location, several cuisines and prices", () => {

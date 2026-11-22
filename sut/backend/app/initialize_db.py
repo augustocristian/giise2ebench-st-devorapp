@@ -8,13 +8,13 @@ sys.path.append(os.getcwd())
 from app.infrastructure.database import Base, engine
 # Import all entities to ensure SQLAlchemy knows about them
 import app.models.entities.usuarios
-import app.models.entities.favoritos
-import app.models.entities.listas_favoritos
-import app.models.entities.restaurante
-import app.models.entities.valoracion
-import app.models.entities.historial
-import app.models.entities.mas_tarde
-import app.models.entities.valoracion_like
+import app.models.entities.favorites
+import app.models.entities.favorite_lists
+import app.models.entities.restaurant
+import app.models.entities.rating
+import app.models.entities.history
+import app.models.entities.saved_for_later
+import app.models.entities.rating_like
 
 def init_db():
     print("== Checking database tables ==")

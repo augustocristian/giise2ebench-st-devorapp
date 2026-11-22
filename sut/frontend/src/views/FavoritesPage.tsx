@@ -6,13 +6,13 @@ import {
     ShoppingBag, Moon, Sun, Zap, Plus, MoreVertical, X, Map,
     ChevronLeft, Search
 } from 'lucide-react';
-import { favoritosService } from '../models/api/favoritosService';
-import type { FavoritosList, FavoritoItem } from '../models/api/favoritosService';
-import { historialService } from '../models/api/historialService';
+import { favoritesService } from '../models/api/favoritesService';
+import type { FavoriteList, FavoriteItem } from '../models/api/favoritesService';
+import { historyService } from '../models/api/historyService';
 import TopBar from '../components/TopBar';
 import RestaurantDetailView from '../components/RestaurantDetailView';
 import RestaurantCompactCard from '../components/RestaurantCompactCard';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 
 // ── Icon catalogue ────────────────────────────────────────────────────────────
 const ICONS: { name: string; component: React.FC<any> }[] = [
@@ -59,11 +59,11 @@ function renderIcon(name: string, size = 22, color = 'white') {
 // ── New‑list modal ────────────────────────────────────────────────────────────
 interface NewListModalProps {
     onClose: () => void;
-    onCreate: (nombre: string, icono: string) => Promise<void>;
+    onCreate: (name: string, icon: string) => Promise<void>;
 }
 
 const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
-    const [nombre, setNombre] = useState('');
+    const [name, setName] = useState('');
     const [selectedIcon, setSelectedIcon] = useState('Heart');
     const [saving, setSaving] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
@@ -82,10 +82,10 @@ const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!nombre.trim()) return;
+        if (!name.trim()) return;
         setSaving(true);
         try {
-            await onCreate(nombre.trim(), selectedIcon);
+            await onCreate(name.trim(), selectedIcon);
         } finally {
             setSaving(false);
         }
@@ -151,8 +151,8 @@ const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
                         data-testid="favorites-new-list-name"
                         type="text"
                         placeholder="Nombre de la lista..."
-                        value={nombre}
-                        onChange={e => setNombre(e.target.value)}
+                        value={name}
+                        onChange={e => setName(e.target.value)}
                         maxLength={40}
                         style={{
                             width: '100%', padding: '14px 16px',
@@ -196,13 +196,13 @@ const NewListModal: React.FC<NewListModalProps> = ({ onClose, onCreate }) => {
                     <button
                         data-testid="favorites-new-list-submit"
                         type="submit"
-                        disabled={!nombre.trim() || saving}
+                        disabled={!name.trim() || saving}
                         style={{
                             width: '100%', padding: '14px',
-                            background: nombre.trim() ? 'var(--accent)' : 'var(--surface-3)',
-                            color: nombre.trim() ? 'white' : 'var(--muted)',
+                            background: name.trim() ? 'var(--accent)' : 'var(--surface-3)',
+                            color: name.trim() ? 'white' : 'var(--muted)',
                             border: 'none', borderRadius: 'var(--radius-sm)',
-                            fontWeight: 700, fontSize: '1rem', cursor: nombre.trim() ? 'pointer' : 'default',
+                            fontWeight: 700, fontSize: '1rem', cursor: name.trim() ? 'pointer' : 'default',
                             transition: 'all 0.2s ease',
                         }}
                     >
@@ -322,13 +322,13 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ onDelete, onHistory, onDetails }) =
 
 // ── Sub-component: Favorites Overview ─────────────────────────────────────────
 interface FavoritesOverviewProps {
-    lists: FavoritosList[];
+    lists: FavoriteList[];
     loading: boolean;
     error: string | null;
     setShowNewModal: (show: boolean) => void;
     setSearchParams: (params: any) => void;
-    handleRename: (list: FavoritosList) => Promise<void>;
-    handleDelete: (list: FavoritosList) => Promise<void>;
+    handleRename: (list: FavoriteList) => Promise<void>;
+    handleDelete: (list: FavoriteList) => Promise<void>;
 }
 
 const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
@@ -397,7 +397,7 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
                 <div style={{ textAlign: 'center', padding: '4rem 1rem', color: 'var(--muted)' }}>
                     <Heart size={48} style={{ opacity: 0.2, marginBottom: '1rem' }} />
                     <p data-testid="favorites-empty" style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Aún no tienes listas</p>
-                    <p style={{ fontSize: 'var(--font-sm)' }}>Crea tu primera lista para guardar restaurantes favoritos</p>
+                    <p style={{ fontSize: 'var(--font-sm)' }}>Crea tu primera lista para guardar restaurantes favorites</p>
                 </div>
             ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -406,15 +406,15 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
                             <button
                                 data-testid="favorites-list-open"
                                 onClick={() => setSearchParams({ list: list.id.toString() })}
-                                aria-label={`Ver lista ${list.nombre}`}
+                                aria-label={`Ver lista ${list.name}`}
                                 style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '1rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left' }}
                             >
-                                <div className="fav-icon-box" style={{ background: getIconColor(list.icono || 'Heart') }}>
-                                    {renderIcon(list.icono || 'Heart', 22)}
+                                <div className="fav-icon-box" style={{ background: getIconColor(list.icon || 'Heart') }}>
+                                    {renderIcon(list.icon || 'Heart', 22)}
                                 </div>
                                 <div style={{ flex: 1, minWidth: 0 }}>
                                     <div data-testid="favorites-list-name" style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                        {list.nombre}
+                                        {list.name}
                                     </div>
                                     <div style={{ fontSize: 'var(--font-xs)', color: 'var(--muted)', marginTop: 2 }}>
                                         Toca para ver restaurantes
@@ -435,27 +435,27 @@ const FavoritesOverview: React.FC<FavoritesOverviewProps> = ({
 
 // ── Sub-component: Favorites List Detail ──────────────────────────────────────
 interface FavoritesListDetailProps {
-    selectedList: FavoritosList;
-    favoritos: FavoritoItem[];
-    filteredFavoritos: FavoritoItem[];
+    selectedList: FavoriteList;
+    favorites: FavoriteItem[];
+    filteredFavorites: FavoriteItem[];
     modalLoading: boolean;
     searchTerm: string;
     setSearchTerm: (term: string) => void;
     setSearchParams: (params: any) => void;
-    handleDeleteFavorito: (fav: FavoritoItem) => Promise<void>;
-    handleRechooseFavorito: (fav: FavoritoItem) => Promise<void>;
+    handleDeleteFavorite: (fav: FavoriteItem) => Promise<void>;
+    handleRechooseFavorite: (fav: FavoriteItem) => Promise<void>;
 }
 
 const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
     selectedList,
-    favoritos,
-    filteredFavoritos,
+    favorites,
+    filteredFavorites,
     modalLoading,
     searchTerm,
     setSearchTerm,
     setSearchParams,
-    handleDeleteFavorito,
-    handleRechooseFavorito,
+    handleDeleteFavorite,
+    handleRechooseFavorite,
 }) => {
     const renderContent = () => {
         if (modalLoading) {
@@ -466,7 +466,7 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
             );
         }
 
-        if (filteredFavoritos.length === 0) {
+        if (filteredFavorites.length === 0) {
             return (
                 <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--muted)' }}>
                     {searchTerm ? <Search size={40} style={{ opacity: 0.1, marginBottom: '1rem' }} /> : <Heart size={40} style={{ opacity: 0.1, marginBottom: '1rem' }} />}
@@ -477,7 +477,7 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-                {filteredFavoritos.map((fav) => {
+                {filteredFavorites.map((fav) => {
                     const r = fav.restaurant;
                     return (
                         <RestaurantCompactCard
@@ -491,8 +491,8 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
                             onClick={() => setSearchParams({ list: selectedList.id.toString(), detail: r.id.toString() })}
                             actionSlot={
                                 <ItemMenu
-                                    onDelete={() => handleDeleteFavorito(fav)}
-                                    onHistory={() => handleRechooseFavorito(fav)}
+                                    onDelete={() => handleDeleteFavorite(fav)}
+                                    onHistory={() => handleRechooseFavorite(fav)}
                                     onDetails={() => setSearchParams({ list: selectedList.id.toString(), detail: r.id.toString() })}
                                 />
                             }
@@ -506,12 +506,12 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
     return (
         <div className="fav-detail-view" data-testid="favorites-detail">
             <div className="fav-detail-title-row">
-                <div className="fav-large-icon" style={{ background: getIconColor(selectedList.icono || 'Heart') }}>
-                    {renderIcon(selectedList.icono || 'Heart', 28)}
+                <div className="fav-large-icon" style={{ background: getIconColor(selectedList.icon || 'Heart') }}>
+                    {renderIcon(selectedList.icon || 'Heart', 28)}
                 </div>
                 <div className="fav-title-info">
-                    <h2>{selectedList.nombre}</h2>
-                    <p>{favoritos.length} restaurantes guardados</p>
+                    <h2 data-testid="favorites-detail-title">{selectedList.name}</h2>
+                    <p>{favorites.length} restaurantes guardados</p>
                 </div>
             </div>
 
@@ -532,73 +532,69 @@ const FavoritesListDetail: React.FC<FavoritesListDetailProps> = ({
 };
 
 // ── Main page ─────────────────────────────────────────────────────────────────
+const NO_FAVORITES: FavoriteItem[] = [];
+
 const FavoritesPage: React.FC = () => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const [lists, setLists] = useState<FavoritosList[]>([]);
+    const [lists, setLists] = useState<FavoriteList[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [showNewModal, setShowNewModal] = useState(false);
     const { showNotification, showConfirm } = useNotification();
 
     // Detail View State
-    const [selectedList, setSelectedList] = useState<FavoritosList | null>(null);
-    const [favoritos, setFavoritos] = useState<FavoritoItem[]>([]);
+    // Favorites are tagged with the list they were loaded for, so they reset
+    // by derivation (not by an effect) when the selected list changes.
+    const [favState, setFavState] = useState<{ listId: number | null; items: FavoriteItem[] }>({ listId: null, items: [] });
     const [modalLoading, setModalLoading] = useState(false);
-    const [selectedEntryForDetail, setSelectedEntryForDetail] = useState<FavoritoItem | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
 
-    // Load the selected list of favorites if 'list' query param changes
+    const listIdStr = searchParams.get('list');
+    const listId = listIdStr ? Number.parseInt(listIdStr, 10) : null;
+    const detailId = searchParams.get('detail');
+
+    const selectedList = useMemo(
+        () => (listId === null ? null : lists.find(l => l.id === listId) ?? null),
+        [listId, lists]
+    );
+    const selectedListId = selectedList?.id ?? null;
+    const favorites = favState.listId !== null && favState.listId === selectedListId ? favState.items : NO_FAVORITES;
+    const selectedEntryForDetail = useMemo(
+        () => (detailId ? favorites.find(f => f.restaurant.id.toString() === detailId) ?? null : null),
+        [detailId, favorites]
+    );
+
+    const setFavorites = (update: (prev: FavoriteItem[]) => FavoriteItem[]) =>
+        setFavState(prev => ({ ...prev, items: update(prev.items) }));
+
+    // Load the favorites of the selected list
     useEffect(() => {
-        const listIdStr = searchParams.get('list');
-        const listId = listIdStr ? Number.parseInt(listIdStr, 10) : null;
-
-        if (listId === null) {
-            setSelectedList(null);
-            setFavoritos([]);
-            return;
-        }
-
-        const listObj = lists.find(l => l.id === listId);
-        if (!listObj) return;
-
-        if (selectedList?.id !== listId) {
-            setSelectedList(listObj);
-            if (!modalLoading) {
-                (async () => {
-                    setModalLoading(true);
-                    try {
-                        const data = await favoritosService.getListaDetalle(listId);
-                        setFavoritos(data.restaurantes);
-                    } catch (err) {
-                        console.error('Error al cargar la lista:', err);
-                        alert('Error al cargar la lista');
-                        setSearchParams({});
-                    } finally {
-                        setModalLoading(false);
-                    }
-                })();
+        if (selectedListId === null) return;
+        let active = true;
+        (async () => {
+            setModalLoading(true);
+            try {
+                const data = await favoritesService.getListDetail(selectedListId);
+                if (active) setFavState({ listId: selectedListId, items: data.restaurants });
+            } catch (err) {
+                console.error('Error loading list:', err);
+                if (active) {
+                    alert('Error al cargar la lista');
+                    setSearchParams({});
+                }
+            } finally {
+                setModalLoading(false);
             }
-        }
-    }, [searchParams, lists, selectedList?.id, modalLoading, setSearchParams]);
-
-    // Sync the detailed restaurant selection if 'detail' query param changes
-    useEffect(() => {
-        const detailId = searchParams.get('detail');
-        if (!detailId) {
-            setSelectedEntryForDetail(null);
-            return;
-        }
-
-        const entry = favoritos.find(f => f.restaurant.id.toString() === detailId);
-        setSelectedEntryForDetail(entry ?? null);
-    }, [searchParams, favoritos]);
+        })();
+        return () => { active = false; };
+    }, [selectedListId, setSearchParams]);
 
     useEffect(() => {
         const fetchLists = async () => {
             try {
                 setLoading(true);
-                const data = await favoritosService.getListas();
+                const data = await favoritesService.getLists();
                 setLists(data);
             } catch (err: any) {
                 setError(err.message || 'No se pudieron cargar tus listas.');
@@ -609,54 +605,51 @@ const FavoritesPage: React.FC = () => {
         fetchLists();
     }, []);
 
-    const handleCreate = async (nombre: string, icono: string) => {
-        const nueva = await favoritosService.crearLista(nombre, icono);
-        setLists(prev => [...prev, nueva]);
+    const handleCreate = async (name: string, icon: string) => {
+        const newList = await favoritesService.createList(name, icon);
+        setLists(prev => [...prev, newList]);
         setShowNewModal(false);
     };
 
-    const handleDelete = async (list: FavoritosList) => {
-        const confirmed = await showConfirm(`¿Eliminar la lista "${list.nombre}" y todos sus restaurantes?`, 'Eliminar lista', true);
+    const handleDelete = async (list: FavoriteList) => {
+        const confirmed = await showConfirm(`¿Eliminar la lista "${list.name}" y todos sus restaurantes?`, 'Eliminar lista', true);
         if (!confirmed) return;
         try {
-            await favoritosService.deleteLista(list.id);
+            await favoritesService.deleteList(list.id);
             setLists(prev => prev.filter(l => l.id !== list.id));
-            showNotification(`Lista "${list.nombre}" eliminada`, 'success');
+            showNotification(`Lista "${list.name}" eliminada`, 'success');
             if (selectedList?.id === list.id) setSearchParams({});
         } catch (err: any) {
             showNotification('Error al eliminar: ' + err.message, 'error');
         }
     };
 
-    const handleRename = async (list: FavoritosList) => {
-        const nuevoNombre = globalThis.prompt('Nuevo nombre para la lista:', list.nombre);
-        if (!nuevoNombre || nuevoNombre.trim() === '' || nuevoNombre === list.nombre) return;
+    const handleRename = async (list: FavoriteList) => {
+        const newName = globalThis.prompt('Nuevo nombre para la lista:', list.name);
+        if (!newName || newName.trim() === '' || newName === list.name) return;
         try {
-            await favoritosService.updateLista(list.id, nuevoNombre.trim());
-            setLists(prev => prev.map(l => l.id === list.id ? { ...l, nombre: nuevoNombre.trim() } : l));
-            if (selectedList?.id === list.id) {
-                setSelectedList(prev => prev ? { ...prev, nombre: nuevoNombre.trim() } : null);
-            }
+            await favoritesService.updateList(list.id, newName.trim());
+            setLists(prev => prev.map(l => l.id === list.id ? { ...l, name: newName.trim() } : l));
         } catch (err: any) {
             showNotification('Error al renombrar: ' + err.message, 'error');
         }
     };
 
-    const handleDeleteFavorito = async (fav: FavoritoItem) => {
+    const handleDeleteFavorite = async (fav: FavoriteItem) => {
         const confirmed = await showConfirm(`¿Quitar ${fav.restaurant.name} de favoritos?`, 'Quitar de favoritos', true);
         if (!confirmed) return;
         try {
-            await favoritosService.deleteFavorito(fav.id);
+            await favoritesService.deleteFavorite(selectedList?.id ?? fav.list_id, fav.id);
             showNotification(`${fav.restaurant.name} quitado de favoritos`, 'success');
-            setFavoritos(prev => prev.filter(item => item.id !== fav.id));
+            setFavorites(prev => prev.filter(item => item.id !== fav.id));
         } catch (err: any) {
             showNotification('Error: ' + err.message, 'error');
         }
     };
 
-    const handleRechooseFavorito = async (fav: FavoritoItem) => {
+    const handleRechooseFavorite = async (fav: FavoriteItem) => {
         try {
-            await historialService.addToHistorial(fav.place_id);
+            await historyService.addToHistory(fav.place_id);
             showNotification(`¡Has vuelto a elegir ${fav.restaurant.name}!`, 'success');
             navigate('/home');
         } catch (err: any) {
@@ -664,14 +657,14 @@ const FavoritesPage: React.FC = () => {
         }
     };
 
-    const filteredFavoritos = useMemo(() => {
-        if (!searchTerm.trim()) return favoritos;
+    const filteredFavorites = useMemo(() => {
+        if (!searchTerm.trim()) return favorites;
         const lowSearch = searchTerm.toLowerCase();
-        return favoritos.filter(fav =>
+        return favorites.filter(fav =>
             fav.restaurant.name.toLowerCase().includes(lowSearch) ||
             fav.restaurant.address.toLowerCase().includes(lowSearch)
         );
-    }, [favoritos, searchTerm]);
+    }, [favorites, searchTerm]);
 
     return (
         <div className="page-screen">
@@ -680,12 +673,12 @@ const FavoritesPage: React.FC = () => {
                 <RestaurantDetailView
                     restaurant={selectedEntryForDetail.restaurant as any}
                     onBack={() => navigate(-1)}
-                    subtitle={`En lista: ${selectedList?.nombre}`}
+                    subtitle={`En list: ${selectedList?.name}`}
                     actions={
                         <div className="detail-actions-column">
                             <button className="btn-detail-main" onClick={async () => {
                                 try {
-                                    await historialService.addToHistorial(selectedEntryForDetail.place_id);
+                                    await historyService.addToHistory(selectedEntryForDetail.place_id);
                                     showNotification(`Has seleccionado ${selectedEntryForDetail.restaurant.name}`, 'success');
                                     navigate('/home');
                                 } catch (err: any) {
@@ -698,9 +691,9 @@ const FavoritesPage: React.FC = () => {
                                 const confirmed = await showConfirm(`¿Quitar ${selectedEntryForDetail.restaurant.name} de favoritos?`, 'Quitar de favoritos', true);
                                 if (confirmed) {
                                     try {
-                                        await favoritosService.deleteFavorito(selectedEntryForDetail.id);
+                                        await favoritesService.deleteFavorite(selectedList?.id ?? selectedEntryForDetail.list_id, selectedEntryForDetail.id);
                                         showNotification(`${selectedEntryForDetail.restaurant.name} quitado de favoritos`, 'success');
-                                        setFavoritos(prev => prev.filter(item => item.id !== selectedEntryForDetail.id));
+                                        setFavorites(prev => prev.filter(item => item.id !== selectedEntryForDetail.id));
                                         setSearchParams({ list: selectedList?.id.toString() || '' });
                                     } catch (err: any) {
                                         showNotification('Error: ' + err.message, 'error');
@@ -741,14 +734,14 @@ const FavoritesPage: React.FC = () => {
                         ) : (
                             <FavoritesListDetail
                                 selectedList={selectedList}
-                                favoritos={favoritos}
-                                filteredFavoritos={filteredFavoritos}
+                                favorites={favorites}
+                                filteredFavorites={filteredFavorites}
                                 modalLoading={modalLoading}
                                 searchTerm={searchTerm}
                                 setSearchTerm={setSearchTerm}
                                 setSearchParams={setSearchParams}
-                                handleDeleteFavorito={handleDeleteFavorito}
-                                handleRechooseFavorito={handleRechooseFavorito}
+                                handleDeleteFavorite={handleDeleteFavorite}
+                                handleRechooseFavorite={handleRechooseFavorite}
                             />
                         )}
                     </main>

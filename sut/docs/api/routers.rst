@@ -17,17 +17,17 @@ Endpoints
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.presentation.routers.favoritos_router
+.. automodule:: app.presentation.routers.favorites_router
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.presentation.routers.historial_router
+.. automodule:: app.presentation.routers.history_router
    :members:
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.presentation.routers.mas_tarde_router
+.. automodule:: app.presentation.routers.saved_for_later_router
    :members:
    :undoc-members:
    :show-inheritance:
@@ -37,7 +37,7 @@ Endpoints
    :undoc-members:
    :show-inheritance:
 
-.. automodule:: app.presentation.routers.valoraciones_router
+.. automodule:: app.presentation.routers.ratings_router
    :members:
    :undoc-members:
    :show-inheritance:

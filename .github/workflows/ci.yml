@@ -1,6 +1,6 @@
 # CI/CD pipeline. Each stage starts once the previous one is green (`needs:`):
 #   1 unit tests -> 2 sonar -> 3 build images once + APK (after Sonar) -> 4 E2E suites -> 5 publish (main/tags)
-# Images are built once; every E2E job loads them and starts its own SUT instance with the
+# Images are built once (a matrix leg per service); every E2E job loads them and starts its own SUT instance with the
 # dev environment (Firebase emulator + gplaces-mock, no secrets), in parallel.
 name: CI/CD Pipeline
 
@@ -265,11 +265,12 @@ jobs:
   # STAGE 3 — PACKAGE
   # ═══════════════════════════════════════════════════════════════════════════
 
-  # ─── BUILD IMAGES (once) ────────────────────────────────────────────────────
+  # ─── BUILD IMAGES (once, one matrix leg per service) ────────────────────────
   # The same images serve dev, E2E and prod: only their environment differs
-  # (docker-compose.dev.override.yml vs. docker-compose.yml). Shared as an artifact.
+  # (docker-compose.dev.override.yml vs. docker-compose.yml). Each leg builds one service
+  # with compose (a single source of truth for contexts and tags) and shares it as an artifact.
   build-images:
-    name: Build Docker images
+    name: Build image (${{ matrix.service }})
     runs-on: ubuntu-latest
     needs: [backend-ci, keras-api-ci, gplaces-mock-ci, frontend-ci, sonar-analysis]
     if: >-
@@ -279,27 +280,28 @@ jobs:
       && needs.gplaces-mock-ci.result == 'success'
       && needs.frontend-ci.result == 'success'
       && needs.sonar-analysis.result != 'failure' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [backend, frontend, keras-api, gplaces-mock, firebase-emulator]
     steps:
       - uses: actions/checkout@v7
 
       - name: Build
         working-directory: sut
-        run: docker compose -f docker-compose.yml -f docker-compose.dev.override.yml build
+        run: docker compose -f docker-compose.yml -f docker-compose.dev.override.yml build ${{ matrix.service }}
 
       - name: Save
         shell: bash   # -o pipefail: a failed `docker save` must fail the job, not leave an empty archive
         run: |
-          IMAGES=$(docker images "devorapp/*:${IMAGE_TAG}" --format '{{.Repository}}:{{.Tag}}')
-          echo "$IMAGES"
-          [ "$(echo "$IMAGES" | wc -l)" -eq 5 ]   # backend, frontend, keras-api, gplaces-mock, firebase-emulator
-          docker save $IMAGES | gzip > images.tar.gz
-          gzip -t images.tar.gz
-          ls -lh images.tar.gz
+          docker save "devorapp/${{ matrix.service }}:${IMAGE_TAG}" | gzip > "${{ matrix.service }}.tar.gz"
+          gzip -t "${{ matrix.service }}.tar.gz"
+          ls -lh "${{ matrix.service }}.tar.gz"
 
       - uses: actions/upload-artifact@v7
         with:
-          name: images
-          path: images.tar.gz
+          name: image-${{ matrix.service }}
+          path: ${{ matrix.service }}.tar.gz
           compression-level: 0
           retention-days: 1
 
@@ -397,7 +399,12 @@ jobs:
   publish-images:
     name: Publish Docker images
     runs-on: ubuntu-latest
-    needs: [build-images, e2e-selenium-java, e2e-cypress-javascript, e2e-playwright-csharp, e2e-puppeteer-python]
+    needs:
+      - build-images
+      - e2e-selenium-java
+      - e2e-cypress-javascript
+      - e2e-playwright-csharp
+      - e2e-puppeteer-python
     if: ${{ github.ref == 'refs/heads/main' || github.ref_type == 'tag' }}
     permissions:
       contents: read
@@ -405,7 +412,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v8
         with:
-          name: images
+          pattern: image-*
+          merge-multiple: true
 
       - uses: docker/login-action@v4
         with:
@@ -415,7 +423,7 @@ jobs:
 
       - name: Tag and push
         run: |
-          docker load -i images.tar.gz
+          for f in *.tar.gz; do docker load -i "$f"; done
           REPO=${{ env.REGISTRY }}/$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
           VERSION=${{ github.ref_type == 'tag' && github.ref_name || '' }}
           for SERVICE in backend frontend keras-api; do
@@ -448,6 +456,10 @@ jobs:
       - name: Run E2E & API tests (headless)
         working-directory: selenium-java
         run: mvn -B test -Dheadless=true
+
+      - name: Test summary
+        if: always()
+        run: python3 .github/scripts/test_summary.py --title "Selenium + Java" --format junit 'selenium-java/target/**/surefire-reports/TEST-*.xml'
 
       - name: Upload reports
         if: always()
@@ -502,6 +514,10 @@ jobs:
         # Electron logs a harmless D-Bus/NetworkManager error per page: runners have no NetworkManager.
         run: npm test 2>&1 | sed '/object_proxy.cc/d'
 
+      - name: Test summary
+        if: always()
+        run: python3 .github/scripts/test_summary.py --title "Cypress + JavaScript" --format junit 'cypress-js/results/*.xml'
+
       - name: Upload screenshots and JUnit results
         if: always()
         uses: actions/upload-artifact@v7
@@ -512,14 +528,51 @@ jobs:
             cypress-js/results/
           if-no-files-found: ignore
 
-  # ─── Not wired yet ──────────────────────────────────────────────────────────
   e2e-playwright-csharp:
     name: "E2E: Playwright + C#"
     runs-on: ubuntu-latest
     needs: [build-images]
     steps:
-      - run: echo "::notice title=Playwright + C#::E2E stage reserved - no tests wired yet."
+      - uses: actions/checkout@v7
 
+      - name: Start DevorApp (own SUT instance)
+        uses: ./.github/actions/start-sut
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Build
+        working-directory: playwright-csharp
+        run: dotnet build
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-dotnet-${{ runner.os }}-${{ hashFiles('playwright-csharp/DevorApp.E2ETests.csproj') }}
+
+      - name: Install Playwright browsers
+        working-directory: playwright-csharp
+        run: pwsh bin/Debug/net8.0/playwright.ps1 install --with-deps chromium
+
+      - name: Run E2E & API tests
+        working-directory: playwright-csharp
+        run: dotnet test --no-build --logger "trx;LogFileName=results.trx" --results-directory target/ci
+
+      - name: Test summary
+        if: always()
+        run: python3 .github/scripts/test_summary.py --title "Playwright + C#" --format trx 'playwright-csharp/target/ci/*.trx'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-csharp-reports
+          path: playwright-csharp/target/ci/
+          if-no-files-found: ignore
+
+  # ─── Not wired yet ──────────────────────────────────────────────────────────
   e2e-puppeteer-python:
     name: "E2E: Puppeteer + Python"
     runs-on: ubuntu-latest

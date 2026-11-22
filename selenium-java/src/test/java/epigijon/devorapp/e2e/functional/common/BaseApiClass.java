@@ -73,12 +73,16 @@ public class BaseApiClass {
 
     // ── URL builders ────────────────────────────────────────────────────────────
 
-    protected String authUrl(String path)              { return sutUrl + "/api" + path; }
-    protected String favoritosUrl(String path)         { return sutUrl + "/api/favoritos" + path; }
-    protected String historialUrl(String path)         { return sutUrl + "/api/historial" + path; }
-    protected String masTardeUrl(String path)          { return sutUrl + "/api/mas-tarde" + path; }
-    protected String valoracionesUrl(String path)      { return sutUrl + "/api/valoraciones" + path; }
-    protected String recommendationsUrl(String path)   { return sutUrl + "/api/recommendations" + path; }
+    protected String authUrl(String path)              { return sutUrl + "/api/v1" + path; }
+    protected String favoritesUrl(String path)         { return sutUrl + "/api/v1/favorites" + path; }
+    protected String historyUrl(String path)         { return sutUrl + "/api/v1/history" + path; }
+    protected String savedUrl(String path)          { return sutUrl + "/api/v1/saved-for-later" + path; }
+    protected String ratingsUrl(String path)      { return sutUrl + "/api/v1/ratings" + path; }
+    protected String recommendationsUrl(String path)   { return sutUrl + "/api/v1/recommendations" + path; }
+    /** URL under /restaurants/{place_id} (e.g. "/rating" or "/ratings"). */
+    protected String restaurantUrl(String placeId, String path) {
+        return sutUrl + "/api/v1/restaurants/" + placeId + path;
+    }
 
     // ── HTTP verbs ───────────────────────────────────────────────────────────────
 
@@ -117,6 +121,51 @@ public class BaseApiClass {
         return statusOf(request);
     }
 
+    protected int put(String url, String jsonBody) throws IOException {
+        return call(buildPut(url, jsonBody)).status;
+    }
+
+    /** Minimal HTTP response snapshot: status code, Location header (or null) and body. */
+    protected static final class ApiResponse {
+        public final int status;
+        public final String location;
+        public final String body;
+        ApiResponse(int status, String location, String body) {
+            this.status = status;
+            this.location = location;
+            this.body = body;
+        }
+        public JsonObject json() { return JsonParser.parseString(body).getAsJsonObject(); }
+    }
+
+    protected ApiResponse postFull(String url, String jsonBody) throws IOException {
+        return call(buildPost(url, jsonBody));
+    }
+
+    protected ApiResponse putFull(String url, String jsonBody) throws IOException {
+        return call(buildPut(url, jsonBody));
+    }
+
+    protected ApiResponse getFull(String url) throws IOException {
+        HttpGet request = new HttpGet(url);
+        request.addHeader("Accept", "application/json");
+        return call(request);
+    }
+
+    protected ApiResponse deleteFull(String url) throws IOException {
+        return call(new HttpDelete(url));
+    }
+
+    private ApiResponse call(HttpUriRequest request) throws IOException {
+        try (CloseableHttpResponse response = httpClient.execute(request)) {
+            HttpEntity entity = response.getEntity();
+            String body = entity != null ? EntityUtils.toString(entity) : "";
+            org.apache.http.Header loc = response.getFirstHeader("Location");
+            return new ApiResponse(response.getStatusLine().getStatusCode(),
+                    loc != null ? loc.getValue() : null, body);
+        }
+    }
+
     protected int delete(String url) throws IOException {
         return statusOf(new HttpDelete(url));
     }
@@ -140,6 +189,11 @@ public class BaseApiClass {
         return JsonParser.parseString(get(url)).getAsJsonArray();
     }
 
+    /** GETs a paginated collection and returns its "items" array (envelope: items, total, limit, offset). */
+    protected JsonArray getItems(String url) throws IOException {
+        return getJsonObject(url).getAsJsonArray("items");
+    }
+
     protected static boolean containsByField(JsonArray array, String fieldName, String expected) {
         for (JsonElement element : array) {
             if (element.isJsonObject()
@@ -148,6 +202,13 @@ public class BaseApiClass {
             }
         }
         return false;
+    }
+
+    private static HttpPut buildPut(String url, String jsonBody) {
+        HttpPut request = new HttpPut(url);
+        request.setEntity(new StringEntity(jsonBody, ContentType.APPLICATION_JSON));
+        request.addHeader("Accept", "application/json");
+        return request;
     }
 
     private static HttpPost buildPost(String url, String jsonBody) {
@@ -182,7 +243,7 @@ public class BaseApiClass {
     // ── Auth lifecycle ───────────────────────────────────────────────────────────
 
     /**
-     * Registers a new test user via POST /api/register, then logs in via POST /api/login.
+     * Registers a new test user via POST /api/v1/users, then logs in via POST /api/v1/sessions.
      * The JWT cookie is captured automatically by the shared cookie store.
      */
     protected static void registerAndLogin(String username, String email, String password)
@@ -192,12 +253,12 @@ public class BaseApiClass {
         testPassword = password;
 
         String regBody = registerPayload(username, email, password, "Test", "User", "");
-        String regResponse = postStatic(authUrl_s() + "/register", regBody);
+        String regResponse = postStatic(authUrl_s() + "/users", regBody);
         log.info("Registered test user: {} / {}, response snippet: {}",
                 username, email, regResponse.length() > 80 ? regResponse.substring(0, 80) : regResponse);
 
         String loginBody = loginPayload(email, password);
-        String loginResponse = postStatic(authUrl_s() + "/login", loginBody);
+        String loginResponse = postStatic(authUrl_s() + "/sessions", loginBody);
         log.info("Logged in test user, response snippet: {}",
                 loginResponse.length() > 80 ? loginResponse.substring(0, 80) : loginResponse);
     }
@@ -222,8 +283,8 @@ public class BaseApiClass {
 
     // Static helpers used from static context (BeforeAll/AfterAll)
     private static String authUrl_s() {
-        if (sutUrl == null) return "http://localhost:8000/api";
-        return sutUrl + "/api";
+        if (sutUrl == null) return "http://localhost:8000/api/v1";
+        return sutUrl + "/api/v1";
     }
 
     private static String postStatic(String url, String jsonBody) throws IOException {
@@ -239,14 +300,14 @@ public class BaseApiClass {
     // ── Payload builders ─────────────────────────────────────────────────────────
 
     protected static String registerPayload(String username, String email, String password,
-                                            String nombre, String apellidos, String ubicacion) {
+                                            String firstName, String lastName, String location) {
         JsonObject json = new JsonObject();
         json.addProperty("username", username);
         json.addProperty("email", email);
         json.addProperty("password", password);
-        json.addProperty("nombre", nombre);
-        json.addProperty("apellidos", apellidos);
-        json.addProperty("ubicacion", ubicacion);
+        json.addProperty("first_name", firstName);
+        json.addProperty("last_name", lastName);
+        json.addProperty("location", location);
         return json.toString();
     }
 
@@ -257,20 +318,20 @@ public class BaseApiClass {
         return json.toString();
     }
 
-    protected static String listaPayload(String nombre) {
-        return listaPayload(nombre, "Heart");
+    protected static String listPayload(String name) {
+        return listPayload(name, "Heart");
     }
 
-    protected static String listaPayload(String nombre, String icono) {
+    protected static String listPayload(String name, String icon) {
         JsonObject json = new JsonObject();
-        json.addProperty("nombre", nombre);
-        json.addProperty("icono", icono);
+        json.addProperty("name", name);
+        json.addProperty("icon", icon);
         return json.toString();
     }
 
-    protected static String favoritoPayload(String placeId)  { return placeIdPayload(placeId); }
-    protected static String masTardePayload(String placeId)  { return placeIdPayload(placeId); }
-    protected static String historialPayload(String placeId) { return placeIdPayload(placeId); }
+    protected static String favoritePayload(String placeId)  { return placeIdPayload(placeId); }
+    protected static String savedPayload(String placeId)  { return placeIdPayload(placeId); }
+    protected static String historyPayload(String placeId) { return placeIdPayload(placeId); }
 
     private static String placeIdPayload(String placeId) {
         JsonObject json = new JsonObject();
@@ -278,36 +339,29 @@ public class BaseApiClass {
         return json.toString();
     }
 
-    protected static String valoracionPayload(String placeId, int calidad, int precio,
-                                               int higiene, int trato, String comentario) {
+    protected static String ratingPayload(int quality, int price,
+                                               int hygiene, int service, String comment) {
         JsonObject json = new JsonObject();
-        json.addProperty("place_id", placeId);
-        json.addProperty("calidad", calidad);
-        json.addProperty("precio", precio);
-        json.addProperty("higiene", higiene);
-        json.addProperty("trato", trato);
-        json.addProperty("comentario", comentario);
+        json.addProperty("quality", quality);
+        json.addProperty("price", price);
+        json.addProperty("hygiene", hygiene);
+        json.addProperty("service", service);
+        json.addProperty("comment", comment);
         return json.toString();
     }
 
-    protected static String profileUpdatePayload(String nombre, String apellidos,
-                                                  String ubicacion, String password) {
+    protected static String profileUpdatePayload(String firstName, String lastName,
+                                                  String location, String password) {
         JsonObject json = new JsonObject();
-        json.addProperty("nombre", nombre);
-        json.addProperty("apellidos", apellidos);
-        json.addProperty("ubicacion", ubicacion);
+        json.addProperty("first_name", firstName);
+        json.addProperty("last_name", lastName);
+        json.addProperty("location", location);
         json.addProperty("password", password);
         return json.toString();
     }
 
-    protected static String popularesPayload(int limit) {
-        JsonObject json = new JsonObject();
-        json.addProperty("limit", limit);
-        return json.toString();
-    }
-
     /**
-     * Builds the request body for POST /api/recommendations/search.
+     * Builds the request body for POST /api/v1/recommendations/search.
      *
      * @param categories list of category ids (e.g. "restaurant", "italian_food")
      * @param prices     list of price level strings (e.g. "PRICE_LEVEL_MODERATE")
@@ -344,47 +398,52 @@ public class BaseApiClass {
     // ── CRUD helpers ─────────────────────────────────────────────────────────────
 
     /** Creates a favorite list and returns its assigned id. */
-    protected int createLista(String nombre) throws IOException {
-        String response = post(favoritosUrl("/listas"), listaPayload(nombre));
+    protected int createList(String name) throws IOException {
+        String response = post(favoritesUrl("/lists"), listPayload(name));
         return JsonParser.parseString(response).getAsJsonObject().get("id").getAsInt();
     }
 
-    /** Adds a restaurant to a list and returns the favorito id. */
-    protected int addFavorito(int listaId, String placeId) throws IOException {
-        String response = post(favoritosUrl("/listas/" + listaId), favoritoPayload(placeId));
+    /** Adds a restaurant to a list and returns the favorite id. */
+    protected int addFavorite(int listId, String placeId) throws IOException {
+        String response = post(favoritesUrl("/lists/" + listId + "/restaurants"), favoritePayload(placeId));
         return JsonParser.parseString(response).getAsJsonObject().get("id").getAsInt();
     }
 
-    /** Adds a restaurant to historial and returns the entry id. */
-    protected int addHistorial(String placeId) throws IOException {
-        String response = post(historialUrl(""), historialPayload(placeId));
+    /** Removes a favorite from its list and returns the HTTP status. */
+    protected int deleteFavorite(int listId, int favoriteId) throws IOException {
+        return delete(favoritesUrl("/lists/" + listId + "/restaurants/" + favoriteId));
+    }
+
+    /** Adds a restaurant to history and returns the entry id. */
+    protected int addHistory(String placeId) throws IOException {
+        String response = post(historyUrl(""), historyPayload(placeId));
         return JsonParser.parseString(response).getAsJsonObject().get("id").getAsInt();
     }
 
-    /** Adds a restaurant to mas-tarde and returns the entry id. */
-    protected int addMasTarde(String placeId) throws IOException {
-        String response = post(masTardeUrl(""), masTardePayload(placeId));
+    /** Adds a restaurant to saved-for-later and returns the entry id. */
+    protected int addSaved(String placeId) throws IOException {
+        String response = post(savedUrl(""), savedPayload(placeId));
         return JsonParser.parseString(response).getAsJsonObject().get("id").getAsInt();
     }
 
-    /** Creates a valoracion and returns the full response JsonObject. */
-    protected JsonObject createValoracion(String placeId, int calidad, int precio,
-                                          int higiene, int trato, String comentario) throws IOException {
-        String response = post(valoracionesUrl(""),
-                valoracionPayload(placeId, calidad, precio, higiene, trato, comentario));
-        return JsonParser.parseString(response).getAsJsonObject();
+    /** Creates or replaces the caller's rating (PUT /restaurants/{place_id}/rating) and returns the body. */
+    protected JsonObject createRating(String placeId, int quality, int price,
+                                          int hygiene, int service, String comment) throws IOException {
+        ApiResponse response = putFull(restaurantUrl(placeId, "/rating"),
+                ratingPayload(quality, price, hygiene, service, comment));
+        return response.json();
     }
 
     /**
-     * Returns the id of the first lista named "Favoritos" in the user's lista collection,
+     * Returns the id of the first list named "Favoritos" in the user's list collection,
      * or -1 if not found.
      */
-    protected int getDefaultListaId() throws IOException {
-        JsonArray listas = getJsonArray(favoritosUrl("/listas"));
-        for (JsonElement el : listas) {
-            JsonObject lista = el.getAsJsonObject();
-            if ("Favoritos".equals(lista.get("nombre").getAsString())) {
-                return lista.get("id").getAsInt();
+    protected int getDefaultListId() throws IOException {
+        JsonArray lists = getJsonArray(favoritesUrl("/lists"));
+        for (JsonElement el : lists) {
+            JsonObject list = el.getAsJsonObject();
+            if ("Favoritos".equals(list.get("name").getAsString())) {
+                return list.get("id").getAsInt();
             }
         }
         return -1;

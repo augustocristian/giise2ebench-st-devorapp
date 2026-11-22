@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import Autocomplete from "../components/GoogleAutocomplete";
 import { Star, MapPin, SlidersHorizontal, Heart, Bookmark, UtensilsCrossed } from 'lucide-react';
 import TopBar from '../components/TopBar';
 import { authService } from '../models/api/authService';
 import { recommendationService } from '../models/api/recommendationService';
-import { historialService } from '../models/api/historialService';
+import { historyService } from '../models/api/historyService';
 import { savedForLaterService } from '../models/api/savedForLaterService';
-import { valoracionesService } from '../models/api/valoracionesService';
-import type { ValoracionPublica } from '../models/api/valoracionesService';
+import { ratingsService } from '../models/api/ratingsService';
+import type { PublicRating } from '../models/api/ratingsService';
 import tagsData from '../data/tags.json';
 import RestaurantDetailView from '../components/RestaurantDetailView';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 import { env } from '../config/env';
 
 interface Tag {
@@ -38,9 +38,9 @@ const getCurrencyForCountry = (countryCode: string): string => {
     return currencyMap[countryCode] || '€';
 };
 
-const fetchCountryCodeFromLocation = async (ubicacion: string): Promise<string | null> => {
+const fetchCountryCodeFromLocation = async (location: string): Promise<string | null> => {
     const apiKey = env.googleApiKey;
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(ubicacion)}&key=${apiKey}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(location)}&key=${apiKey}`;
     const parsedUrl = new URL(url);
     if (parsedUrl.hostname !== 'maps.googleapis.com') {
         throw new Error('Invalid geocoding service domain');
@@ -80,13 +80,13 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
 
 
 interface RestaurantReviewsSectionProps {
-    currResenas: any[];
-    onLike: (resenaId: number) => void;
+    currReviews: any[];
+    onLike: (reviewId: number) => void;
     isLoading?: boolean;
 }
 
 const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
-    currResenas,
+    currReviews,
     onLike,
     isLoading = false
 }) => {
@@ -106,12 +106,12 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
         );
     }
 
-    const avg = { calidad: 0, precio: 0, higiene: 0, trato: 0 };
-    if (currResenas.length > 0) {
-        avg.calidad = currResenas.reduce((s: number, r: any) => s + r.calidad, 0) / currResenas.length;
-        avg.precio = currResenas.reduce((s: number, r: any) => s + r.precio, 0) / currResenas.length;
-        avg.higiene = currResenas.reduce((s: number, r: any) => s + r.higiene, 0) / currResenas.length;
-        avg.trato = currResenas.reduce((s: number, r: any) => s + r.trato, 0) / currResenas.length;
+    const avg = { quality: 0, price: 0, hygiene: 0, service: 0 };
+    if (currReviews.length > 0) {
+        avg.quality = currReviews.reduce((s: number, r: any) => s + r.quality, 0) / currReviews.length;
+        avg.price = currReviews.reduce((s: number, r: any) => s + r.price, 0) / currReviews.length;
+        avg.hygiene = currReviews.reduce((s: number, r: any) => s + r.hygiene, 0) / currReviews.length;
+        avg.service = currReviews.reduce((s: number, r: any) => s + r.service, 0) / currReviews.length;
     }
 
     const formatDateStr = (dateString?: string) => {
@@ -134,7 +134,7 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
                 </span>
                 <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text)' }}>Reseñas de la comunidad</span>
-                {currResenas.length > 0 && (
+                {currReviews.length > 0 && (
                     <span style={{
                         background: 'rgba(255,255,255,0.1)',
                         color: 'var(--muted)',
@@ -144,12 +144,12 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                         borderRadius: '12px',
                         border: '1px solid var(--border)',
                     }}>
-                        {currResenas.length}
+                        {currReviews.length}
                     </span>
                 )}
             </div>
 
-            {currResenas.length === 0 ? (
+            {currReviews.length === 0 ? (
                 <div style={{
                     textAlign: 'center', padding: '1.5rem',
                     color: 'var(--muted)', fontSize: '0.875rem',
@@ -172,10 +172,10 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                         border: '1px solid var(--border)'
                     }}>
                         {[
-                            { label: 'Calidad', val: avg.calidad },
-                            { label: 'Precio', val: avg.precio },
-                            { label: 'Higiene', val: avg.higiene },
-                            { label: 'Trato', val: avg.trato },
+                            { label: 'Calidad', val: avg.quality },
+                            { label: 'Precio', val: avg.price },
+                            { label: 'Higiene', val: avg.hygiene },
+                            { label: 'Trato', val: avg.service },
                         ].map(item => (
                             <div key={item.label} style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem' }}>
@@ -191,8 +191,8 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
 
                     {/* Reviews Feed */}
                     <div className="reviews-feed" style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-                        {currResenas.map((resena: any) => (
-                            <div key={resena.id} className="review-item-card" style={{
+                        {currReviews.map((review: any) => (
+                            <div key={review.id} className="review-item-card" style={{
                                 background: 'var(--surface-2)',
                                 padding: '1.5rem',
                                 borderRadius: 'var(--radius-md)',
@@ -209,14 +209,14 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                                         alignItems: 'center', justifyContent: 'center',
                                         color: 'white', fontWeight: 700, fontSize: '0.9rem'
                                     }}>
-                                        {resena.username?.charAt(0).toUpperCase()}
+                                        {review.username?.charAt(0).toUpperCase()}
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                                         <span style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--text)' }}>
-                                            {resena.username}
+                                            {review.username}
                                         </span>
                                         <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-                                            {formatDateStr(resena.fecha)}
+                                            {formatDateStr(review.created_at)}
                                         </span>
                                     </div>
                                 </div>
@@ -228,10 +228,10 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                                     gap: '0.6rem 1rem'
                                 }}>
                                     {[
-                                        { label: 'Calidad', val: resena.calidad },
-                                        { label: 'Precio', val: resena.precio },
-                                        { label: 'Higiene', val: resena.higiene },
-                                        { label: 'Trato', val: resena.trato },
+                                        { label: 'Calidad', val: review.quality },
+                                        { label: 'Precio', val: review.price },
+                                        { label: 'Higiene', val: review.hygiene },
+                                        { label: 'Trato', val: review.service },
                                     ].map(({ label, val }) => (
                                         <div key={label} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                             <span style={{ fontSize: '0.8rem', color: 'var(--text)' }}>{label}</span>
@@ -241,7 +241,7 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                                 </div>
 
                                 {/* Comment */}
-                                {resena.comentario && (
+                                {review.comment && (
                                     <p style={{
                                         fontSize: '0.85rem',
                                         color: 'var(--text)',
@@ -250,14 +250,14 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                                         fontStyle: 'italic',
                                         fontWeight: 600
                                     }}>
-                                        "{resena.comentario}"
+                                        "{review.comment}"
                                     </p>
                                 )}
 
                                 {/* Like button right aligned */}
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-0.5rem' }}>
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); onLike(resena.id); }}
+                                        onClick={(e) => { e.stopPropagation(); onLike(review.id); }}
                                         style={{
                                             background: 'transparent',
                                             border: '1px solid var(--border)',
@@ -268,12 +268,12 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
                                             alignItems: 'center',
                                             gap: '0.4rem',
                                             fontSize: '0.8rem',
-                                            color: resena.ha_dado_me_gusta ? '#f472b6' : 'var(--muted)',
+                                            color: review.liked_by_me ? '#f472b6' : 'var(--muted)',
                                             transition: 'all 0.2s',
                                         }}
                                     >
-                                        <Heart size={14} fill={resena.ha_dado_me_gusta ? '#f472b6' : 'transparent'} color={resena.ha_dado_me_gusta ? '#f472b6' : 'var(--muted)'} />
-                                        <span style={{ fontWeight: 500, fontSize: '0.75rem' }}>{resena.me_gustas}</span>
+                                        <Heart size={14} fill={review.liked_by_me ? '#f472b6' : 'transparent'} color={review.liked_by_me ? '#f472b6' : 'var(--muted)'} />
+                                        <span style={{ fontWeight: 500, fontSize: '0.75rem' }}>{review.likes}</span>
                                     </button>
                                 </div>
                             </div>
@@ -286,6 +286,30 @@ const RestaurantReviewsSection: React.FC<RestaurantReviewsSectionProps> = ({
 };
 
 
+// Resolves the user's preferred location and its currency without touching state,
+// so callers can apply the result from an async callback.
+const resolvePreferredLocation = async (): Promise<{ symbol: string; location?: string }> => {
+    try {
+        const userData = await authService.getMe();
+        const location = userData.location;
+        if (location) {
+            const countryCode = await fetchCountryCodeFromLocation(location);
+            return { symbol: countryCode ? getCurrencyForCountry(countryCode) : '€', location };
+        }
+        return { symbol: '€', location: '' };
+    } catch (error) {
+        console.error("Error connecting to FastAPI to get the profile:", error);
+        // Try to recover the location even if geocoding fails
+        try {
+            const userData = await authService.getMe();
+            return { symbol: '€', location: userData.location || undefined };
+        } catch (e) {
+            console.error("Final error getting location:", e);
+            return { symbol: '€' };
+        }
+    }
+};
+
 const RestaurantRecommendationPage: React.FC = () => {
     const navigate = useNavigate();
     const { showNotification } = useNotification();
@@ -293,7 +317,6 @@ const RestaurantRecommendationPage: React.FC = () => {
     // Tags Autocomplete
     const [tagInput, setTagInput] = useState('');
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
-    const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
     const [isTagsDropdownOpen, setIsTagsDropdownOpen] = useState(false);
 
     // Prices
@@ -318,97 +341,59 @@ const RestaurantRecommendationPage: React.FC = () => {
     const [nextPageToken, setNextPageToken] = useState<string | null>(null);
     const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
-    const [selectedEntryForDetail, setSelectedEntryForDetail] = useState<any>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
 
-    // Reseñas por restaurante: { [place_id]: ValoracionPublica[] }
-    const [resenasPorRestaurante, setResenasPorRestaurante] = useState<Record<string, ValoracionPublica[]>>({});
-    const [loadingResenas, setLoadingResenas] = useState<Record<string, boolean>>({});
+    // Reviews per restaurant: { [place_id]: PublicRating[] }
+    const [reviewsByRestaurant, setReviewsByRestaurant] = useState<Record<string, PublicRating[]>>({});
 
-    const fetchResenas = async (placeId: string) => {
-        if (!resenasPorRestaurante[placeId]) {
-            setLoadingResenas(prev => ({ ...prev, [placeId]: true }));
-            try {
-                const resenas = await valoracionesService.obtenerResenasRestaurante(placeId);
-                setResenasPorRestaurante(prev => ({ ...prev, [placeId]: resenas }));
-            } catch (err) {
-                console.error('Error fetching reviews:', err);
-                setResenasPorRestaurante(prev => ({ ...prev, [placeId]: [] }));
-            } finally {
-                setLoadingResenas(prev => ({ ...prev, [placeId]: false }));
-            }
-        }
-    };
-
-    const handlePreferredLocationCurrency = async () => {
-        try {
-            const userData = await authService.getMe();
-            const ubicacion = userData.ubicacion;
-
-            if (ubicacion) {
-                const countryCode = await fetchCountryCodeFromLocation(ubicacion);
-                const symbol = countryCode ? getCurrencyForCountry(countryCode) : '€';
-                setCurrencySymbol(symbol);
-                setPreferredLocation(ubicacion);
-            } else {
-                setCurrencySymbol('€');
-                setPreferredLocation('');
-            }
-        } catch (error) {
-            console.error("Error al conectar con FastAPI para obtener el perfil:", error);
-            setCurrencySymbol('€');
-            // Intentar recuperar la ubicación aunque falle la geocodificación
-            try {
-                const userData = await authService.getMe();
-                if (userData.ubicacion) setPreferredLocation(userData.ubicacion);
-            } catch (e) {
-                console.error("Error definitivo al obtener ubicación:", e);
-            }
-        }
-    };
-
-    // Sync selected entry with URL parameter 'detail'
-    useEffect(() => {
-        const detailId = searchParams.get('detail');
-        if (detailId) {
-            // Check if we already have it in results
-            const entry = results.find(p => p.id === detailId);
-            if (entry) {
-                setSelectedEntryForDetail(entry);
-                if (!resenasPorRestaurante[detailId]) {
-                    fetchResenas(detailId);
-                }
-            } else {
-                setSearchParams({});
-            }
-        } else {
-            setSelectedEntryForDetail(null);
-        }
-    }, [searchParams, results]);
+    // Derived from the URL parameter 'detail'
+    const detailId = searchParams.get('detail');
+    const selectedEntryForDetail = useMemo(
+        () => (detailId ? results.find(p => p.id === detailId) ?? null : null),
+        [detailId, results]
+    );
 
     useEffect(() => {
-        if (!tagInput.trim()) {
-            setFilteredTags([]);
-            setIsTagsDropdownOpen(false);
+        if (!detailId) return;
+        if (!selectedEntryForDetail) {
+            setSearchParams({});
             return;
         }
+        if (reviewsByRestaurant[detailId]) return;
+        Promise.resolve()
+            .then(() => ratingsService.getRestaurantReviews(detailId))
+            .then(reviews => setReviewsByRestaurant(prev => ({ ...prev, [detailId]: reviews ?? [] })))
+            .catch(err => {
+                console.error('Error fetching reviews:', err);
+                setReviewsByRestaurant(prev => ({ ...prev, [detailId]: [] }));
+            });
+    }, [detailId, selectedEntryForDetail, reviewsByRestaurant, setSearchParams]);
 
+    const filteredTags = useMemo(() => {
+        if (!tagInput.trim()) return [];
         const lowerInput = tagInput.toLowerCase();
-        const availableTags = (tagsData as Tag[]).filter(tag =>
+        return (tagsData as Tag[]).filter(tag =>
             !selectedTags.some(selected => selected.id === tag.id) &&
             tag.label.toLowerCase().includes(lowerInput)
         );
-
-        setFilteredTags(availableTags);
-        setIsTagsDropdownOpen(true);
     }, [tagInput, selectedTags]);
 
+    const handleTagInputChange = (value: string) => {
+        setTagInput(value);
+        setIsTagsDropdownOpen(value.trim() !== '');
+    };
+
     useEffect(() => {
-        if (locationMode === 'preferred') {
-            handlePreferredLocationCurrency();
-        }
+        if (locationMode !== 'preferred') return;
+        let active = true;
+        resolvePreferredLocation().then(({ symbol, location }) => {
+            if (!active) return;
+            setCurrencySymbol(symbol);
+            if (location !== undefined) setPreferredLocation(location);
+        });
+        return () => { active = false; };
     }, [locationMode]);
 
     const handleAddTag = (tag: Tag) => {
@@ -419,6 +404,7 @@ const RestaurantRecommendationPage: React.FC = () => {
 
     const handleRemoveTag = (tagId: string) => {
         setSelectedTags(selectedTags.filter(t => t.id !== tagId));
+        if (tagInput.trim()) setIsTagsDropdownOpen(true);
     };
 
     const handlePriceToggle = (priceId: string) => {
@@ -434,8 +420,8 @@ const RestaurantRecommendationPage: React.FC = () => {
         setLoading(true);
         setCurrentPage(1);
         setNextPageToken(null);
-        setSelectedEntryForDetail(null);
-        setResenasPorRestaurante({});
+        setSearchParams({});
+        setReviewsByRestaurant({});
 
         const currentSearchLocation = locationMode === 'preferred' ? preferredLocation : customLocation;
 
@@ -497,7 +483,7 @@ const RestaurantRecommendationPage: React.FC = () => {
             setNextPageToken(data.next_page_token || null);
             setCurrentPage(prev => prev + 1);
         } catch (err: any) {
-            console.error("Error al cargar más resultados:", err);
+            console.error("Error loading more results:", err);
             setError('No se pudieron cargar más resultados.');
         } finally {
             setLoadingMore(false);
@@ -516,45 +502,45 @@ const RestaurantRecommendationPage: React.FC = () => {
         }
     };
 
-    const handleMeGusta = async (placeId: string, valoracionId: number) => {
-        // Encontrar la reseña actual para saber su estado previo
-        const resenaActual = (resenasPorRestaurante[placeId] || []).find(r => r.id === valoracionId);
-        if (!resenaActual) return;
+    const handleLike = async (placeId: string, ratingId: number) => {
+        // Find the current review to know its previous state
+        const currentReview = (reviewsByRestaurant[placeId] || []).find(r => r.id === ratingId);
+        if (!currentReview) return;
 
-        const yaDabaLike = resenaActual.ha_dado_me_gusta;
+        const yaDabaLike = currentReview.liked_by_me;
 
-        // Actualización optimista de la UI
-        setResenasPorRestaurante(prev => ({
+        // Optimistic UI update
+        setReviewsByRestaurant(prev => ({
             ...prev,
             [placeId]: (prev[placeId] || []).map(r =>
-                r.id === valoracionId
+                r.id === ratingId
                     ? {
                         ...r,
-                        ha_dado_me_gusta: !yaDabaLike,
-                        me_gustas: yaDabaLike ? Math.max(0, r.me_gustas - 1) : r.me_gustas + 1
+                        liked_by_me: !yaDabaLike,
+                        likes: yaDabaLike ? Math.max(0, r.likes - 1) : r.likes + 1
                     }
                     : r
             )
         }));
 
         try {
-            const updated = await valoracionesService.darMeGusta(valoracionId);
-            setResenasPorRestaurante(prev => ({
+            const updated = await ratingsService.likeReview(ratingId, yaDabaLike);
+            if (updated) setReviewsByRestaurant(prev => ({
                 ...prev,
                 [placeId]: (prev[placeId] || []).map(r =>
                     r.id === updated.id ? updated : r
                 )
             }));
         } catch {
-            // Revertir en caso de error
-            setResenasPorRestaurante(prev => ({
+            // Revert on error
+            setReviewsByRestaurant(prev => ({
                 ...prev,
                 [placeId]: (prev[placeId] || []).map(r =>
-                    r.id === valoracionId
+                    r.id === ratingId
                         ? {
                             ...r,
-                            ha_dado_me_gusta: yaDabaLike,
-                            me_gustas: yaDabaLike ? r.me_gustas + 1 : Math.max(0, r.me_gustas - 1)
+                            liked_by_me: yaDabaLike,
+                            likes: yaDabaLike ? r.likes + 1 : Math.max(0, r.likes - 1)
                         }
                         : r
                 )
@@ -577,7 +563,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     <button
                                         onClick={async (_e) => {
                                             try {
-                                                await historialService.addToHistorial(selectedEntryForDetail.id);
+                                                await historyService.addToHistory(selectedEntryForDetail.id);
                                                 showNotification(`¡Has seleccionado ${selectedEntryForDetail.name}!`, 'success');
                                                 navigate('/home');
                                             } catch (err: any) {
@@ -623,10 +609,10 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     </button>
                                 </div>
 
-                                {/* ── Sección de reseñas ── */}
+                                {/* ── Reviews section ── */}
                                 <RestaurantReviewsSection
-                                    currResenas={resenasPorRestaurante[selectedEntryForDetail.id] || []}
-                                    onLike={(resenaId) => handleMeGusta(selectedEntryForDetail.id, resenaId)}
+                                    currReviews={reviewsByRestaurant[selectedEntryForDetail.id] || []}
+                                    onLike={(reviewId) => handleLike(selectedEntryForDetail.id, reviewId)}
                                 />
                             </>
                         }
@@ -645,14 +631,14 @@ const RestaurantRecommendationPage: React.FC = () => {
                     <RestaurantDetailView
                         restaurant={selectedEntryForDetail}
                         backText="Resultados"
-                        onBack={() => setSelectedEntryForDetail(null)}
+                        onBack={() => setSearchParams({})}
                         actions={
                             <>
                                 <div className="detail-actions-column">
                                     <button
                                         onClick={async (_e) => {
                                             try {
-                                                await historialService.addToHistorial(selectedEntryForDetail.id);
+                                                await historyService.addToHistory(selectedEntryForDetail.id);
                                                 showNotification(`Has seleccionado ${selectedEntryForDetail.name}`, 'success');
                                                 navigate('/home');
                                             } catch (err: any) {
@@ -697,11 +683,11 @@ const RestaurantRecommendationPage: React.FC = () => {
                                     </button>
                                 </div>
 
-                                {/* ── Sección de reseñas ── */}
+                                {/* ── Reviews section ── */}
                                 <RestaurantReviewsSection
-                                    currResenas={resenasPorRestaurante[selectedEntryForDetail.id] || []}
-                                    onLike={(resenaId) => handleMeGusta(selectedEntryForDetail.id, resenaId)}
-                                    isLoading={loadingResenas[selectedEntryForDetail.id]}
+                                    currReviews={reviewsByRestaurant[selectedEntryForDetail.id] || []}
+                                    onLike={(reviewId) => handleLike(selectedEntryForDetail.id, reviewId)}
+                                    isLoading={!reviewsByRestaurant[selectedEntryForDetail.id]}
                                 />
                             </>
                         }
@@ -719,7 +705,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 <p style={{ margin: 0, fontSize: '1rem', color: 'var(--muted)', marginTop: '0.4rem' }}>Encuentra tu próximo lugar favorito</p>
                             </div>
 
-                            {/* Tipo de cocina */}
+                            {/* Cuisine type */}
                             <div style={{ marginBottom: '1.8rem' }}>
                                 <label htmlFor="tags-input-field" style={{ fontSize: 'var(--font-sm)', color: 'var(--text)', marginBottom: '0.5rem', display: 'block', fontWeight: 500 }}>Tipo de cocina</label>
                                 {selectedTags.length > 0 && (
@@ -743,7 +729,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                         type="text"
                                         placeholder="+ Añadir tipo de cocina..."
                                         value={tagInput}
-                                        onChange={(e) => setTagInput(e.target.value)}
+                                        onChange={(e) => handleTagInputChange(e.target.value)}
                                         onFocus={() => { if (tagInput) setIsTagsDropdownOpen(true) }}
                                         style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', padding: '12px 16px', color: 'var(--text)', width: '100%', fontSize: 'var(--font-base)' }}
                                     />
@@ -769,7 +755,7 @@ const RestaurantRecommendationPage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Rango de precios */}
+                            {/* Price range */}
                             <div style={{ marginBottom: '2rem' }}>
                                 <span style={{ fontSize: 'var(--font-sm)', color: 'var(--text)', marginBottom: '0.5rem', display: 'block', fontWeight: 500 }}>Rango de precios</span>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem', marginBottom: '0.5rem' }}>

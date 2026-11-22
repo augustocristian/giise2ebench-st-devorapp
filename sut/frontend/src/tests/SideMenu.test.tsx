@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import SideMenu from '../components/SideMenu';
 
-// ── Mockeamos createPortal para que el contenido se renderice en línea ────────
+// ── Mock createPortal so the content renders inline ────────
 vi.mock('react-dom', async () => {
     const actual = await vi.importActual<typeof import('react-dom')>('react-dom');
     return {
@@ -17,8 +17,8 @@ vi.mock('react-dom', async () => {
 vi.mock('../models/api/authService', () => ({
     authService: {
         getMe: vi.fn().mockResolvedValue({
-            nombre: 'Test',
-            apellidos: 'User',
+            first_name: 'Test',
+            last_name: 'User',
             username: 'testuser',
             email: 'test@test.com',
         }),
@@ -52,35 +52,35 @@ describe('SideMenu', () => {
 
     // ── Renderizado inicial ───────────────────────────────────────────────────
 
-    it('renderiza el botón hamburguesa', () => {
+    it('renders the hamburger button', () => {
         renderSideMenu();
         expect(screen.getByLabelText('Abrir menú')).toBeInTheDocument();
     });
 
-    it('el drawer no tiene la clase "open" inicialmente', () => {
+    it('the drawer does not have the "open" class initially', () => {
         renderSideMenu();
         const overlay = document.querySelector('.sidemenu-overlay');
         expect(overlay?.classList.contains('open')).toBe(false);
     });
 
-    // ── Apertura del drawer ───────────────────────────────────────────────────
+    // ── Drawer opening ───────────────────────────────────────────────────
 
-    it('abre el drawer al clicar el botón hamburguesa', () => {
+    it('opens the drawer when clicking the hamburger button', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         const overlay = document.querySelector('.sidemenu-overlay');
         expect(overlay?.classList.contains('open')).toBe(true);
     });
 
-    it('muestra el título "DevorApp" dentro del drawer cuando está abierto', () => {
+    it('shows the "DevorApp" title inside the drawer when open', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         expect(screen.getByText('DevorApp')).toBeInTheDocument();
     });
 
-    // ── Cierre del drawer ─────────────────────────────────────────────────────
+    // ── Drawer closing ─────────────────────────────────────────────────────
 
-    it('cierra el drawer al clicar el botón X', () => {
+    it('closes the drawer when clicking the X button', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         fireEvent.click(screen.getByLabelText('Cerrar menú'));
@@ -88,7 +88,7 @@ describe('SideMenu', () => {
         expect(overlay?.classList.contains('open')).toBe(false);
     });
 
-    it('cierra el drawer al clicar el backdrop', () => {
+    it('closes the drawer when clicking the backdrop', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         const backdrop = document.querySelector('.sidemenu-backdrop');
@@ -97,9 +97,9 @@ describe('SideMenu', () => {
         expect(overlay?.classList.contains('open')).toBe(false);
     });
 
-    // ── Elementos de navegación ───────────────────────────────────────────────
+    // ── Navigation items ───────────────────────────────────────────────
 
-    it('muestra los ítems de navegación cuando el drawer está abierto', () => {
+    it('shows the navigation items when the drawer is open', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         expect(screen.getByText('Inicio')).toBeInTheDocument();
@@ -110,7 +110,7 @@ describe('SideMenu', () => {
         expect(screen.getByText('Valoraciones')).toBeInTheDocument();
     });
 
-    it('cierra el drawer al pulsar un ítem de navegación', () => {
+    it('closes the drawer when pressing a navigation item', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         fireEvent.click(screen.getByText('Favoritos'));
@@ -118,23 +118,23 @@ describe('SideMenu', () => {
         expect(overlay?.classList.contains('open')).toBe(false);
     });
 
-    // ── Controles de tema ─────────────────────────────────────────────────────
+    // ── Theme controls ─────────────────────────────────────────────────────
 
-    it('muestra los botones de tema Claro y Oscuro', () => {
+    it('shows the Claro and Oscuro theme buttons', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         expect(screen.getByText(/claro/i)).toBeInTheDocument();
         expect(screen.getByText(/oscuro/i)).toBeInTheDocument();
     });
 
-    it('cambia el atributo data-theme del documento al seleccionar "Claro"', () => {
+    it('changes the document data-theme attribute when selecting "Claro"', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         fireEvent.click(screen.getByText(/claro/i));
         expect(document.documentElement.getAttribute('data-theme')).toBe('light');
     });
 
-    it('elimina el atributo data-theme al seleccionar "Oscuro"', () => {
+    it('removes the data-theme attribute when selecting "Oscuro"', () => {
         document.documentElement.setAttribute('data-theme', 'light');
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
@@ -142,9 +142,9 @@ describe('SideMenu', () => {
         expect(document.documentElement.getAttribute('data-theme')).toBeNull();
     });
 
-    // ── Controles de tamaño de fuente ─────────────────────────────────────────
+    // ── Font size controls ─────────────────────────────────────────
 
-    it('muestra los botones de tamaño de fuente S, M y L', () => {
+    it('shows the S, M and L font size buttons', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         expect(screen.getByRole('button', { name: 'S' })).toBeInTheDocument();
@@ -152,14 +152,14 @@ describe('SideMenu', () => {
         expect(screen.getByRole('button', { name: 'L' })).toBeInTheDocument();
     });
 
-    it('añade data-font-size="L" al documento al seleccionar L', () => {
+    it('adds data-font-size="L" to the document when selecting L', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         fireEvent.click(screen.getByRole('button', { name: 'L' }));
         expect(document.documentElement.dataset.fontSize).toBe('L');
     });
 
-    it('elimina data-font-size al seleccionar M (tamaño por defecto)', () => {
+    it('removes data-font-size when selecting M (default size)', () => {
         document.documentElement.dataset.fontSize = 'L';
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
@@ -169,33 +169,33 @@ describe('SideMenu', () => {
 
     // ── Logout ────────────────────────────────────────────────────────────────
 
-    it('muestra el botón "Cerrar sesión"', () => {
+    it('shows the "Cerrar sesión" button', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         expect(screen.getByText(/cerrar sesión/i)).toBeInTheDocument();
     });
 
-    it('el botón de logout llama a submitLogout al ser clicado', () => {
+    it('the logout button calls submitLogout when clicked', () => {
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         fireEvent.click(screen.getByText(/cerrar sesión/i));
-        // submitLogout es llamado por el mock de useLogout
-        // verificamos que el drawer se cierra (el mock llama a onSuccess)
+        // submitLogout is called by the useLogout mock
+        // verify the drawer closes (the mock calls onSuccess)
         const overlay = document.querySelector('.sidemenu-overlay');
         expect(overlay?.classList.contains('open')).toBe(false);
     });
 
-    // ── Usuario en caché ──────────────────────────────────────────────────────
+    // ── Cached user ──────────────────────────────────────────────────────
 
-    it('muestra los datos del usuario si están en localStorage', async () => {
-        const userData = { nombre: 'Carlos', apellidos: 'López', username: 'carlos', email: 'carlos@test.com' };
+    it('shows the user data if present in localStorage', async () => {
+        const userData = { first_name: 'Carlos', last_name: 'López', username: 'carlos', email: 'carlos@test.com' };
         localStorage.setItem('devorapp_user_cache', JSON.stringify(userData));
         renderSideMenu();
         fireEvent.click(screen.getByLabelText('Abrir menú'));
         expect(screen.getByText('carlos@test.com')).toBeInTheDocument();
     });
 
-    it('llama a authService.getMe para actualizar la caché al montar', async () => {
+    it('calls authService.getMe to refresh the cache on mount', async () => {
         renderSideMenu();
         await waitFor(() => {
             expect(authService.getMe).toHaveBeenCalledTimes(1);

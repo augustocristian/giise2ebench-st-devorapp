@@ -212,7 +212,7 @@ if ($Mode -eq "docker") {
     switch ($Component) {
         "backend"  { $composeArgs += @("db", "backend", "keras-api") }
         "frontend" { $composeArgs += @("frontend") }
-        # "all" starts everything (default docker compose behaviour)
+        # "all" starts everything (default docker compose behavior)
     }
 
     Show-Step "Starting with Docker Compose$(if ($Dev) { ' [DEV mode]' })"

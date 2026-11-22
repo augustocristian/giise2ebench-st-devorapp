@@ -207,24 +207,24 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
         {/* Nombre + Apellidos */}
         <div className="form-row">
           <div className="form-group">
-            <label htmlFor="reg-nombre" className="form-label">Nombre</label>
+            <label htmlFor="reg-first-name" className="form-label">Nombre</label>
             <input
-              id="reg-nombre" name="nombre" type="text"
-              data-testid="register-nombre"
+              id="reg-first-name" name="first_name" type="text"
+              data-testid="register-first-name"
               className="form-input"
               autoComplete="given-name"
-              value={form.nombre} onChange={handleInputChange}
+              value={form.first_name} onChange={handleInputChange}
               aria-required="true"
             />
           </div>
           <div className="form-group">
-            <label htmlFor="reg-apellidos" className="form-label">Apellidos</label>
+            <label htmlFor="reg-last-name" className="form-label">Apellidos</label>
             <input
-              id="reg-apellidos" name="apellidos" type="text"
-              data-testid="register-apellidos"
+              id="reg-last-name" name="last_name" type="text"
+              data-testid="register-last-name"
               className="form-input"
               autoComplete="family-name"
-              value={form.apellidos} onChange={handleInputChange}
+              value={form.last_name} onChange={handleInputChange}
               aria-required="true"
             />
           </div>
@@ -300,28 +300,28 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
 
       {/* Search + GPS row */}
       <div className="form-group">
-        <label htmlFor="reg-ubicacion" className="form-label">Busca tu ubicación</label>
+        <label htmlFor="reg-location" className="form-label">Busca tu ubicación</label>
         <div className="location-search-row">
           <div className="form-input-wrap" style={{ flex: 1 }}>
             <span className="form-input-icon" aria-hidden="true"><Search size={18} /></span>
             <Autocomplete
-              id="reg-ubicacion"
-              data-testid="register-ubicacion"
+              id="reg-location"
+              data-testid="register-location"
               apiKey={env.googleApiKey}
               onChange={() => {
-                setFieldValue('ubicacion', '');
+                setFieldValue('location', '');
                 setGpsLabel(null);
               }}
               onPlaceSelected={(place) => {
                 if (place?.formatted_address) {
-                  setFieldValue('ubicacion', place.formatted_address);
+                  setFieldValue('location', place.formatted_address);
                   setGpsLabel(place.formatted_address);
                 }
               }}
               options={{ types: [] }}
               className="form-input has-icon-left"
               placeholder="Ciudad, barrio o dirección..."
-              defaultValue={gpsLabel ?? form.ubicacion}
+              defaultValue={gpsLabel ?? form.location}
             />
           </div>
 
@@ -353,7 +353,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
           <button
             type="button"
             className="btn-ghost"
-            onClick={() => { setGpsLabel(null); setFieldValue('ubicacion', ''); }}
+            onClick={() => { setGpsLabel(null); setFieldValue('location', ''); }}
             aria-label="Cambiar ubicación"
           >
             Cambiar
@@ -422,8 +422,8 @@ const RegisterPage: React.FC = () => {
     if (form.username.length < 3) return setStepError('El usuario debe tener al menos 3 caracteres.');
     if (!form.password) return setStepError('La contraseña es obligatoria.');
     if (form.password.length < 8) return setStepError('La contraseña debe tener al menos 8 caracteres.');
-    if (!form.nombre.trim()) return setStepError('El nombre es obligatorio.');
-    if (!form.apellidos.trim()) return setStepError('Los apellidos son obligatorios.');
+    if (!form.first_name.trim()) return setStepError('El nombre es obligatorio.');
+    if (!form.last_name.trim()) return setStepError('Los apellidos son obligatorios.');
 
     // Remote availability check
     setCheckLoading(true);
@@ -467,7 +467,7 @@ const RegisterPage: React.FC = () => {
           const data = await res.json();
           if (data.results?.[0]) {
             const address = data.results[0].formatted_address;
-            setFieldValue('ubicacion', address);
+            setFieldValue('location', address);
             setGpsLabel(address);
           }
         } catch (err) {

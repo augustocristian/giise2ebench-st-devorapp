@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { NotificationProvider, useNotification } from '../components/NotificationSystem';
+import { NotificationProvider } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 
 // Helper component to trigger notifications
 const TestComponent = () => {
@@ -21,7 +22,7 @@ describe('NotificationSystem', () => {
         vi.useFakeTimers();
     });
 
-    it('debe mostrar y ocultar automáticamente un brindis (toast)', async () => {
+    it('should automatically show and hide a toast', async () => {
         render(
             <NotificationProvider>
                 <TestComponent />
@@ -32,17 +33,17 @@ describe('NotificationSystem', () => {
 
         expect(screen.getByText('Test Toast')).toBeInTheDocument();
 
-        // Esperar a que pase el tiempo (5000ms + animaciones)
+        // Wait for time to pass (5000ms + animations)
         act(() => {
             vi.advanceTimersByTime(5500);
         });
 
-        // El toast debe desaparecer (o estar en proceso de remoción)
-        // En nuestro caso, removemos del estado tras el timeout
+        // The toast must disappear (or be in the process of being removed)
+        // In our case, it is removed from state after the timeout
         expect(screen.queryByText('Test Toast')).not.toBeInTheDocument();
     });
 
-    it('debe manejar correctamente el modal de confirmación', async () => {
+    it('should handle the confirmation modal correctly', async () => {
         vi.useRealTimers();
         render(
             <NotificationProvider>
@@ -55,13 +56,13 @@ describe('NotificationSystem', () => {
         expect(screen.getByText('Are you sure?')).toBeInTheDocument();
         expect(screen.getByText('Title')).toBeInTheDocument();
 
-        // Pulsar Confirmar
+        // Press Confirmar
         fireEvent.click(screen.getByRole('button', { name: /confirmar/i, hidden: true }));
 
         expect(await screen.findByText('Confirmed')).toBeInTheDocument();
     });
 
-    it('debe devolver false al pulsar cancelar en el modal', async () => {
+    it('should return false when pressing cancel in the modal', async () => {
         vi.useRealTimers();
         render(
             <NotificationProvider>
@@ -71,7 +72,7 @@ describe('NotificationSystem', () => {
 
         fireEvent.click(screen.getByText('Show Confirm'));
 
-        // Pulsar Cancelar
+        // Press Cancelar
         fireEvent.click(screen.getByRole('button', { name: /cancelar/i, hidden: true }));
 
         expect(await screen.findByText('Cancelled')).toBeInTheDocument();

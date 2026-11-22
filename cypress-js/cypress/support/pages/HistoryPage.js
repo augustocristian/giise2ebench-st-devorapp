@@ -1,7 +1,7 @@
 import { TID } from "../testids";
 import SideMenuPage from "./SideMenuPage";
 
-const RATING_ASPECTS = ["calidad", "precio", "higiene", "trato"];
+const RATING_ASPECTS = ["quality", "price", "hygiene", "service"];
 
 // Entries are grouped by month; only the most recent group starts expanded.
 class HistoryPage {
@@ -56,7 +56,7 @@ class HistoryPage {
     return this;
   }
 
-  /** `scores`: { calidad, precio, higiene, trato }, each 0..5 (0 = leave unrated). */
+  /** `scores`: { quality, price, hygiene, service }, each 0..5 (0 = leave unrated). */
   fillRating(scores, comment) {
     RATING_ASPECTS.forEach((aspect) => {
       if (scores[aspect] > 0) cy.tid(TID.rating.star(aspect, scores[aspect])).click();

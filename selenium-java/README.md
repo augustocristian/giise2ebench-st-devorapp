@@ -1,143 +1,89 @@
-# Suite de Pruebas para DevorApp
+# Test Suite for DevorApp (Selenium + Java)
 
-Suite de pruebas de extremo a extremo (E2E) y de API para **DevorApp** (una aplicación de descubrimiento y recomendación de restaurantes).
+End-to-end (E2E) and API test suite for **DevorApp** (a restaurant discovery and recommendation application).
 
 ---
 
-## Dependencias necesarias
+## Requirements
 
-Para compilar, desplegar y ejecutar esta suite de pruebas localmente, asegúrate de tener instalados los siguientes componentes en el sistema:
-
-### 1. Requisitos del Sistema
-| Herramienta | Propósito | Instalación rápida |
+| Tool | Purpose | Quick install |
 | :--- | :--- | :--- |
-| **Java JDK 8+** (Recomendado JDK 17) | Ejecutar las pruebas Java (JUnit/Selenium) | `winget install Eclipse.Temurin.17.JDK` (Win) / `brew install openjdk@17` (Mac) |
-| **Apache Maven 3.x** | Gestor de compilación y pruebas | `winget install Apache.Maven` (Win) / `brew install maven` (Mac) |
-| **Docker Desktop / Engine** (Compose v2) | Ejecutar los servicios del SUT | `winget install Docker.DockerDesktop` (Win) / `brew install --cask docker` (Mac) |
-| **Git** | Clonar el SUT en la primera ejecución | `winget install Git.Git` (Win) / `brew install git` (Mac) |
+| **Java JDK 17** | Run the Java tests (JUnit 5 / Selenium) | `winget install Eclipse.Temurin.17.JDK` (Win) / `brew install openjdk@17` (Mac) |
+| **Apache Maven 3.x** | Build and test runner | `winget install Apache.Maven` (Win) / `brew install maven` (Mac) |
+| **Chrome** | Browser for the E2E tests | |
+| **Docker Desktop / Engine** (Compose 2.24+) | Run the system under test (SUT) | `winget install Docker.DockerDesktop` (Win) / `brew install --cask docker` (Mac) |
 
-*En Linux (Ubuntu/Debian) puedes instalar todo con:* `sudo apt install openjdk-17-jdk maven git docker.io docker-compose-v2`.
+On Linux (Ubuntu/Debian) you can install most of it with: `sudo apt install openjdk-17-jdk maven docker.io docker-compose-v2`.
 
-### 2. Credenciales de Firebase
-Para la autenticación de usuarios en las pruebas:
-* Consigue el archivo de credenciales de la cuenta de servicio de Firebase: **`firebase-service-account.json`**.
-* Colócalo en la raíz de este proyecto (`./firebase-service-account.json`).
-* El script de despliegue lo copiará automáticamente al contenedor del backend de la aplicación durante la compilación.
-
-### 3. Librerías de Java
-Todas las dependencias de código (JUnit 5, Selenium, Selema, HttpClient, Gson, etc.) están definidas en el archivo [pom.xml](pom.xml). **Maven las descargará e instalará automáticamente** al ejecutar las pruebas por primera vez (`mvn test`).
+All Java dependencies (JUnit 5, Selenium, Selema, HttpClient, Gson, etc.) are defined in [pom.xml](pom.xml). **Maven downloads them automatically** the first time you run the tests (`mvn test`).
 
 ---
 
-## Despliegue del Sistema bajo Prueba (SUT)
+## Starting the System Under Test (SUT)
 
-El proyecto incluye scripts automatizados que se encargan de clonar la última versión de **DevorApp**, aplicar los parches necesarios para entornos de pruebas locales (como saltar la verificación de correo electrónico en Firebase), construir las imágenes de Docker y esperar a que el backend esté listo.
+The suite runs against the SUT deployed in **dev** mode (Firebase emulator + Google Places mock, no accounts or credentials needed). From the `sut/` folder of this repository:
 
-El SUT consta de tres servicios principales:
-* **Backend**: FastAPI (Python 3.12) ejecutándose en el puerto `8000`.
-* **Frontend**: React 19 + TypeScript servido por Nginx en el puerto `80` (por defecto).
-* **Database**: PostgreSQL 16 (puerto interno `5432`).
-
-### Comandos de Despliegue
-
-Utiliza el script correspondiente a tu sistema operativo desde la raíz del proyecto:
-
-#### **Windows (PowerShell)**
-```powershell
-# Levantar en el puerto por defecto (80 para el frontend)
-.\deploy-local.ps1
-
-# Levantar especificando un puerto alternativo para el frontend
-.\deploy-local.ps1 -Port 8080
-
-# Detener los contenedores y limpiar los volúmenes de datos
-.\deploy-local.ps1 -Down
-```
-
-#### **Linux / macOS (Bash)**
 ```bash
-# Otorgar permisos de ejecución (solo la primera vez)
-chmod +x deploy-local.sh
-
-# Levantar en el puerto por defecto (80)
-./deploy-local.sh
-
-# Levantar en un puerto específico
-./deploy-local.sh --port 8080
-
-# Detener los contenedores y limpiar volúmenes
-./deploy-local.sh --down
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up -d --build
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml down -v    # stop and delete the data
 ```
 
-> **Verificación**: El SUT estará listo para las pruebas una vez que veas el siguiente mensaje en la consola:
-> `[+] DevorApp backend is ready at http://localhost:8000/health`
+See the [root README](../README.md#deployment) for the details. Once started, the frontend is at `http://localhost` and the backend at `http://localhost:8000` (health check: `http://localhost:8000/health`).
 
 ---
 
-## Ejecución de las Pruebas
+## Running the Tests
 
-Las pruebas están estructuradas bajo el paquete `epigijon.devorapp.e2e.functional` y se dividen en dos categorías principales:
-1. **Pruebas de API (`tests.api`)**: Comprueban los endpoints REST del backend a nivel HTTP.
-2. **Pruebas E2E de interfaz (`tests.e2e`)**: Automatizan la experiencia de usuario en un navegador web real usando **Selenium** y el patrón **Page Object Model (POM)**.
+The tests are in the `epigijon.devorapp.e2e.functional` package and fall into two categories:
+1. **API tests (`tests.api`)**: Check the backend REST endpoints at the HTTP level (42 tests).
+2. **Interface E2E tests (`tests.e2e`)**: Automate the user experience in a real web browser using **Selenium** and the **Page Object Model (POM)** pattern (22 tests).
 
-Puedes ejecutar el conjunto de pruebas con los siguientes comandos de Maven:
+Run them with the following Maven commands from the `selenium-java` folder:
 
-### Todos los Tests
+### All Tests
 ```bash
-# Ejecuta la suite de pruebas completa en modo visual
+# Run the full suite with a visible browser
 mvn test
 
-# Ejecuta las pruebas de navegador en modo oculto/sin cabecera (Headless)
+# Run the browser tests headless
 mvn test -Dheadless=true
 ```
 
-### Subconjuntos de Pruebas
+### Test Subsets
 ```bash
-# Ejecutar solo las pruebas de la API
+# Run only the API tests
 mvn test -Dtest="TestApi*"
 
-# Ejecutar solo las pruebas de interfaz E2E (Selenium)
+# Run only the E2E interface tests (Selenium)
 mvn test -Dtest="Test*View,TestSideMenu"
 
-# Ejecutar una sola clase de pruebas
+# Run a single test class
 mvn test -Dtest=TestLogin
 
-# Ejecutar un único método de prueba dentro de una clase
-mvn test -Dtest="TestApiAuth#testHealthEndpoint"
+# Run a single test method within a class
+mvn test -Dtest="TestApiRegister#<methodName>"
 ```
 
-### Reportes de Resultados
-Los informes generados por Maven Surefire se almacenan en:
-* **Ejecución local**: `target/local/surefire-reports/`
-* **Ejecución en CI**: `target/${TJOB_NAME}/surefire-reports/`
+### Result Reports
+The reports generated by Maven Surefire are stored in:
+* **Local run**: `target/local/surefire-reports/`
+* **CI run**: `target/${TJOB_NAME}/surefire-reports/`
 
 ---
 
-## Configuración Opcional
+## Configuration
 
-En el primer despliegue se creará automáticamente el archivo `.retorch/envfiles/local.env`. Puedes añadir las siguientes variables de entorno para habilitar funcionalidades específicas durante las pruebas:
-
-```env
-FIREBASE_API_KEY=<tu_api_key_de_firebase>     # Requerido para flujos de autenticación completos
-GOOGLE_API_KEY=<tu_api_key_de_google_places>  # Requerido para la búsqueda y enriquecimiento de restaurantes
-SECRET_KEY=<tu_clave_secreta_jwt>             # Sobrescribe la clave secreta de desarrollo por defecto
-```
-
-Si deseas cambiar las URLs de acceso a las que apunta la suite de pruebas, edita el archivo `src/test/resources/test.properties`:
+To change the URLs the suite points to, edit `src/test/resources/test.properties`:
 ```properties
 BROWSER_USER=CHROME
-LOCALHOST_URL=http://localhost:8000   # URL base para los tests de API
-FRONTEND_URL=http://localhost         # URL base para los tests de navegador
+LOCALHOST_URL=http://localhost:8000   # Base URL for the API tests
+FRONTEND_URL=http://localhost         # Base URL for the browser tests
 ```
+
+They can also be overridden at run time with `-DSUT_URL=http://other-host:8000`, and `-DTJOB_NAME=<name>` isolates the output under `target/<name>/` so simultaneous runs do not collide.
 
 ---
 
-## Integración Continua (CI - Jenkins)
+## Continuous Integration
 
-El repositorio incluye un archivo `Jenkinsfile` que define la pipeline de construcción y prueba en servidores de Integración Continua. Para ejecutar las pruebas apuntando a contenedores en una red virtual dockerizada, ejecuta:
-
-```bash
-mvn test -DSUT_URL=http://backend:8000 -DTJOB_NAME=tjob1
-```
-
-Esto aislará el espacio de trabajo bajo el subdirectorio de destino `target/tjob1/` evitando conflictos en ejecuciones simultáneas.
+The CI pipeline ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)) runs this suite in its own job, against its own instance of the dev stack built from the images that were built once earlier in the pipeline.

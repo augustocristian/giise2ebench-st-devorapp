@@ -3,17 +3,17 @@ import { useNavigate } from 'react-router-dom';
 import SideMenu from './SideMenu';
 
 interface TopBarProps {
-  /** Slot derecho opcional: botones de acción, avatar, etc. */
+  /** Optional right slot: action buttons, avatar, etc. */
   rightSlot?: React.ReactNode;
-  /** Slot izquierdo opcional, alternativo al menú */
+  /** Optional left slot, alternative to the menu */
   leftSlot?: React.ReactNode;
-  /** Si es true, muestra el menú de navegación izquierdo */
+  /** If true, shows the left navigation menu */
   showMenu?: boolean;
 }
 
 /**
- * Barra superior persistente de la app.
- * Muestra el nombre centrado y controles laterales.
+ * Persistent top bar of the app.
+ * Shows the centered name and side controls.
  */
 const TopBar: React.FC<TopBarProps> = ({ rightSlot, leftSlot, showMenu }) => {
   const navigate = useNavigate();

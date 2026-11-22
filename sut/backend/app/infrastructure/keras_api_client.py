@@ -9,7 +9,7 @@ class KerasApiClient:
         self.headers = {"x-api-key": settings.KERAS_API_KEY}
 
     async def get_restaurants_info(self, place_ids: List[str]) -> Dict[str, Any]:
-        """Consulta metadatos (tipos/precios) al microservicio de IA."""
+        """Fetch metadata (types/prices) from the AI microservice."""
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.post(
@@ -25,7 +25,7 @@ class KerasApiClient:
         return {}
 
     async def get_predictions(self, payload: Dict[str, Any]) -> Dict[str, float]:
-        """Obtiene las predicciones de rating de la IA para un lote de candidatos."""
+        """Get the AI rating predictions for a batch of candidates."""
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.post(

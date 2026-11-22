@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import TopBar from '../components/TopBar';
 import Autocomplete from '../components/GoogleAutocomplete';
 import { authService } from '../models/api/authService';
-import { useNotification } from '../components/NotificationSystem';
+import { useNotification } from '../components/useNotification';
 import { env } from '../config/env';
 
 // ── Sub-component: PersonalInfoSection ───────────────────────────────────────
@@ -57,26 +57,26 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         <form onSubmit={onSave} className="auth-form" style={{ marginTop: '0.5rem' }}>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="profile-nombre-input" className="form-label">Nombre</label>
+              <label htmlFor="profile-first-name-input" className="form-label">Nombre</label>
               <input
-                id="profile-nombre-input"
-                data-testid="profile-personal-nombre"
+                id="profile-first-name-input"
+                data-testid="profile-personal-first-name"
                 type="text"
                 className="form-input"
-                value={formData.nombre}
-                onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                value={formData.first_name}
+                onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                 required
               />
             </div>
             <div className="form-group">
-              <label htmlFor="profile-apellidos-input" className="form-label">Apellidos</label>
+              <label htmlFor="profile-last-name-input" className="form-label">Apellidos</label>
               <input
-                id="profile-apellidos-input"
-                data-testid="profile-personal-apellidos"
+                id="profile-last-name-input"
+                data-testid="profile-personal-last-name"
                 type="text"
                 className="form-input"
-                value={formData.apellidos}
-                onChange={e => setFormData({ ...formData, apellidos: e.target.value })}
+                value={formData.last_name}
+                onChange={e => setFormData({ ...formData, last_name: e.target.value })}
               />
             </div>
           </div>
@@ -93,11 +93,11 @@ const PersonalInfoSection: React.FC<PersonalInfoSectionProps> = ({
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', padding: '0.5rem 0' }}>
           <div>
             <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>Nombre</span>
-            <span style={{ fontSize: '1rem', fontWeight: 500 }}>{user?.nombre || '—'}</span>
+            <span style={{ fontSize: '1rem', fontWeight: 500 }}>{user?.first_name || '—'}</span>
           </div>
           <div>
             <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>Apellidos</span>
-            <span style={{ fontSize: '1rem', fontWeight: 500 }}>{user?.apellidos || '—'}</span>
+            <span style={{ fontSize: '1rem', fontWeight: 500 }}>{user?.last_name || '—'}</span>
           </div>
         </div>
       )}
@@ -164,23 +164,23 @@ const LocationSection: React.FC<LocationSectionProps> = ({
               apiKey={env.googleApiKey}
               onPlaceSelected={(place) => {
                 if (place?.formatted_address) {
-                  setFormData((prev: any) => ({ ...prev, ubicacion: place.formatted_address }));
+                  setFormData((prev: any) => ({ ...prev, location: place.formatted_address }));
                   setLocationValid(true);
                   setLocationError('');
                 }
               }}
               onChange={(e: any) => {
-                setFormData((prev: any) => ({ ...prev, ubicacion: e.target.value }));
+                setFormData((prev: any) => ({ ...prev, location: e.target.value }));
                 setLocationValid(false);
                 setLocationError('');
               }}
               options={{ types: [] }}
               className={`form-input${locationError ? ' input-error' : ''}`}
               placeholder="Ciudad, barrio o dirección..."
-              defaultValue={formData.ubicacion}
+              defaultValue={formData.location}
             />
             {locationError && (
-              <span style={{ color: 'var(--error)', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
+              <span data-testid="profile-location-error" style={{ color: 'var(--error)', fontSize: '0.8rem', marginTop: '0.25rem', display: 'block' }}>
                 {locationError}
               </span>
             )}
@@ -198,7 +198,7 @@ const LocationSection: React.FC<LocationSectionProps> = ({
       ) : (
         <div style={{ padding: '0.5rem 0' }}>
           <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase' }}>Ubicación actual</span>
-          <span style={{ fontSize: '1rem', fontWeight: 500 }}>{user?.ubicacion || '—'}</span>
+          <span style={{ fontSize: '1rem', fontWeight: 500 }}>{user?.location || '—'}</span>
         </div>
       )}
     </div>
@@ -530,10 +530,10 @@ const ProfilePage: React.FC = () => {
   // Edit states
   const [editSection, setEditSection] = useState<'none' | 'personal' | 'location' | 'email' | 'password' | 'delete'>('none');
   const [formData, setFormData] = useState({
-    nombre: '',
-    apellidos: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    ubicacion: '',
+    location: '',
     currentPassword: '',
     newPassword: '',
     confirmPassword: ''
@@ -553,13 +553,13 @@ const ProfilePage: React.FC = () => {
         globalThis.dispatchEvent(new CustomEvent('userUpdated', { detail: data }));
         setFormData(prev => ({
           ...prev,
-          nombre: data.nombre || '',
-          apellidos: data.apellidos || '',
+          first_name: data.first_name || '',
+          last_name: data.last_name || '',
           email: data.email || '',
-          ubicacion: data.ubicacion || ''
+          location: data.location || ''
         }));
       } catch (err) {
-        console.error('Error al cargar datos del perfil:', err);
+        console.error('Error loading profile data:', err);
         showNotification('Error al cargar datos del perfil', 'error');
         navigate('/home');
       } finally {
@@ -588,10 +588,10 @@ const ProfilePage: React.FC = () => {
     if (user) {
       setFormData(prev => ({
         ...prev,
-        nombre: user.nombre || '',
-        apellidos: user.apellidos || '',
+        first_name: user.first_name || '',
+        last_name: user.last_name || '',
         email: user.email || '',
-        ubicacion: user.ubicacion || ''
+        location: user.location || ''
       }));
     }
   };
@@ -608,9 +608,9 @@ const ProfilePage: React.FC = () => {
           return;
         }
         const result = await authService.updateProfile({
-          nombre: formData.nombre,
-          apellidos: formData.apellidos,
-          ubicacion: formData.ubicacion,
+          first_name: formData.first_name,
+          last_name: formData.last_name,
+          location: formData.location,
           password: formData.currentPassword
         });
         setUser(result.user);
@@ -705,10 +705,10 @@ const ProfilePage: React.FC = () => {
                 fontSize: '2.5rem', fontWeight: 800, color: 'white',
                 boxShadow: '0 8px 24px rgba(124, 109, 250, 0.3)'
               }}>
-                {getInitials(user?.nombre, user?.username)}
+                {getInitials(user?.first_name, user?.username)}
               </div>
             </div>
-            <h1 data-testid="profile-header-name">{user?.nombre ? `${user.nombre} ${user.apellidos || ''}` : user?.username}</h1>
+            <h1 data-testid="profile-header-name">{user?.first_name ? `${user.first_name} ${user.last_name || ''}` : user?.username}</h1>
             <p data-testid="profile-header-email">{user?.email}</p>
           </div>
 

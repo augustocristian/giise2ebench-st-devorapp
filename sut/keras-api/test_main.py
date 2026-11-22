@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 import numpy as np
 from unittest.mock import patch, MagicMock
 
-# Evitar que se cargue el modelo real durante los tests si existe
+# Avoid loading the real model during tests if it exists
 with patch("tensorflow.keras.models.load_model") as mock_load:
     _mock_model_init = MagicMock()
     _mock_model_init.inputs = [MagicMock(name="input", shape=(None, 10)) for _ in range(7)]
@@ -32,7 +32,7 @@ PREDICT_PAYLOAD = {
 
 
 class FakeModelOutput:
-    """Simula la salida de model.predict() retornando un array (N, 1)."""
+    """Simulate model.predict() output by returning an (N, 1) array."""
     def __init__(self, values):
         self._values = np.array([[v] for v in values])
 
@@ -55,7 +55,7 @@ def make_fake_model(scores):
 
 @pytest.fixture(autouse=True)
 def setup_mocks():
-    """Inyectar variables globales simuladas para todos los tests."""
+    """Inject mocked globals for all tests."""
     main.model = make_fake_model([0.8, 0.6])
     main.API_KEY_SECRET = "test-api-key"
     main.user_mapping = {"test_user": 1}
@@ -81,12 +81,12 @@ def test_health_check():
 
 def test_predict_unauthorized():
     payload = {**PREDICT_PAYLOAD, "candidates": []}
-    # Sin API Key
+    # Without an API key
     response = client.post("/predict", json=payload)
     assert response.status_code == 403
     assert response.json()["detail"] == "Clave de API no válida"
 
-    # Con API Key incorrecta
+    # With a wrong API key
     response = client.post("/predict", json=payload, headers={"x-api-key": "wrong-key"})
     assert response.status_code == 403
 
@@ -120,7 +120,7 @@ def test_predict_success():
 
 
 def test_predict_model_none():
-    """Si el modelo no está cargado, /predict debe devolver 503."""
+    """If the model is not loaded, /predict must return 503."""
     main.model = None
     resp = client.post("/predict", headers={"x-api-key": "test-api-key"}, json=PREDICT_PAYLOAD)
     assert resp.status_code == 503
@@ -134,22 +134,22 @@ def test_predict_empty_candidates():
 
 
 def test_predict_missing_fields():
-    """Payload incompleto debe devolver 422 por validación Pydantic."""
+    """An incomplete payload must return 422 from Pydantic validation."""
     payload = {
         "user_id": "test_user",
         "avg_rating": 4.5,
         "num_val": 10,
         "user_favs": [],
         "candidates": []
-        # Faltan es_finde y franja
+        # es_finde and franja are missing
     }
     response = client.post("/predict", json=payload, headers={"x-api-key": "test-api-key"})
     assert response.status_code == 422
 
 
-def test_predict_ok_y_ordenado():
-    """Los candidatos deben estar ordenados de mayor a menor keras_score."""
-    # Scores: place_A=0.6, place_B=0.9 → place_B primero
+def test_predict_ok_and_sorted():
+    """Candidates must be sorted by keras_score, highest first."""
+    # Scores: place_A=0.6, place_B=0.9 -> place_B first
     main.model = make_fake_model([0.6, 0.9])
     resp = client.post("/predict", headers={"x-api-key": "test-api-key"}, json=PREDICT_PAYLOAD)
     assert resp.status_code == 200
@@ -160,16 +160,16 @@ def test_predict_ok_y_ordenado():
     assert results[0]["keras_score"] > results[1]["keras_score"]
 
 
-def test_predict_usuario_desconocido_usa_idx_0():
-    """Un user_id que no está en user_mapping debe usar idx=0 sin error."""
+def test_predict_unknown_user_uses_idx_0():
+    """A user_id missing from user_mapping must use idx=0 without error."""
     main.model = make_fake_model([0.5, 0.5])
-    main.user_mapping = {}  # Sin mapeos
+    main.user_mapping = {}  # Without mappings
     resp = client.post("/predict", headers={"x-api-key": "test-api-key"}, json=PREDICT_PAYLOAD)
     assert resp.status_code == 200
 
 
-def test_predict_favoritos_en_cache():
-    """Favoritos en places_cache deben contribuir al vector fav del usuario."""
+def test_predict_favorites_in_cache():
+    """Favorites in places_cache must contribute to the user's fav vector."""
     main.model = make_fake_model([0.5, 0.5])
     main.places_cache = {"fav_place": {"types": ["restaurant"], "price_level": 1}}
     payload = {**PREDICT_PAYLOAD, "user_favs": ["fav_place"]}
@@ -178,8 +178,8 @@ def test_predict_favoritos_en_cache():
     assert len(resp.json()["results"]) == 2
 
 
-def test_predict_favoritos_no_en_cache():
-    """Favoritos no en places_cache deben ser ignorados (fav_vector = zeros)."""
+def test_predict_favorites_not_in_cache():
+    """Favorites not in places_cache must be ignored (fav_vector = zeros)."""
     main.model = make_fake_model([0.5, 0.5])
     main.places_cache = {}
     payload = {**PREDICT_PAYLOAD, "user_favs": ["no_existe"]}
@@ -189,8 +189,8 @@ def test_predict_favoritos_no_en_cache():
 
 # ── extract_tags_vector ───────────────────────────────────────────────────────
 
-def test_extract_tags_vector_tipos_conocidos():
-    """Tipos presentes en TAGS_ORDER deben activar el bit correspondiente."""
+def test_extract_tags_vector_known_types():
+    """Types present in TAGS_ORDER must set the matching bit."""
     main.TAGS_ORDER = ["restaurant", "cafe", "bar"]
     main.NUM_TAGS = 3
     main.tag_to_idx = {t: i for i, t in enumerate(main.TAGS_ORDER)}
@@ -200,18 +200,18 @@ def test_extract_tags_vector_tipos_conocidos():
     assert vec[2] == 0.0
 
 
-def test_extract_tags_vector_tipos_desconocidos():
-    """Tipos no reconocidos deben activar el fallback 'restaurant' si existe."""
+def test_extract_tags_vector_unknown_types():
+    """Unrecognized types must set the 'restaurant' fallback if it exists."""
     main.TAGS_ORDER = ["restaurant", "cafe"]
     main.NUM_TAGS = 2
     main.tag_to_idx = {t: i for i, t in enumerate(main.TAGS_ORDER)}
     vec = extract_tags_vector(["alien_food"])
-    # Fallback: 'restaurant' debe activarse
+    # Fallback: 'restaurant' must be set
     assert vec[0] == 1.0
 
 
-def test_extract_tags_vector_vacio():
-    """Sin tipos, el fallback 'restaurant' debe activarse."""
+def test_extract_tags_vector_empty():
+    """Without types, the 'restaurant' fallback must be set."""
     main.TAGS_ORDER = ["restaurant", "cafe"]
     main.NUM_TAGS = 2
     main.tag_to_idx = {t: i for i, t in enumerate(main.TAGS_ORDER)}
@@ -219,8 +219,8 @@ def test_extract_tags_vector_vacio():
     assert vec[0] == 1.0  # fallback restaurant
 
 
-def test_extract_tags_vector_multiples():
-    """Con múltiples tipos reconocidos deben activarse todos."""
+def test_extract_tags_vector_multiple():
+    """With multiple recognized types, all must be set."""
     main.TAGS_ORDER = ["restaurant", "cafe", "bar"]
     main.NUM_TAGS = 3
     main.tag_to_idx = {t: i for i, t in enumerate(main.TAGS_ORDER)}
@@ -244,8 +244,8 @@ def test_get_place_info():
     assert data["info"]["fav_place_1"]["price_level"] == 2
 
 
-def test_info_todos_desconocidos():
-    """Si ningún place_id está en cache, /info devuelve dict vacío."""
+def test_info_all_unknown():
+    """If no place_id is in the cache, /info returns an empty dict."""
     main.places_cache = {}
     resp = client.post("/info", headers={"x-api-key": "test-api-key"}, json={"place_ids": ["unknown"]})
     assert resp.status_code == 200

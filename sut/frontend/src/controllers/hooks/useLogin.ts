@@ -20,7 +20,7 @@ export const useLogin = (onSuccess?: () => void) => {
 
         try {
             const data = await authService.login(identifier.trim(), password);
-            setMessage({ type: 'success', text: `¡Bienvenido de nuevo, ${data.user.nombre}!` });
+            setMessage({ type: 'success', text: `¡Bienvenido de nuevo, ${data.user.first_name}!` });
 
             if (onSuccess) {
                 setTimeout(onSuccess, 1500);

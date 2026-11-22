@@ -15,12 +15,12 @@ public class RegisterPage extends BasePage {
     private static final By EMAIL        = TestId.of("register-email");
     private static final By USERNAME     = TestId.of("register-username");
     private static final By PASSWORD     = TestId.of("register-password");
-    private static final By NOMBRE       = TestId.of("register-nombre");
-    private static final By APELLIDOS    = TestId.of("register-apellidos");
+    private static final By FIRST_NAME       = TestId.of("register-first-name");
+    private static final By LAST_NAME    = TestId.of("register-last-name");
     private static final By CONTINUE_BTN = TestId.of("register-continue");
 
     private static final By GPS_BTN    = TestId.of("register-gps");
-    private static final By UBICACION  = TestId.of("register-ubicacion");
+    private static final By LOCATION  = TestId.of("register-location");
     private static final By SUBMIT_BTN = TestId.of("register-submit");
     private static final By BACK_BTN   = TestId.of("register-back");
 
@@ -51,13 +51,13 @@ public class RegisterPage extends BasePage {
         return this;
     }
 
-    public RegisterPage enterNombre(String nombre) {
-        fill(NOMBRE, nombre);
+    public RegisterPage enterFirstName(String firstName) {
+        fill(FIRST_NAME, firstName);
         return this;
     }
 
-    public RegisterPage enterApellidos(String apellidos) {
-        fill(APELLIDOS, apellidos);
+    public RegisterPage enterLastName(String lastName) {
+        fill(LAST_NAME, lastName);
         return this;
     }
 
@@ -72,8 +72,8 @@ public class RegisterPage extends BasePage {
     }
 
     /** Types a location without picking an autocomplete suggestion. */
-    public RegisterPage enterUbicacion(String location) {
-        fill(UBICACION, location);
+    public RegisterPage enterLocation(String location) {
+        fill(LOCATION, location);
         return this;
     }
 

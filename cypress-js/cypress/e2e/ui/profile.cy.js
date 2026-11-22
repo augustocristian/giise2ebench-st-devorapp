@@ -31,14 +31,14 @@ describe("Profile", () => {
 
     it("BASE - the registered data is displayed", () => {
       profile
-        .expectCardText(P.cardPersonal, user.nombre)
-        .expectCardText(P.cardPersonal, user.apellidos)
-        .expectCardText(P.cardLocation, user.ubicacion);
+        .expectCardText(P.cardPersonal, user.first_name)
+        .expectCardText(P.cardPersonal, user.last_name)
+        .expectCardText(P.cardLocation, user.location);
     });
 
     it("BASE - cancelling the personal info edit keeps the original values", () => {
       profile.editPersonalInfo().fillPersonalInfo("JuanModificado", "PérezModificado").cancelPersonalInfo();
-      profile.expectCardText(P.cardPersonal, user.nombre).expectCardNotText(P.cardPersonal, "JuanModificado");
+      profile.expectCardText(P.cardPersonal, user.first_name).expectCardNotText(P.cardPersonal, "JuanModificado");
     });
 
     it("S2, S3 - saving a new first and last name updates the card", () => {

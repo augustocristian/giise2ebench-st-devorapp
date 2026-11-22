@@ -1,5 +1,5 @@
-Aplicación principal
-====================
+Main application
+================
 
 .. automodule:: app.main
    :members:

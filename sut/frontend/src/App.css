@@ -36,14 +36,14 @@
   --warning-bg:    rgba(212, 160, 69, 0.12);
   --warning:       #f59e0b;
   --warning-border:rgba(212, 160, 69, 0.2);
-  --aspect-calidad:      #fb923c;
-  --aspect-calidad-bg:   rgba(251, 146, 60, 0.15);
-  --aspect-precio:       #4ade80;
-  --aspect-precio-bg:    rgba(74, 222, 128, 0.15);
-  --aspect-higiene:      #38bdf8;
-  --aspect-higiene-bg:   rgba(56, 189, 248, 0.15);
-  --aspect-trato:        #c084fc;
-  --aspect-trato-bg:     rgba(192, 132, 252, 0.15);
+  --aspect-quality:      #fb923c;
+  --aspect-quality-bg:   rgba(251, 146, 60, 0.15);
+  --aspect-price:       #4ade80;
+  --aspect-price-bg:    rgba(74, 222, 128, 0.15);
+  --aspect-hygiene:      #38bdf8;
+  --aspect-hygiene-bg:   rgba(56, 189, 248, 0.15);
+  --aspect-service:        #c084fc;
+  --aspect-service-bg:     rgba(192, 132, 252, 0.15);
 
   /* Elevation */
   --shadow-sm:     0 2px 8px rgba(0, 0, 0, 0.3);
@@ -108,14 +108,14 @@
   --warning-bg:    #fffbeb;
   --warning:       #b45309;
   --warning-border:rgba(180, 83, 9, 0.2);
-  --aspect-calidad:      #c2410c;
-  --aspect-calidad-bg:   #fff7ed;
-  --aspect-precio:       #15803d;
-  --aspect-precio-bg:    #f0fdf4;
-  --aspect-higiene:      #0369a1;
-  --aspect-higiene-bg:   #f0f9ff;
-  --aspect-trato:        #7e22ce;
-  --aspect-trato-bg:     #faf5ff;
+  --aspect-quality:      #c2410c;
+  --aspect-quality-bg:   #fff7ed;
+  --aspect-price:       #15803d;
+  --aspect-price-bg:    #f0fdf4;
+  --aspect-hygiene:      #0369a1;
+  --aspect-hygiene-bg:   #f0f9ff;
+  --aspect-service:        #7e22ce;
+  --aspect-service-bg:     #faf5ff;
 
   /* Elevation */
   --shadow-sm:     0 2px 8px rgba(0, 0, 0, 0.05);
@@ -891,7 +891,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   justify-content: center;
   width: 40px;
   height: 40px;
-  margin-left: calc(var(--space-2) * -1); /* compensa el padding */
+  margin-left: calc(var(--space-2) * -1); /* compensates for the padding */
   border-radius: var(--radius-sm);
   color: var(--text);
   transition: background var(--t-fast);
@@ -910,7 +910,7 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   display: flex;
   pointer-events: none;
   visibility: hidden;
-  /* El menu tarda en desaparecer para que los hijos animen cierre */
+  /* The menu takes time to disappear so children can animate closing */
   transition: visibility 0s 0.4s;
 }
 .sidemenu-overlay.open {
@@ -2809,10 +2809,10 @@ button { cursor: pointer; border: none; background: none; color: inherit; font-f
   color: white;
 }
 
-.aspect-icon-box.calidad { background: var(--aspect-calidad-bg); color: var(--aspect-calidad); }
-.aspect-icon-box.precio { background: var(--aspect-precio-bg); color: var(--aspect-precio); }
-.aspect-icon-box.higiene { background: var(--aspect-higiene-bg); color: var(--aspect-higiene); }
-.aspect-icon-box.trato { background: var(--aspect-trato-bg); color: var(--aspect-trato); }
+.aspect-icon-box.quality { background: var(--aspect-quality-bg); color: var(--aspect-quality); }
+.aspect-icon-box.price { background: var(--aspect-price-bg); color: var(--aspect-price); }
+.aspect-icon-box.hygiene { background: var(--aspect-hygiene-bg); color: var(--aspect-hygiene); }
+.aspect-icon-box.service { background: var(--aspect-service-bg); color: var(--aspect-service); }
 
 .aspect-info-premium {
   display: flex;

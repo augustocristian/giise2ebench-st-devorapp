@@ -189,7 +189,7 @@ public class BaseLoggedClass {
         return BaseLoggedClass.class;
     }
 
-    /** Registers the class test user (POST /api/register); call from {@code @BeforeAll}. */
+    /** Registers the class test user (POST /api/v1/users); call from {@code @BeforeAll}. */
     protected static void setupTestUser(String username, String email, String password)
             throws IOException {
         Class<?> callingClass = getCallingClass();
@@ -202,11 +202,11 @@ public class BaseLoggedClass {
         payload.addProperty("username",  username);
         payload.addProperty("email",     email);
         payload.addProperty("password",  password);
-        payload.addProperty("nombre",    "UITester");
-        payload.addProperty("apellidos", "Test");
-        payload.addProperty("ubicacion", "Gijón");
+        payload.addProperty("first_name",    "UITester");
+        payload.addProperty("last_name", "Test");
+        payload.addProperty("location", "Gijón");
 
-        HttpPost reg = new HttpPost(apiBase + "/api/register");
+        HttpPost reg = new HttpPost(apiBase + "/api/v1/users");
         reg.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
         reg.addHeader("Accept", "application/json");
         try (CloseableHttpResponse resp = apiClient.execute(reg)) {
@@ -231,11 +231,11 @@ public class BaseLoggedClass {
         payload.addProperty("username",  username);
         payload.addProperty("email",     email);
         payload.addProperty("password",  password);
-        payload.addProperty("nombre",    "UITester");
-        payload.addProperty("apellidos", "Test");
-        payload.addProperty("ubicacion", "Gijón");
+        payload.addProperty("first_name",    "UITester");
+        payload.addProperty("last_name", "Test");
+        payload.addProperty("location", "Gijón");
 
-        HttpPost reg = new HttpPost(apiBase + "/api/register");
+        HttpPost reg = new HttpPost(apiBase + "/api/v1/users");
         reg.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
         reg.addHeader("Accept", "application/json");
         try (CloseableHttpResponse resp = apiClient.execute(reg)) {
@@ -244,7 +244,7 @@ public class BaseLoggedClass {
         log.info("Registered API-only test user: {}", email);
     }
 
-    /** Deletes the class user and any extra users via DELETE /api/profile; call from {@code @AfterAll}. */
+    /** Deletes the class user and any extra users via DELETE /api/v1/profile; call from {@code @AfterAll}. */
     protected static void tearDownTestUser() {
         Class<?> callingClass = getCallingClass();
         String email = classEmails.get(callingClass);
@@ -262,14 +262,14 @@ public class BaseLoggedClass {
                     JsonObject loginPayload = new JsonObject();
                     loginPayload.addProperty("identifier", extraEmail);
                     loginPayload.addProperty("password",   extraPassword);
-                    HttpPost login = new HttpPost(apiBase + "/api/login");
+                    HttpPost login = new HttpPost(apiBase + "/api/v1/sessions");
                     login.setEntity(new StringEntity(loginPayload.toString(), ContentType.APPLICATION_JSON));
                     login.addHeader("Accept", "application/json");
                     try (CloseableHttpResponse resp = apiClient.execute(login)) {
                         EntityUtils.consume(resp.getEntity());
                     }
 
-                    URIBuilder ub = new URIBuilder(apiBase + "/api/profile");
+                    URIBuilder ub = new URIBuilder(apiBase + "/api/v1/profile");
                     ub.addParameter("password", extraPassword);
                     try (CloseableHttpResponse resp = apiClient.execute(new HttpDelete(ub.build()))) {
                         EntityUtils.consume(resp.getEntity());
@@ -289,14 +289,14 @@ public class BaseLoggedClass {
             JsonObject loginPayload = new JsonObject();
             loginPayload.addProperty("identifier", email);
             loginPayload.addProperty("password",   password);
-            HttpPost login = new HttpPost(apiBase + "/api/login");
+            HttpPost login = new HttpPost(apiBase + "/api/v1/sessions");
             login.setEntity(new StringEntity(loginPayload.toString(), ContentType.APPLICATION_JSON));
             login.addHeader("Accept", "application/json");
             try (CloseableHttpResponse resp = apiClient.execute(login)) {
                 EntityUtils.consume(resp.getEntity());
             }
 
-            URIBuilder ub = new URIBuilder(apiBase + "/api/profile");
+            URIBuilder ub = new URIBuilder(apiBase + "/api/v1/profile");
             ub.addParameter("password", password);
             try (CloseableHttpResponse resp = apiClient.execute(new HttpDelete(ub.build()))) {
                 EntityUtils.consume(resp.getEntity());
@@ -329,7 +329,7 @@ public class BaseLoggedClass {
         JsonObject payload = new JsonObject();
         payload.addProperty("identifier", testEmail);
         payload.addProperty("password", testPassword);
-        HttpPost login = new HttpPost(apiBase + "/api/login");
+        HttpPost login = new HttpPost(apiBase + "/api/v1/sessions");
         login.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
         login.addHeader("Accept", "application/json");
         try (CloseableHttpResponse resp = apiClient.execute(login)) {

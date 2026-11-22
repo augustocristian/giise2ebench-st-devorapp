@@ -34,9 +34,9 @@ class TestHistoryView extends BaseLoggedClass {
         ((JavascriptExecutor) driver).executeScript(
                 "window.originalFetch = window.fetch; " +
                         "window.fetch = function(input, init) { " +
-                        "  if (typeof input === 'string' && input.includes('/api/historial')) { " +
-                        "    return Promise.resolve(new Response('" + jsonResponse.replace("'", "\\'")
-                        + "', { status: 200, headers: { 'Content-Type': 'application/json' } })); " +
+                        "  if (typeof input === 'string' && input.includes('/api/v1/history')) { " +
+                        "    return Promise.resolve(new Response(JSON.stringify((function(a) { return { items: a, total: a.length, limit: 100, offset: 0 }; })(JSON.parse('" + jsonResponse.replace("'", "\\'")
+                        + "'))), { status: 200, headers: { 'Content-Type': 'application/json' } })); " +
                         "  } " +
                         "  return window.originalFetch(input, init); " +
                         "};");
@@ -49,11 +49,11 @@ class TestHistoryView extends BaseLoggedClass {
 
     private String getMockHistoryJson(String date1, String date2) {
         return "[" +
-                "{\"id\":1,\"user_id\":\"uid\",\"place_id\":\"MOCK_PLACE_101\",\"fecha_acceso\":\"" + date1
+                "{\"id\":1,\"user_id\":\"uid\",\"place_id\":\"MOCK_PLACE_101\",\"accessed_at\":\"" + date1
                 + "\"," +
                 "\"restaurant\":{\"id\":\"MOCK_PLACE_101\",\"name\":\"Restaurante Uno\",\"rating\":4.5,\"user_ratings_total\":100,\"types\":[\"restaurant\"],\"address\":\"Calle Ficticia 123\",\"main_photo\":null,\"summary\":\"Excelente\",\"open_now\":true}},"
                 +
-                "{\"id\":2,\"user_id\":\"uid\",\"place_id\":\"MOCK_PLACE_102\",\"fecha_acceso\":\"" + date2
+                "{\"id\":2,\"user_id\":\"uid\",\"place_id\":\"MOCK_PLACE_102\",\"accessed_at\":\"" + date2
                 + "\"," +
                 "\"restaurant\":{\"id\":\"MOCK_PLACE_102\",\"name\":\"Restaurante Dos\",\"rating\":4.0,\"user_ratings_total\":50,\"types\":[\"restaurant\"],\"address\":\"Avenida Imaginaria 742\",\"main_photo\":null,\"summary\":\"Agradable\",\"open_now\":false}}"
                 +
@@ -62,7 +62,7 @@ class TestHistoryView extends BaseLoggedClass {
 
     private String getSingleMockEntryJson(String date) {
         return "[" +
-                "{\"id\":1,\"user_id\":\"uid\",\"place_id\":\"MOCK_PLACE_101\",\"fecha_acceso\":\"" + date
+                "{\"id\":1,\"user_id\":\"uid\",\"place_id\":\"MOCK_PLACE_101\",\"accessed_at\":\"" + date
                 + "\"," +
                 "\"restaurant\":{\"id\":\"MOCK_PLACE_101\",\"name\":\"Restaurante Uno\",\"rating\":4.5,\"user_ratings_total\":100,\"types\":[\"restaurant\"],\"address\":\"Calle Ficticia 123\",\"main_photo\":null,\"summary\":\"Excelente\",\"open_now\":true}}"
                 +

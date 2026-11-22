@@ -4,24 +4,24 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import FavoritesPage from '../views/FavoritesPage';
 
 // ── Mock services ─────────────────────────────────────────────────────────────
-vi.mock('../models/api/favoritosService', () => ({
-    favoritosService: {
-        getListas: vi.fn(),
-        getListaDetalle: vi.fn(),
-        deleteLista: vi.fn(),
-        deleteFavorito: vi.fn(),
-        crearLista: vi.fn(),
-        updateLista: vi.fn(),
+vi.mock('../models/api/favoritesService', () => ({
+    favoritesService: {
+        getLists: vi.fn(),
+        getListDetail: vi.fn(),
+        deleteList: vi.fn(),
+        deleteFavorite: vi.fn(),
+        createList: vi.fn(),
+        updateList: vi.fn(),
     },
 }));
 
-vi.mock('../models/api/historialService', () => ({
-    historialService: {
-        addToHistorial: vi.fn(),
+vi.mock('../models/api/historyService', () => ({
+    historyService: {
+        addToHistory: vi.fn(),
     },
 }));
 
-import { favoritosService } from '../models/api/favoritosService';
+import { favoritesService } from '../models/api/favoritesService';
 
 // Mock useNavigate
 const mockNavigate = vi.fn();
@@ -36,16 +36,16 @@ vi.mock('react-router-dom', async (importOriginal) => {
 // Mock useNotification
 const mockShowNotification = vi.fn();
 const mockShowConfirm = vi.fn();
-vi.mock('../components/NotificationSystem', () => ({
+vi.mock('../components/useNotification', () => ({
     useNotification: () => ({
         showNotification: mockShowNotification,
         showConfirm: mockShowConfirm,
     }),
 }));
 
-const mockListas = [
-    { id: 1, nombre: 'Favoritos', icono: 'Heart' },
-    { id: 2, nombre: 'Cenas', icono: 'Star' }
+const mockLists = [
+    { id: 1, name: 'Favoritos', icon: 'Heart' },
+    { id: 2, name: 'Cenas', icon: 'Star' }
 ];
 
 const renderFavoritesPage = () =>
@@ -60,25 +60,25 @@ describe('FavoritesPage', () => {
         vi.clearAllMocks();
     });
 
-    it('debe mostrar el estado de carga inicialmente', async () => {
-        (favoritosService.getListas as any).mockReturnValue(new Promise(() => {}));
+    it('should show the loading state initially', async () => {
+        (favoritesService.getLists as any).mockReturnValue(new Promise(() => {}));
         renderFavoritesPage();
         expect(await screen.findByText(/Cargando tus listas/i)).toBeInTheDocument();
     });
 
-    it('debe mostrar las listas de favoritos cuando se cargan', async () => {
-        (favoritosService.getListas as any).mockResolvedValue(mockListas);
+    it('should show the favorites lists when loaded', async () => {
+        (favoritesService.getLists as any).mockResolvedValue(mockLists);
 
         renderFavoritesPage();
 
         await waitFor(() => expect(screen.getByText('Favoritos')).toBeInTheDocument());
         expect(screen.getByText('Cenas')).toBeInTheDocument();
-        // Muestra el contador de listas
+        // Shows the list counter
         expect(screen.getByText('2 listas')).toBeInTheDocument();
     });
 
-    it('debe mostrar mensaje vacío cuando no hay listas', async () => {
-        (favoritosService.getListas as any).mockResolvedValue([]);
+    it('should show an empty message when there are no lists', async () => {
+        (favoritesService.getLists as any).mockResolvedValue([]);
 
         renderFavoritesPage();
 
@@ -87,34 +87,34 @@ describe('FavoritesPage', () => {
         });
     });
 
-    it('debe eliminar una lista tras confirmar desde el menú contextual', async () => {
-        (favoritosService.getListas as any).mockResolvedValue(mockListas);
-        (favoritosService.deleteLista as any).mockResolvedValue({});
+    it('should delete a list after confirming from the context menu', async () => {
+        (favoritesService.getLists as any).mockResolvedValue(mockLists);
+        (favoritesService.deleteList as any).mockResolvedValue({});
         mockShowConfirm.mockResolvedValue(true);
 
         renderFavoritesPage();
 
         await waitFor(() => expect(screen.getByText('Cenas')).toBeInTheDocument());
         
-        // El componente tiene un ListMenu con MoreVertical en cada lista
-        // Buscamos los botones MoreVertical (sin aria-label, con MoreVertical svg)
+        // The component has a ListMenu with MoreVertical on each list
+        // Look for the MoreVertical buttons (no aria-label, with MoreVertical svg)
         const allButtons = screen.getAllByRole('button');
         const moreBtn = allButtons.find(btn => btn.querySelector('.lucide-more-vertical'));
 
         if (moreBtn) {
             fireEvent.click(moreBtn);
             
-            // El menú muestra "Eliminar lista"
+            // The menu shows "Eliminar lista"
             const deleteListBtn = await screen.findByText(/Eliminar lista/i);
             fireEvent.click(deleteListBtn);
 
             await waitFor(() => {
                 expect(mockShowConfirm).toHaveBeenCalled();
-                expect(favoritosService.deleteLista).toHaveBeenCalled();
+                expect(favoritesService.deleteList).toHaveBeenCalled();
             });
         } else {
-            // Si no encontramos el botón, al menos verificamos que el servicio está disponible
-            expect(favoritosService.deleteLista).toBeDefined();
+            // If the button is not found, at least verify the service is available
+            expect(favoritesService.deleteList).toBeDefined();
         }
     });
 });
