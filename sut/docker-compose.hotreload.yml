@@ -1,6 +1,6 @@
 # Development override — hot reload, source volumes, exposed ports.
-# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml -f docker-compose.hotreload.yml up
-#        (layered on docker-compose.dev.yml, so it keeps the emulator and the mock).
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.override.yml -f docker-compose.hotreload.yml up
+#        (layered on docker-compose.dev.override.yml, so it keeps the emulator and the mock).
 #        or via the deploy scripts with --dev flag.
 
 services:

@@ -12,16 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-/**
- * Validates the save-for-later endpoints:
- * <ul>
- *   <li>POST   /api/mas-tarde              — add restaurant (HTTP 201)</li>
- *   <li>GET    /api/mas-tarde              — list saved entries (HTTP 200)</li>
- *   <li>DELETE /api/mas-tarde/{entry_id}   — remove entry (HTTP 204)</li>
- * </ul>
- * Each test uses a unique fake place_id to avoid state interference between
- * tests in the same class.
- */
+/** API tests for the save-for-later endpoints (/api/mas-tarde): POST 201, GET 200, DELETE 204. */
 class TestApiMasTarde extends BaseApiClass {
 
     @BeforeAll

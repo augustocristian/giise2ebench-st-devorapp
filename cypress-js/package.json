@@ -6,16 +6,31 @@
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
-    "cypress:run:e2e": "cypress run --spec \"cypress/e2e/*.cy.js\"",
+    "cypress:run:e2e": "cypress run --spec \"cypress/e2e/ui/*.cy.js\"",
     "cypress:run:api": "cypress run --spec \"cypress/e2e/api/*.cy.js\"",
     "cypress:run:headed": "cypress run --headed",
     "pretest:wait": "node scripts/wait-for-sut.js",
     "test": "npm run pretest:wait && npm run cypress:run",
     "test:e2e": "npm run pretest:wait && npm run cypress:run:e2e",
-    "test:api": "npm run pretest:wait && npm run cypress:run:api"
+    "test:api": "npm run pretest:wait && npm run cypress:run:api",
+    "cypress:install": "cypress install",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@eslint/js": "10.0.1",
     "cypress": "^13.17.0",
+    "eslint": "10.14.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-cypress": "7.0.3",
+    "globals": "17.14.0",
+    "mocha-junit-reporter": "2.2.1",
+    "prettier": "3.9.10",
     "wait-on": "^7.2.0"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

@@ -19,7 +19,7 @@ const TopBar: React.FC<TopBarProps> = ({ rightSlot, leftSlot, showMenu }) => {
   const navigate = useNavigate();
 
   return (
-    <header className="topbar">
+    <header className="topbar" data-testid="topbar">
       <div className="topbar-inner">
         {/* Left Side: Back button or SideMenu */}
         <div className="topbar-side">
@@ -28,6 +28,7 @@ const TopBar: React.FC<TopBarProps> = ({ rightSlot, leftSlot, showMenu }) => {
 
         {/* Center: App Name (home link) */}
         <button
+          data-testid="topbar-home"
           className="topbar-name topbar-home-btn"
           onClick={() => navigate('/home')}
           aria-label="Ir a Inicio"

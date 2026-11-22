@@ -30,6 +30,10 @@ RUN apk add --no-cache openssl && \
     touch /var/run/nginx.pid && \
     chown -R nginx:nginx /var/run/nginx.pid /var/cache/nginx /var/log/nginx /etc/nginx/conf.d /etc/nginx/ssl
 
+# Writes /env-config.js from the container environment at start (runs before nginx)
+COPY docker/40-env-config.sh /docker-entrypoint.d/40-env-config.sh
+RUN chmod 755 /docker-entrypoint.d/40-env-config.sh
+
 USER nginx
 
 COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html

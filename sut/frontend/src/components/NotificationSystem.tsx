@@ -90,7 +90,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       {/* Toast Container */}
       <div className="toast-container">
         {notifications.map(n => (
-          <div key={n.id} className={`toast ${n.type} ${n.removing ? 'removing' : ''}`}>
+          <div key={n.id} data-testid={`toast-${n.type}`} className={`toast ${n.type} ${n.removing ? 'removing' : ''}`}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
                 {n.type === 'success' && <CheckCircle size={22} className="text-success" />}
                 {n.type === 'error' && <AlertCircle size={22} className="text-error" />}
@@ -107,7 +107,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
 
       {/* Confirm Modal */}
       {confirm.open && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
+        <div className="modal-overlay" role="dialog" aria-modal="true" data-testid="confirm-modal">
           <button
             className="modal-overlay-backdrop"
             onClick={() => handleConfirm(false)}
@@ -120,10 +120,11 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
               <div className="modal-text">{confirm.message}</div>
             </div>
             <div className="modal-actions">
-              <button className="modal-btn modal-btn-cancel" onClick={() => handleConfirm(false)}>
+              <button data-testid="confirm-cancel" className="modal-btn modal-btn-cancel" onClick={() => handleConfirm(false)}>
                 Cancelar
               </button>
               <button 
+                data-testid="confirm-accept"
                 className={`modal-btn modal-btn-confirm ${confirm.isDanger ? 'danger' : ''}`} 
                 onClick={() => handleConfirm(true)}
               >

@@ -14,6 +14,7 @@ import TopBar from '../components/TopBar';
 import RestaurantCompactCard from '../components/RestaurantCompactCard';
 import RestaurantDetailView from '../components/RestaurantDetailView';
 import { useNotification } from '../components/NotificationSystem';
+import { env } from '../config/env';
 
 /* ─── RestaurantReviews Component ───────────────── */
 interface ReviewStarsRowProps {
@@ -322,7 +323,7 @@ const HomePage: React.FC = () => {
           try {
             const { latitude: lat, longitude: lng } = pos.coords;
             const res = await fetch(
-              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${import.meta.env.VITE_GOOGLE_API_KEY}&language=es`
+              `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${env.googleApiKey}&language=es`
             );
             const raw = await res.json();
             const loc = raw.results?.[0]?.formatted_address ?? `${lat},${lng}`;

@@ -24,7 +24,6 @@ COPY --chown=appuser:appuser app/ ./app/
 COPY --chown=appuser:appuser alembic/ ./alembic/
 COPY --chown=appuser:appuser alembic.ini ./alembic.ini
 COPY --chown=appuser:appuser entrypoint.sh ./entrypoint.sh
-COPY --chown=appuser:appuser pyproject.toml firebase-service-account.jso[n]* ./
 
 RUN poetry install --without dev && \
     dos2unix entrypoint.sh && chmod +x entrypoint.sh

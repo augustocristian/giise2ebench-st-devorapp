@@ -12,27 +12,12 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-/**
- * API Base-Choice tests for the favorites module.
- *
- * <p>Adapts the favorites scenarios from {@code favorites.spec.ts} (Playwright)
- * to pure REST assertions using {@link BaseApiClass}.
- *
- * <p>Cases covered:
- * <ul>
- *   <li>BASE   — create list, add several restaurants, GET returns all.</li>
- *   <li>Caso 2 — GET empty list returns empty restaurantes array.</li>
- *   <li>Caso 3 — GET list with 1 restaurant returns array of size 1.</li>
- *   <li>Caso 4 — GET all lists returns the expected count.</li>
- *   <li>Caso 5 — DELETE restaurant removes it from the list detail.</li>
- *   <li>Caso 6 — DELETE list removes it from the user's collection.</li>
- * </ul>
- */
+/** API Base-Choice tests for the favorites module (see @DisplayName for scenario ids). */
 class TestApiFavoritosBC extends BaseApiClass {
 
-    private static final String PLACE_A = "ChIJN1t_tDeuEmsRUsoyG83frY4";
-    private static final String PLACE_B = "ChIJdd4hrwug2EcRmSrV3Vo6llI";
-    private static final String PLACE_C = "ChIJ2eUgeAK6j4ARbn5u_wAGqWA";
+    private static final String PLACE_A = "MOCK_PLACE_101";
+    private static final String PLACE_B = "MOCK_PLACE_102";
+    private static final String PLACE_C = "MOCK_PLACE_103";
 
     private int listaId;
 
@@ -52,11 +37,9 @@ class TestApiFavoritosBC extends BaseApiClass {
         deleteTestUser();
     }
 
-    // ── BASE: varias listas + varios restaurantes ─────────────────────────────
-
     @Test
     @DisplayName("BASE — adding 3 restaurants to a list returns all 3 in the detail endpoint")
-    void testBase_VariosRestaurantes() throws IOException {
+    void testBase_SeveralRestaurants() throws IOException {
         post(favoritosUrl("/listas/" + listaId), favoritoPayload(PLACE_A));
         post(favoritosUrl("/listas/" + listaId), favoritoPayload(PLACE_B));
         post(favoritosUrl("/listas/" + listaId), favoritoPayload(PLACE_C));
@@ -68,11 +51,9 @@ class TestApiFavoritosBC extends BaseApiClass {
                 "After adding 3 restaurants the detail must return exactly 3");
     }
 
-    // ── Caso 2: lista vacía → restaurantes array vacío ────────────────────────
-
     @Test
-    @DisplayName("Caso 2 — a new list has an empty restaurantes array")
-    void testCaso2_ListaVacia() throws IOException {
+    @DisplayName("Case 2 — a new list has an empty restaurantes array")
+    void testCase2_EmptyList() throws IOException {
         JsonObject detail = getJsonObject(favoritosUrl("/listas/" + listaId));
         JsonArray restaurantes = detail.getAsJsonArray("restaurantes");
 
@@ -80,11 +61,9 @@ class TestApiFavoritosBC extends BaseApiClass {
                 "A brand-new list must have 0 restaurants");
     }
 
-    // ── Caso 3: lista con 1 restaurante ──────────────────────────────────────
-
     @Test
-    @DisplayName("Caso 3 — adding 1 restaurant returns a restaurantes array of size 1")
-    void testCaso3_UnRestaurante() throws IOException {
+    @DisplayName("Case 3 — adding 1 restaurant returns a restaurantes array of size 1")
+    void testCase3_OneRestaurant() throws IOException {
         post(favoritosUrl("/listas/" + listaId), favoritoPayload(PLACE_A));
 
         JsonObject detail = getJsonObject(favoritosUrl("/listas/" + listaId));
@@ -97,11 +76,9 @@ class TestApiFavoritosBC extends BaseApiClass {
                 "The place_id must match the added restaurant");
     }
 
-    // ── Caso 4: GET /api/favoritos/listas devuelve las listas del usuario ─────
-
     @Test
-    @DisplayName("Caso 4 — GET /api/favoritos/listas returns a non-empty array with the created list")
-    void testCaso4_GetListas() throws IOException {
+    @DisplayName("Case 4 — GET /api/favoritos/listas returns a non-empty array with the created list")
+    void testCase4_GetLists() throws IOException {
         JsonArray listas = getJsonArray(favoritosUrl("/listas"));
 
         Assertions.assertFalse(listas.isEmpty(),
@@ -117,11 +94,9 @@ class TestApiFavoritosBC extends BaseApiClass {
                 "The created list id=" + listaId + " must appear in GET /api/favoritos/listas");
     }
 
-    // ── Caso 5: eliminar un restaurante lo quita del detalle ─────────────────
-
     @Test
-    @DisplayName("Caso 5 — deleting a restaurant removes it from the list detail")
-    void testCaso5_EliminarRestaurante() throws IOException {
+    @DisplayName("Case 5 — deleting a restaurant removes it from the list detail")
+    void testCase5_DeleteRestaurant() throws IOException {
         int favIdA = addFavorito(listaId, PLACE_A);
         post(favoritosUrl("/listas/" + listaId), favoritoPayload(PLACE_B));
 
@@ -140,11 +115,9 @@ class TestApiFavoritosBC extends BaseApiClass {
         );
     }
 
-    // ── Caso 6: eliminar lista la quita de la colección ──────────────────────
-
     @Test
-    @DisplayName("Caso 6 — deleting a list removes it from GET /api/favoritos/listas")
-    void testCaso6_EliminarLista() throws IOException {
+    @DisplayName("Case 6 — deleting a list removes it from GET /api/favoritos/listas")
+    void testCase6_DeleteList() throws IOException {
         int status = delete(favoritosUrl("/listas/" + listaId));
         Assertions.assertEquals(204, status, "DELETE lista must return HTTP 204");
 

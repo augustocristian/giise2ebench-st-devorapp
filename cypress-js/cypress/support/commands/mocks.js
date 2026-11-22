@@ -42,51 +42,17 @@ export function installGoogleAutocompleteMock(win) {
   });
 }
 
-// Convenience wrapper: visit a URL with the Autocomplete mock pre-installed.
-Cypress.Commands.add("visitWithAutocompleteMock", (url) => {
-  return cy.visit(url, { onBeforeLoad: installGoogleAutocompleteMock });
-});
-
-// Waits for the mock instance to register a 'place_changed' listener, then
-// fires it - mirrors Java's WebDriverWait polling loop via Cypress's
-// built-in retry-until `.should()`.
+// Waits until the component registered its 'place_changed' listener, then fires it.
 Cypress.Commands.add("triggerAutocompletePlaceChanged", () => {
   cy.window({ log: false })
     .should((win) => {
-      expect(win.mockAutocompleteInstance && win.mockAutocompleteInstance.listeners && win.mockAutocompleteInstance.listeners.place_changed).to.exist;
+      expect(
+        win.mockAutocompleteInstance &&
+          win.mockAutocompleteInstance.listeners &&
+          win.mockAutocompleteInstance.listeners.place_changed,
+      ).to.exist;
     })
     .then((win) => {
       win.mockAutocompleteInstance.listeners.place_changed.forEach((cb) => cb());
     });
-});
-
-// Installs a mock Google Identity Services SDK (window.google.accounts.oauth2)
-// so the "Sign in with Google" button can be exercised without hitting the
-// real Google popup flow. Direct port of login.spec.ts's addInitScript.
-export function installGoogleIdentityMock(win) {
-  win.google = {
-    accounts: {
-      oauth2: {
-        initTokenClient: (config) => {
-          win.mockGoogleTokenClient = config;
-          return {
-            requestAccessToken: () => {
-              if (win.mockGoogleTokenClient && win.mockGoogleTokenClient.callback) {
-                win.mockGoogleTokenClient.callback({ access_token: "fake_google_access_token" });
-              }
-            },
-          };
-        },
-      },
-    },
-  };
-}
-
-Cypress.Commands.add("visitWithGoogleIdentityMock", (url) => {
-  cy.intercept("**/gsi/client", {
-    statusCode: 200,
-    headers: { "content-type": "application/javascript" },
-    body: 'console.log("Mock Google GSI client script loaded");',
-  });
-  return cy.visit(url, { onBeforeLoad: installGoogleIdentityMock });
 });

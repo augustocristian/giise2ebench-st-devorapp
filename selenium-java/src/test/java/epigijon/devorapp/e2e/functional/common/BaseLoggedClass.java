@@ -36,19 +36,8 @@ import java.time.Duration;
 import java.util.Properties;
 
 /**
- * Base class for all DevorApp browser (Selenium) tests.
- *
- * <p>Manages two concerns:
- * <ol>
- *   <li><b>Browser lifecycle</b> — initialises the Selema/Chrome driver once per class
- *       and hands a fresh {@link WebDriver} + {@link Waiter} to each test method.</li>
- *   <li><b>Test-user lifecycle</b> — provides {@link #setupTestUser} and
- *       {@link #tearDownTestUser} so every subclass creates and deletes a real Firebase
- *       user with a single line, without duplicating HTTP-client boilerplate.</li>
- * </ol>
- *
- * <p>Tests interact with the UI exclusively through page objects in
- * {@code epigijon.devorapp.e2e.functional.pages}.
+ * Base class for browser tests: Selema/Chrome lifecycle per class, plus helpers that create and
+ * delete real test users through the API so tests do not repeat HTTP boilerplate.
  */
 @ExtendWith(LifecycleJunit5.class)
 public class BaseLoggedClass {
@@ -129,10 +118,7 @@ public class BaseLoggedClass {
         this.testUsername = classUsernames.get(this.getClass());
     }
 
-    /**
-     * Clears cookies, localStorage, sessionStorage, and synchronises deletion of
-     * all IndexedDB databases (where Firebase stores JWT tokens).
-     */
+    /** Clears cookies, web storage and IndexedDB (where Firebase keeps its tokens). */
     public void clearSession() {
         try {
             driver.get(sutUrl + "/vite.svg");
@@ -174,7 +160,7 @@ public class BaseLoggedClass {
         log.info("Finished: {}", testInfo.getDisplayName());
     }
 
-    /** Closes the shared API client. Runs after all subclass {@code @AfterAll} methods. */
+    /** Closes the shared API client after the subclass {@code @AfterAll} methods. */
     @AfterAll
     public static void tearDownAll() throws IOException {
         if (apiClient != null) {
@@ -185,10 +171,7 @@ public class BaseLoggedClass {
 
     // ── Test-user helpers ────────────────────────────────────────────────────────
 
-    /**
-     * Registers a new test user via {@code POST /api/register} and stores the
-     * credentials for later teardown.  Call from a subclass {@code @BeforeAll}.
-     */
+    /** Finds the test class that called into this base class (keys per-class user state). */
     private static Class<?> getCallingClass() {
         try {
             StackTraceElement[] st = Thread.currentThread().getStackTrace();
@@ -206,10 +189,7 @@ public class BaseLoggedClass {
         return BaseLoggedClass.class;
     }
 
-    /**
-     * Registers a new test user via {@code POST /api/register} and stores the
-     * credentials for later teardown.  Call from a subclass {@code @BeforeAll}.
-     */
+    /** Registers the class test user (POST /api/register); call from {@code @BeforeAll}. */
     protected static void setupTestUser(String username, String email, String password)
             throws IOException {
         Class<?> callingClass = getCallingClass();
@@ -235,20 +215,14 @@ public class BaseLoggedClass {
         log.info("Registered browser test user: {}", email);
     }
 
-    /**
-     * Registers a username, email, and password created during a test so that they
-     * are cleaned up automatically in {@link #tearDownTestUser()}.
-     */
+    /** Marks a user created during a test for deletion in {@link #tearDownTestUser()}. */
     protected static void registerEmailForCleanup(String email, String password) {
         Class<?> callingClass = getCallingClass();
         classRegisteredUsers.computeIfAbsent(callingClass, k -> new java.util.concurrent.CopyOnWriteArrayList<>())
                 .add(new String[]{email, password});
     }
 
-    /**
-     * Registers a new test user via {@code POST /api/register} directly via the API client
-     * without storing the credentials in the static maps (to prevent session pollution for other tests).
-     */
+    /** Registers an extra user via the API without making it the class user, and schedules its cleanup. */
     protected static void registerUserApi(String username, String email, String password)
             throws IOException {
         registerEmailForCleanup(email, password);
@@ -270,12 +244,7 @@ public class BaseLoggedClass {
         log.info("Registered API-only test user: {}", email);
     }
 
-    /**
-     * Logs in and then calls {@code DELETE /api/profile} to permanently remove
-     * the test user created by {@link #setupTestUser} as well as any extra users registered during the test.
-     * Call from a subclass {@code @AfterAll} — the parent {@code @AfterAll}
-     * ({@link #tearDownAll}) which closes the API client runs after this.
-     */
+    /** Deletes the class user and any extra users via DELETE /api/profile; call from {@code @AfterAll}. */
     protected static void tearDownTestUser() {
         Class<?> callingClass = getCallingClass();
         String email = classEmails.get(callingClass);
@@ -342,11 +311,7 @@ public class BaseLoggedClass {
         }
     }
 
-    /**
-     * POSTs a JSON body to the given absolute URL using the shared API client.
-     * The client is already authenticated if {@link #setupTestUser} was called.
-     * Returns the response body as a parsed {@link com.google.gson.JsonObject}.
-     */
+    /** POSTs JSON with the shared (authenticated) client and returns the parsed body. */
     protected com.google.gson.JsonObject apiPost(String url, String jsonBody)
             throws IOException {
         HttpPost req = new HttpPost(url);
@@ -358,11 +323,7 @@ public class BaseLoggedClass {
         }
     }
 
-    /**
-     * Logs in the test user (using {@link #testEmail} / {@link #testPassword})
-     * with the shared API client so that subsequent {@link #apiPost} / {@link #apiDelete}
-     * calls carry the JWT session cookie.
-     */
+    /** Logs the class user in on the shared client so later API calls carry the JWT cookie. */
     protected void apiLogin() throws IOException {
         String apiBase = properties.getProperty("LOCALHOST_URL", "http://localhost:8000");
         JsonObject payload = new JsonObject();
@@ -376,10 +337,7 @@ public class BaseLoggedClass {
         }
     }
 
-    /**
-     * DELETEs the given absolute URL using the shared API client.
-     * Returns the HTTP status code.
-     */
+    /** DELETEs the URL with the shared client and returns the HTTP status. */
     protected int apiDelete(String url) throws IOException {
         try (CloseableHttpResponse resp = apiClient.execute(new HttpDelete(url))) {
             int status = resp.getStatusLine().getStatusCode();
@@ -388,7 +346,7 @@ public class BaseLoggedClass {
         }
     }
 
-    /** Injects a bulletproof Google Maps Autocomplete mock into the window object. */
+    /** Injects a Google Maps Autocomplete mock into the page. */
     protected void injectAutocompleteMock() {
         ((JavascriptExecutor) driver).executeScript(
                 "const mockAutocompleteClass = class {\n" +
@@ -425,10 +383,7 @@ public class BaseLoggedClass {
         );
     }
 
-    /**
-     * Waits for the mock Autocomplete instance to be initialized and have a 'place_changed'
-     * listener, then triggers all the 'place_changed' callbacks.
-     */
+    /** Waits for the mock Autocomplete to register a place_changed listener, then fires it. */
     protected void triggerAutocompletePlaceChanged() {
         new WebDriverWait(driver, Duration.ofSeconds(10)).until(d ->
             (Boolean) ((JavascriptExecutor) d).executeScript(

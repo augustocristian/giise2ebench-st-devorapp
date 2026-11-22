@@ -1,16 +1,17 @@
 # Dev override: runs the SUT with no external accounts.
 # Firebase Auth/Firestore -> firebase-emulator, Google Places/Geocoding -> gplaces-mock.
-# No .env files or credentials needed: env_file and the credentials mount are reset
-# and the values are set here (!reset needs Docker Compose 2.24+).
+# The images are the same as in prod: only the environment below differs. No .env files or
+# credentials needed: env_file and the credentials mount are reset (!reset needs Compose 2.24+).
 #
-#   dev:       docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+#   dev:        docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up -d --build
 #   hot reload: add  -f docker-compose.hotreload.yml
-#   prod:      docker compose up -d --build   (real Firebase + Google, see README)
+#   prod:       docker compose up -d --build   (real Firebase + Google, see README)
 
 services:
 
   gplaces-mock:
     build: ./gplaces-mock
+    image: devorapp/gplaces-mock:${IMAGE_TAG:-local}
     container_name: devorapp-gplaces-mock
     ports:
       - "8002:8002"   # also host-reachable: the browser loads photos from it
@@ -19,9 +20,16 @@ services:
 
   firebase-emulator:
     build: ./firebase-emulator
+    image: devorapp/firebase-emulator:${IMAGE_TAG:-local}
     container_name: devorapp-firebase-emulator
     networks:
       - devorapp-net
+
+  frontend:
+    env_file: !reset []
+    environment:   # runtime config; without a client id the SPA renders blank
+      VITE_GOOGLE_CLIENT_ID: mock.apps.googleusercontent.com
+      VITE_GOOGLE_API_KEY: mock
 
   keras-api:
     env_file: !reset []

@@ -1,105 +1,82 @@
-# Cypress + JavaScript E2E Suite for DevorApp
+# Cypress + JavaScript E2E suite for DevorApp
 
-End-to-end (browser) and API test suite for **DevorApp**, implemented in Cypress + JavaScript. This is a port of the [`selenium-java`](../selenium-java) suite, preserving its test coverage and "Base-Choice" scenario documentation style while using idiomatic Cypress patterns (`cy.intercept()`, `cy.request()`, `cy.visit({ onBeforeLoad })`) instead of literal Java-to-JS translation.
+Browser (UI) and API tests for **DevorApp**, written with Cypress 13 and JavaScript. It covers the same scenarios as the [`selenium-java`](../selenium-java) suite.
 
 ## Prerequisites
 
-| Tool | Purpose |
-| :--- | :--- |
-| **Node.js 18+** | Run Cypress and the test suite |
-| The running SUT | Backend (`:8000`), frontend (`:80` via Docker or `:5173` native), and database |
-
-This suite does **not** start the SUT itself — start it first from the repository root:
-
-```powershell
-# Windows
-.\deploy.ps1
-```
-```bash
-# Linux / macOS
-./deploy.sh
-```
-
-Verify the backend is ready at `http://localhost:8000/health` before running tests.
+- Node.js 22 or newer (`.nvmrc` pins `22`).
+- A running SUT: frontend (`http://localhost`), backend (`http://localhost:8000`) and the Google Places mock (`http://localhost:8002`). The suite does not start it; use `deploy.ps1` / `deploy.sh` from the repository root.
 
 ## Install
 
 ```bash
 cd cypress-js
-npm install
+npm ci
+npm run cypress:install   # downloads the Cypress binary
 ```
 
 ## Configuration
 
-Base URLs are set in [`cypress.config.js`](cypress.config.js):
-- `baseUrl` — frontend, default `http://localhost`
-- `env.apiUrl` — backend, default `http://localhost:8000`
+Defaults live in [`cypress.config.js`](cypress.config.js):
 
-Override locally by copying `cypress.env.json.example` to `cypress.env.json` (gitignored), or via environment variables:
+| Setting             | Default                 | Purpose            |
+| :------------------ | :---------------------- | :----------------- |
+| `baseUrl`           | `http://localhost`      | Frontend           |
+| `env.apiUrl`        | `http://localhost:8000` | Backend API        |
+| `env.placesMockUrl` | `http://localhost:8002` | Google Places mock |
+
+Override with `cypress.env.json` (gitignored, see `cypress.env.json.example`) or environment variables:
 
 ```bash
 CYPRESS_BASE_URL=http://localhost:8080 CYPRESS_apiUrl=http://localhost:8000 npm run cypress:run
 ```
 
-This mirrors `selenium-java`'s `-DSUT_URL=...` override.
+When the `CI` environment variable is set, JUnit XML reports are written to `results/` (gitignored).
 
-## Running the tests
+## Running
 
 ```bash
-npm run cypress:open        # interactive runner
-npm run cypress:run         # full suite, headless
-npm run cypress:run:e2e     # browser specs only (cypress/e2e/*.cy.js)
-npm run cypress:run:api     # API specs only (cypress/e2e/api/*.cy.js)
-npm run cypress:run:headed  # full suite, headed browser
-npm test                    # waits for the SUT to be ready, then runs the full suite
+npm test                  # wait for the SUT, then run everything (UI + API)
+npm run test:e2e          # UI specs only (cypress/e2e/ui)
+npm run test:api          # API specs only (cypress/e2e/api)
+npm run cypress:open      # interactive runner
 ```
 
-`npm test` / `npm run test:e2e` / `npm run test:api` first run `scripts/wait-for-sut.js`, which polls the backend `/health` endpoint and the frontend `baseUrl` until both respond (or times out after 2 minutes) — Cypress has no built-in retry for a not-yet-ready SUT, unlike Selenium's implicit page-load waits.
+`test*` scripts first run `scripts/wait-for-sut.js`, which polls the backend health endpoint and the frontend until they respond (2 minute timeout).
 
 ## Structure
 
-```
-cypress-js/
-├── cypress.config.js          baseUrl, env.apiUrl, spec pattern
-├── scripts/wait-for-sut.js    pre-test readiness check
-└── cypress/
-    ├── e2e/                   8 browser specs (Page Object Model)
-    │   └── api/               7 API specs (cy.request only, no browser)
-    └── support/
-        ├── e2e.js             global beforeEach (session clearing), uncaught-exception handling
-        ├── commands/
-        │   ├── api.js         URL/payload builders, cy.apiGet/apiPost/apiPatch/apiDelete, CRUD helpers
-        │   ├── auth.js        test-user lifecycle (register/login/delete), session clearing
-        │   └── mocks.js       Google Maps Autocomplete + Google Identity Services mocks
-        └── pages/              8 Page Object classes (one per app page)
+```text
+cypress/
+  e2e/ui/                 UI specs
+  e2e/api/                API specs
+  support/
+    commands/             custom commands (users.js, testid.js, ...)
+    pages/                page objects
+    data/                 test data (users, PLACES, ...)
+    testids.js            data-testid constants
+    e2e.js                global hooks
 ```
 
-## Design notes (differences from `selenium-java`)
+## Adding a test
 
-- **No `Waiter`/`Click`/`ElementNotFoundException` equivalents.** Cypress's `cy.get()` retries automatically until an element is actionable, and failed commands produce clear errors on their own — a centralized wait/click/exception layer isn't needed.
-- **No `BasePage`.** `fill`/`click`/`isVisible` become inline `cy.get().type()/.click()` calls in each Page Object; there's no shared driver/waiter state to inject.
-- **No cross-class static user tracking.** Java's `BaseLoggedClass` needed a `ConcurrentHashMap<Class, ...>` keyed by calling class to survive JUnit 5's static `@BeforeAll`/`@AfterAll` lifecycle. Each Cypress spec file is naturally isolated, so a spec-local variable is enough.
-- **Network mocking uses `cy.intercept()`**, not a `window.fetch` monkey-patch — the idiomatic Cypress mechanism, used in `favorites.cy.js`, `history.cy.js`, and part of `recommend.cy.js`.
-- **The JWT session cookie is carried automatically** by Cypress's per-test cookie jar; no manual cookie-store wiring is needed for authenticated `cy.request()` calls.
+- Create the user with `useTestUser()` (`support/commands/users.js`); never hard-code credentials.
+- Take places from `PLACES` (`support/data/`), not literals.
+- Interact through page objects in `support/pages/`; select elements with `cy.tid(...)`, which targets `data-testid` (ids are listed in `support/testids.js`).
+- One scenario per `it`, with an English title prefixed by the short scenario id.
+- No fixed waits (`cy.wait(1000)`): wait on `cy.intercept` aliases or retry-able assertions.
+- No boolean assertions (`expect(x).to.be.true`): assert on the element or value itself (`should("be.visible")`, `should("have.text", ...)`).
 
-## Scenario coverage
+## Lint and format
 
-Each spec's header comment lists the same Base-Choice scenario IDs (`BASE`, `S2`, `S3`, …) as the corresponding Java class's Javadoc, and test cases bundle scenarios the same way the Java `@Test` methods do. See [the implementation plan](../.claude) or the `selenium-java` source for the full scenario-to-class mapping.
+```bash
+npm run lint           # ESLint (flat config, eslint-plugin-cypress)
+npm run lint:fix
+npm run format:check   # Prettier (double quotes, semicolons, width 120)
+npm run format
+```
 
-| Spec | Ported from |
-| :--- | :--- |
-| `cypress/e2e/login.cy.js` | `TestLogin.java` |
-| `cypress/e2e/register.cy.js` | `TestRegisterView.java` |
-| `cypress/e2e/favorites.cy.js` | `TestFavoritesView.java` |
-| `cypress/e2e/history.cy.js` | `TestHistoryView.java` |
-| `cypress/e2e/profile.cy.js` | `TestProfileView.java` |
-| `cypress/e2e/rating.cy.js` | `TestRatingView.java` |
-| `cypress/e2e/recommend.cy.js` | `TestRecommendView.java` |
-| `cypress/e2e/sidemenu.cy.js` | `TestSideMenu.java` |
-| `cypress/e2e/api/register.cy.js` | `TestApiRegister.java` |
-| `cypress/e2e/api/favoritos.cy.js` | `TestApiFavoritosBC.java` |
-| `cypress/e2e/api/historial.cy.js` | `TestApiHistorialBC.java` |
-| `cypress/e2e/api/mas-tarde.cy.js` | `TestApiMasTarde.java` |
-| `cypress/e2e/api/profile.cy.js` | `TestApiProfileBC.java` |
-| `cypress/e2e/api/recommend.cy.js` | `TestApiRecommendBC.java` |
-| `cypress/e2e/api/valoraciones.cy.js` | `TestApiValoracionesBC.java` |
+## Known local gotchas
+
+- **Cypress binary missing**: with npm >= 11 the Cypress postinstall is not run, so the binary is not downloaded on `npm ci`. Run `npm run cypress:install` (CI does too).
+- **VS Code terminals**: they set `ELECTRON_RUN_AS_NODE`, which makes Cypress fail with `bad option`. Run `unset ELECTRON_RUN_AS_NODE` (PowerShell: `Remove-Item Env:ELECTRON_RUN_AS_NODE`) before running Cypress.

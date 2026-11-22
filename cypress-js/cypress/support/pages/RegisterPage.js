@@ -1,138 +1,80 @@
-// Mirrors selenium-java's pages/RegisterPage.java.
-// Covers both registration steps: step 1 (email, username, password, nombre,
-// apellidos) and step 2 (location + final submit).
+import { TID } from "../testids";
+import { installGoogleAutocompleteMock } from "../commands/mocks";
+
+const R = TID.register;
+
+// Both steps: 1 = credentials and name, 2 = preferred location + submit.
 class RegisterPage {
-  static SELECTORS = {
-    form: "#register-form",
-    // Step 1
-    email: "#reg-email",
-    username: "#reg-username",
-    password: "#reg-password",
-    nombre: "#reg-nombre",
-    apellidos: "#reg-apellidos",
-    continueBtn: "#register-continue-btn",
-    // Step 2
-    gpsBtn: "#use-gps-btn",
-    ubicacion: "#reg-ubicacion",
-    submitBtn: "#register-submit-btn",
-    backBtn: "#register-back-btn",
-    // Feedback
-    errorMsg: ".message.error",
-    emailError: "#email-error",
-    usernameError: "#username-error",
-    locName: ".location-detected-name",
-  };
-
-  visit() {
-    cy.visit("/register");
-    cy.get(RegisterPage.SELECTORS.form).should("be.visible");
+  /** `withAutocompleteMock` must be set before step 2 mounts, so it is installed on page load. */
+  visit({ withAutocompleteMock = false } = {}) {
+    cy.visit("/register", withAutocompleteMock ? { onBeforeLoad: installGoogleAutocompleteMock } : {});
+    cy.tid(R.step1).should("be.visible");
     return this;
   }
 
-  // ── Step 1 actions ──────────────────────────────────────────────────────
-
-  enterEmail(email) {
-    cy.get(RegisterPage.SELECTORS.email).clear().type(email);
+  /** Fills every step 1 field; an empty string leaves the field blank. */
+  fillStep1({ email, username, password, nombre, apellidos }) {
+    cy.tid(R.email).fill(email);
+    cy.tid(R.username).fill(username);
+    cy.tid(R.password).fill(password);
+    cy.tid(R.nombre).fill(nombre);
+    cy.tid(R.apellidos).fill(apellidos);
     return this;
   }
 
-  enterUsername(username) {
-    cy.get(RegisterPage.SELECTORS.username).clear().type(username);
+  continueToStep2() {
+    cy.tid(R.continue).click();
     return this;
   }
 
-  enterPassword(password) {
-    cy.get(RegisterPage.SELECTORS.password).clear().type(password);
+  /** Types a location as free text, without picking it from the autocomplete. */
+  typeLocation(text) {
+    cy.tid(R.ubicacion).fill(text);
     return this;
   }
 
-  enterNombre(nombre) {
-    cy.get(RegisterPage.SELECTORS.nombre).clear().type(nombre);
+  /** Types a location and picks it through the mocked Google autocomplete. */
+  selectLocation(text) {
+    this.typeLocation(text);
+    cy.triggerAutocompletePlaceChanged();
     return this;
   }
 
-  enterApellidos(apellidos) {
-    cy.get(RegisterPage.SELECTORS.apellidos).clear().type(apellidos);
+  submit() {
+    cy.tid(R.submit).click();
     return this;
   }
 
-  clickContinue() {
-    cy.get(RegisterPage.SELECTORS.continueBtn).click();
+  expectOnStep(n) {
+    cy.tid(R.stepLabel).should("contain.text", `Paso ${n} de 2`);
     return this;
   }
 
-  // ── Step 2 actions ──────────────────────────────────────────────────────
-
-  clickUseGps() {
-    cy.get(RegisterPage.SELECTORS.gpsBtn).click();
+  /** Step 1 validation banner. */
+  expectStepError(text) {
+    cy.tid(R.stepError).should("be.visible").and("contain.text", text);
     return this;
   }
 
-  /** Types a location manually into the text field (without selecting from autocomplete). */
-  enterUbicacion(location) {
-    cy.get(RegisterPage.SELECTORS.ubicacion).clear().type(location);
+  /** Step 2 / backend feedback banner. */
+  expectMessageError(pattern) {
+    cy.tid(R.messageError).should("be.visible").invoke("text").should("match", pattern);
     return this;
   }
 
-  clickSubmit() {
-    cy.get(RegisterPage.SELECTORS.submitBtn).click();
+  expectEmailError(text) {
+    cy.tid(R.emailError).should("contain.text", text);
     return this;
   }
 
-  clickBack() {
-    cy.get(RegisterPage.SELECTORS.backBtn).click();
+  expectUsernameError(text) {
+    cy.tid(R.usernameError).should("contain.text", text);
     return this;
   }
 
-  waitForStep2() {
-    cy.contains("Paso 2 de 2").should("be.visible");
+  expectVerifyEmailShown() {
+    cy.tid(R.verifyTitle).should("be.visible");
     return this;
-  }
-
-  // ── State queries ────────────────────────────────────────────────────────
-
-  getErrorMessage() {
-    return cy.get("body").then(($body) => {
-      const el = $body.find(RegisterPage.SELECTORS.errorMsg);
-      return el.length ? el.first().text() : "";
-    });
-  }
-
-  getEmailError() {
-    return cy.get("body").then(($body) => {
-      const el = $body.find(RegisterPage.SELECTORS.emailError);
-      return el.length ? el.first().text() : "";
-    });
-  }
-
-  getUsernameError() {
-    return cy.get("body").then(($body) => {
-      const el = $body.find(RegisterPage.SELECTORS.usernameError);
-      return el.length ? el.first().text() : "";
-    });
-  }
-
-  isOnStep1() {
-    return cy.get("body").then(($body) => $body.text().includes("Paso 1 de 2"));
-  }
-
-  isOnStep2() {
-    return cy.get("body").then(($body) => $body.text().includes("Paso 2 de 2"));
-  }
-
-  isVerifyEmailVisible() {
-    return cy.get("body").then(($body) => $body.text().includes("Verifica tu correo"));
-  }
-
-  getDetectedLocationText() {
-    return cy.get("body").then(($body) => {
-      const el = $body.find(RegisterPage.SELECTORS.locName);
-      return el.length ? el.first().text() : "";
-    });
-  }
-
-  isLoaded() {
-    return cy.get("body").then(($body) => $body.find(RegisterPage.SELECTORS.form).length > 0);
   }
 }
 

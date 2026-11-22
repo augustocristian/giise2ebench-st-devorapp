@@ -9,14 +9,14 @@ class Settings(BaseSettings):
     FIREBASE_PROJECT_ID: str = "epi-devorapp"
     FIREBASE_API_KEY: str = ""
     FIREBASE_SERVICE_ACCOUNT_PATH: str = "firebase-service-account.json"
-    # Identity Toolkit endpoint; docker-compose.dev.yml points it at the emulator.
+    # Identity Toolkit endpoint; docker-compose.dev.override.yml points it at the emulator.
     FIREBASE_AUTH_BASE_URL: str = "https://identitytoolkit.googleapis.com/v1"
 
     # Google Maps & OAuth
     GOOGLE_API_KEY: str = ""
     GOOGLE_CLIENT_ID: str = ""
 
-    # Google Places / Geocoding endpoints; docker-compose.dev.yml points them at gplaces-mock.
+    # Google Places / Geocoding endpoints; docker-compose.dev.override.yml points them at gplaces-mock.
     GOOGLE_PLACES_BASE_URL: str = os.getenv(
         "GOOGLE_PLACES_BASE_URL", "https://places.googleapis.com/v1"
     )

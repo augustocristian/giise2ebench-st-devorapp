@@ -65,7 +65,7 @@ class SearchTextTestSuite(MockTestCase):
     def test_search_narrows_by_category_label(self):
         logger.debug("Starting the test: " + self._testMethodName)
         body = self.search("Pizzería restaurantes en Gijón").json()
-        assert [p["displayName"]["text"] for p in body["places"]] == ["Pizzería Bella Napoli"]
+        assert [p["displayName"]["text"] for p in body["places"]] == ["Pizzería Bocca Nuova"]
         logger.debug("Ending the test: " + self._testMethodName)
 
     def test_search_honours_the_field_mask(self):
@@ -95,7 +95,7 @@ class SearchTextTestSuite(MockTestCase):
         body = self.search(
             "restaurantes en Gijón", priceLevels=["PRICE_LEVEL_VERY_EXPENSIVE"]
         ).json()
-        assert [p["displayName"]["text"] for p in body["places"]] == ["Restaurante Auga"]
+        assert [p["displayName"]["text"] for p in body["places"]] == ["Restaurante Mar y Sal"]
         logger.debug("Ending the test: " + self._testMethodName)
 
     def test_unspecified_price_level_includes_places_without_a_price(self):
@@ -108,8 +108,8 @@ class SearchTextTestSuite(MockTestCase):
             priceLevels=["PRICE_LEVEL_MODERATE", "PRICE_LEVEL_UNSPECIFIED"],
         ).json()
 
-        assert "MOCK_GIJON_KEBAB_008" not in {p["id"] for p in without["places"]}
-        assert "MOCK_GIJON_KEBAB_008" in {p["id"] for p in with_unpriced["places"]}
+        assert "MOCK_PLACE_008" not in {p["id"] for p in without["places"]}
+        assert "MOCK_PLACE_008" in {p["id"] for p in with_unpriced["places"]}
         logger.debug("Ending the test: " + self._testMethodName)
 
     def test_search_filters_by_open_now(self):
@@ -147,7 +147,7 @@ class SearchTextTestSuite(MockTestCase):
         """EXCLUDED_TYPES lives in the SUT, so the mock must not pre-filter it."""
         logger.debug("Starting the test: " + self._testMethodName)
         body = self.search("Farmacia restaurantes en Gijón").json()
-        assert [p["id"] for p in body["places"]] == ["MOCK_GIJON_FARMACIA_012"]
+        assert [p["id"] for p in body["places"]] == ["MOCK_PLACE_012"]
         logger.debug("Ending the test: " + self._testMethodName)
 
 
@@ -157,18 +157,18 @@ class PlaceDetailsTestSuite(MockTestCase):
     def test_place_details_returns_the_place(self):
         logger.debug("Starting the test: " + self._testMethodName)
         response = self.client.get(
-            "/v1/places/MOCK_GIJON_SIDRERIA_001", headers=DETAILS_HEADERS
+            "/v1/places/MOCK_PLACE_001", headers=DETAILS_HEADERS
         )
         assert response.status_code == 200
         body = response.json()
-        assert body["id"] == "MOCK_GIJON_SIDRERIA_001"
-        assert body["displayName"]["text"] == "Sidrería El Llagar de Cimavilla"
+        assert body["id"] == "MOCK_PLACE_001"
+        assert body["displayName"]["text"] == "Sidrería El Manzanal"
         assert "_mock" not in body
         logger.debug("Ending the test: " + self._testMethodName)
 
     def test_details_only_fixture_is_served_by_id_but_never_searched(self):
         logger.debug("Starting the test: " + self._testMethodName)
-        place_id = "ChIJN1t_tDeuEmsRUsoyG83frY4"
+        place_id = "MOCK_PLACE_101"
         response = self.client.get(f"/v1/places/{place_id}", headers=DETAILS_HEADERS)
         assert response.status_code == 200
         assert response.json()["id"] == place_id
@@ -186,7 +186,7 @@ class PlaceDetailsTestSuite(MockTestCase):
     def test_photo_media_returns_a_png(self):
         logger.debug("Starting the test: " + self._testMethodName)
         response = self.client.get(
-            "/v1/places/MOCK_GIJON_SIDRERIA_001/photos/photo-1/media?maxHeightPx=400"
+            "/v1/places/MOCK_PLACE_001/photos/photo-1/media?maxHeightPx=400"
         )
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/png"

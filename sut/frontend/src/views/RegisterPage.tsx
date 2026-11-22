@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Autocomplete from 'react-google-autocomplete';
+import Autocomplete from '../components/GoogleAutocomplete';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Mail, User, Lock, Eye, EyeOff,
@@ -8,6 +8,7 @@ import {
 import { useRegister } from '../controllers/hooks/useRegister';
 import { authService } from '../models/api/authService';
 import TopBar from '../components/TopBar';
+import { env } from '../config/env';
 
 
 /* ─── Step progress bar ─────────────────────────────── */
@@ -61,7 +62,7 @@ const RegisterWaitingVerification: React.FC<RegisterWaitingVerificationProps> = 
       <main className="auth-screen-body">
         <div className="auth-content" style={{ alignItems: 'center', textAlign: 'center' }}>
           <div className="auth-heading">
-            <h1>Verifica tu correo</h1>
+            <h1 data-testid="register-verify-title">Verifica tu correo</h1>
             <p>
               Hemos enviado un enlace a{' '}
               <strong style={{ color: 'var(--text)' }}>{email}</strong>.
@@ -72,7 +73,7 @@ const RegisterWaitingVerification: React.FC<RegisterWaitingVerificationProps> = 
             style={{ color: 'var(--accent)', animation: 'spin 1.2s linear infinite' }} />
           <p className="text-muted text-sm">Esperando confirmación…</p>
           {message && (
-            <div className={`message ${message.type}`} role="alert">
+            <div data-testid={`register-message-${message.type}`} className={`message ${message.type}`} role="alert">
               {message.type === 'error'
                 ? <AlertCircle size={16} aria-hidden="true" />
                 : <CheckCircle2 size={16} aria-hidden="true" />}
@@ -117,7 +118,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
 }) => {
   return (
     <>
-      <div className="auth-form">
+      <div className="auth-form" data-testid="register-step1">
         {/* Email */}
         <div className="form-group">
           <label htmlFor="reg-email" className="form-label">Email</label>
@@ -125,6 +126,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             <span className="form-input-icon" aria-hidden="true"><Mail size={18} /></span>
             <input
               id="reg-email" name="email" type="email"
+              data-testid="register-email"
               className={`form-input has-icon-left${fieldErrors.email ? ' input-error' : ''}`}
               placeholder="tu@email.com"
               autoComplete="email"
@@ -134,7 +136,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             />
           </div>
           {fieldErrors.email && (
-            <p id="email-error" className="field-error" role="alert">
+            <p data-testid="register-email-error" id="email-error" className="field-error" role="alert">
               <AlertCircle size={13} aria-hidden="true" />{fieldErrors.email}
             </p>
           )}
@@ -147,6 +149,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             <span className="form-input-icon" aria-hidden="true"><User size={18} /></span>
             <input
               id="reg-username" name="username" type="text"
+              data-testid="register-username"
               className={`form-input has-icon-left${fieldErrors.username ? ' input-error' : ''}`}
               placeholder="@usuario"
               autoComplete="username"
@@ -156,7 +159,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             />
           </div>
           {fieldErrors.username && (
-            <p id="username-error" className="field-error" role="alert">
+            <p data-testid="register-username-error" id="username-error" className="field-error" role="alert">
               <AlertCircle size={13} aria-hidden="true" />{fieldErrors.username}
             </p>
           )}
@@ -169,6 +172,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             <span className="form-input-icon" aria-hidden="true"><Lock size={18} /></span>
             <input
               id="reg-password" name="password"
+              data-testid="register-password"
               type={showPassword ? 'text' : 'password'}
               className="form-input has-icon-left has-icon-right"
               placeholder="Mínimo 8 caracteres"
@@ -178,6 +182,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             />
             <button
               type="button" id="toggle-reg-password-btn"
+              data-testid="register-toggle-password"
               className="input-action-btn"
               onClick={() => setShowPassword((v: boolean) => !v)}
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -205,6 +210,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             <label htmlFor="reg-nombre" className="form-label">Nombre</label>
             <input
               id="reg-nombre" name="nombre" type="text"
+              data-testid="register-nombre"
               className="form-input"
               autoComplete="given-name"
               value={form.nombre} onChange={handleInputChange}
@@ -215,6 +221,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
             <label htmlFor="reg-apellidos" className="form-label">Apellidos</label>
             <input
               id="reg-apellidos" name="apellidos" type="text"
+              data-testid="register-apellidos"
               className="form-input"
               autoComplete="family-name"
               value={form.apellidos} onChange={handleInputChange}
@@ -225,7 +232,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
 
         {/* Step error */}
         {stepError && (
-          <div className="message error" role="alert" aria-live="polite">
+          <div data-testid="register-step-error" className="message error" role="alert" aria-live="polite">
             <AlertCircle size={16} aria-hidden="true" />
             {stepError}
           </div>
@@ -233,6 +240,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
 
         <button
           type="button" id="register-continue-btn"
+          data-testid="register-continue"
           className={`btn-primary${checkLoading ? ' loading' : ''}`}
           onClick={onContinue}
           disabled={checkLoading}
@@ -243,7 +251,7 @@ const RegisterStep1: React.FC<RegisterStep1Props> = ({
 
       <p className="auth-footer" style={{ marginTop: '1.5rem' }}>
         ¿Ya tienes cuenta?{' '}
-        <Link to="/login" id="go-login-link">Inicia sesión</Link>
+        <Link data-testid="register-login-link" to="/login" id="go-login-link">Inicia sesión</Link>
       </p>
     </>
   );
@@ -276,7 +284,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
   onBack,
 }) => {
   return (
-    <form id="register-form" onSubmit={onSubmit} className="auth-form" noValidate>
+    <form data-testid="register-form" id="register-form" onSubmit={onSubmit} className="auth-form" noValidate>
       {/* Info card */}
       <div className="location-info-card">
         <span className="location-info-icon" aria-hidden="true">
@@ -298,7 +306,8 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
             <span className="form-input-icon" aria-hidden="true"><Search size={18} /></span>
             <Autocomplete
               id="reg-ubicacion"
-              apiKey={import.meta.env.VITE_GOOGLE_API_KEY}
+              data-testid="register-ubicacion"
+              apiKey={env.googleApiKey}
               onChange={() => {
                 setFieldValue('ubicacion', '');
                 setGpsLabel(null);
@@ -318,6 +327,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
 
           <button
             type="button" id="use-gps-btn"
+            data-testid="register-gps"
             className={`btn-gps${gpsLoading ? ' loading' : ''}`}
             onClick={onUseGPS}
             disabled={gpsLoading}
@@ -337,7 +347,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
         <div className="location-detected" role="status" aria-live="polite">
           <span className="location-detected-icon" aria-hidden="true"><MapPin size={16} /></span>
           <div className="location-detected-text">
-            <span className="location-detected-name">{gpsLabel}</span>
+            <span data-testid="register-location-name" className="location-detected-name">{gpsLabel}</span>
             <span className="location-detected-sub">Ubicación detectada automáticamente</span>
           </div>
           <button
@@ -353,7 +363,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
 
       {/* API error */}
       {message && (
-        <div className={`message ${message.type}`} role="alert" aria-live="polite">
+        <div data-testid={`register-message-${message.type}`} className={`message ${message.type}`} role="alert" aria-live="polite">
           {message.type === 'error'
             ? <AlertCircle size={16} aria-hidden="true" />
             : <CheckCircle2 size={16} aria-hidden="true" />}
@@ -363,6 +373,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
 
       <button
         type="submit" id="register-submit-btn"
+        data-testid="register-submit"
         className={`btn-primary${loading ? ' loading' : ''}`}
         disabled={loading}
       >
@@ -371,6 +382,7 @@ const RegisterStep2: React.FC<RegisterStep2Props> = ({
 
       <button
         type="button" id="register-back-btn"
+        data-testid="register-back"
         className="btn-back"
         onClick={onBack}
         style={{ alignSelf: 'center' }}
@@ -450,7 +462,7 @@ const RegisterPage: React.FC = () => {
         try {
           const { latitude, longitude } = pos.coords;
           const res = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${import.meta.env.VITE_GOOGLE_API_KEY}&language=es`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${env.googleApiKey}&language=es`
           );
           const data = await res.json();
           if (data.results?.[0]) {
@@ -500,7 +512,7 @@ const RegisterPage: React.FC = () => {
           {/* ── Header ── */}
           <div className="auth-heading">
             <h1>Crear cuenta</h1>
-            <p>
+            <p data-testid="register-step-label">
               {step === 1
                 ? 'Paso 1 de 2 · Datos de acceso'
                 : 'Paso 2 de 2 · Tu ubicación'}

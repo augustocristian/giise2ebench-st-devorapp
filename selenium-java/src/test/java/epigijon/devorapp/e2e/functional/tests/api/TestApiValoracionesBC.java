@@ -11,23 +11,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-/**
- * API Base-Choice tests for the ratings (valoraciones) module.
- *
- * <p>Adapts the rating scenarios from {@code rating.spec.ts} (Playwright)
- * to pure REST assertions.
- *
- * <p>Cases covered:
- * <ul>
- *   <li>BASE  — full rating (all 4 aspects + comment) is stored and retrieved correctly.</li>
- *   <li>S3    — calidad=1, precio=3 → scores match exactly.</li>
- *   <li>S4    — calidad=3, precio=1 → scores match exactly.</li>
- *   <li>S9    — higiene=1, trato=3 → scores match exactly.</li>
- *   <li>S10   — higiene=3, trato=1 → scores match exactly.</li>
- *   <li>S14   — empty comment is stored as empty string or null.</li>
- *   <li>del   — deleting a rating removes it from GET /api/valoraciones.</li>
- * </ul>
- */
+/** API Base-Choice tests for the ratings (valoraciones) module (see @DisplayName for scenario ids). */
 class TestApiValoracionesBC extends BaseApiClass {
 
     @BeforeAll
@@ -41,11 +25,9 @@ class TestApiValoracionesBC extends BaseApiClass {
         deleteTestUser();
     }
 
-    // ── BASE: valoración completa → todos los campos almacenados ─────────────
-
     @Test
     @DisplayName("BASE — full rating with all aspects at max stored and retrieved correctly")
-    void testBase_ValoracionCompleta() throws IOException {
+    void testBase_FullRating() throws IOException {
         String placeId = "bc_base_" + unique();
         JsonObject val = createValoracion(placeId, 5, 5, 5, 5,
                 "Excelente servicio y comida deliciosa");
@@ -61,11 +43,9 @@ class TestApiValoracionesBC extends BaseApiClass {
         );
     }
 
-    // ── S3: calidad=1, precio=3 ───────────────────────────────────────────────
-
     @Test
     @DisplayName("S3 — calidad=1, precio=3, higiene=5, trato=5 stored correctly")
-    void testS3_CalidadBajaPrecioMedio() throws IOException {
+    void testS3_LowQualityMidPrice() throws IOException {
         String placeId = "bc_s3_" + unique();
         JsonObject val = createValoracion(placeId, 1, 3, 5, 5, "OK");
 
@@ -77,11 +57,9 @@ class TestApiValoracionesBC extends BaseApiClass {
         );
     }
 
-    // ── S4: calidad=3, precio=1 ───────────────────────────────────────────────
-
     @Test
     @DisplayName("S4 — calidad=3, precio=1, higiene=5, trato=5 stored correctly")
-    void testS4_CalidadMedioPrecioBajo() throws IOException {
+    void testS4_MidQualityLowPrice() throws IOException {
         String placeId = "bc_s4_" + unique();
         JsonObject val = createValoracion(placeId, 3, 1, 5, 5, "OK");
 
@@ -91,11 +69,9 @@ class TestApiValoracionesBC extends BaseApiClass {
         );
     }
 
-    // ── S9: higiene=1, trato=3 ───────────────────────────────────────────────
-
     @Test
     @DisplayName("S9 — calidad=5, precio=5, higiene=1, trato=3 stored correctly")
-    void testS9_HigieneBajoTratoMedio() throws IOException {
+    void testS9_LowHygieneMidService() throws IOException {
         String placeId = "bc_s9_" + unique();
         JsonObject val = createValoracion(placeId, 5, 5, 1, 3, "Regular higiene");
 
@@ -105,11 +81,9 @@ class TestApiValoracionesBC extends BaseApiClass {
         );
     }
 
-    // ── S10: higiene=3, trato=1 ──────────────────────────────────────────────
-
     @Test
     @DisplayName("S10 — calidad=5, precio=5, higiene=3, trato=1 stored correctly")
-    void testS10_HigieneMedioTratoBajo() throws IOException {
+    void testS10_MidHygieneLowService() throws IOException {
         String placeId = "bc_s10_" + unique();
         JsonObject val = createValoracion(placeId, 5, 5, 3, 1, "Trato mejorable");
 
@@ -119,11 +93,9 @@ class TestApiValoracionesBC extends BaseApiClass {
         );
     }
 
-    // ── S14: comentario vacío aceptado ───────────────────────────────────────
-
     @Test
     @DisplayName("S14 — rating with empty comment is accepted (HTTP 201)")
-    void testS14_ComentarioVacio() throws IOException {
+    void testS14_EmptyComment() throws IOException {
         String placeId = "bc_s14_" + unique();
         int status = postStatus(valoracionesUrl(""),
                 valoracionPayload(placeId, 5, 5, 5, 5, ""));
@@ -132,11 +104,9 @@ class TestApiValoracionesBC extends BaseApiClass {
                 "A rating with an empty comment must return HTTP 201");
     }
 
-    // ── Eliminar valoración la quita de GET /api/valoraciones ────────────────
-
     @Test
     @DisplayName("Deleting a rating removes it from GET /api/valoraciones")
-    void testEliminarValoracion() throws IOException {
+    void testDeleteRating() throws IOException {
         String placeId = "bc_del_" + unique();
         createValoracion(placeId, 4, 3, 5, 4, "A delete test");
 

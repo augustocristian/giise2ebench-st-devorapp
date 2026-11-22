@@ -14,8 +14,9 @@ import { useLogin } from '../controllers/hooks/useLogin';
 import { usePasswordReset } from '../controllers/hooks/usePasswordReset';
 import TopBar from '../components/TopBar';
 import { useGoogleLogin } from '@react-oauth/google';
-import Autocomplete from 'react-google-autocomplete';
+import Autocomplete from '../components/GoogleAutocomplete';
 import { authService } from '../models/api/authService';
+import { env } from '../config/env';
 
 /* ─── Google SVG logo ─────────────────────────────── */
 const GoogleLogo: React.FC = () => (
@@ -148,6 +149,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
     <>
       <form
         id="login-form"
+        data-testid="login-form"
         onSubmit={onSubmit}
         className="auth-form"
         noValidate
@@ -164,6 +166,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             </span>
             <input
               id="identifier"
+              data-testid="login-identifier"
               type="text"
               className="form-input has-icon-left"
               placeholder="tu@email.com"
@@ -186,6 +189,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             <button
               type="button"
               id="forgot-password-btn"
+              data-testid="login-forgot"
               className="forgot-link"
               onClick={onForgotPassword}
               aria-label="Recuperar contraseña olvidada"
@@ -199,6 +203,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             </span>
             <input
               id="password"
+              data-testid="login-password"
               type={showPassword ? 'text' : 'password'}
               className="form-input has-icon-left has-icon-right"
               placeholder="••••••••"
@@ -212,6 +217,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
             <button
               type="button"
               id="toggle-password-btn"
+              data-testid="login-toggle-password"
               className="input-action-btn"
               onClick={() => setShowPassword((v) => !v)}
               aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
@@ -226,6 +232,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         <button
           type="submit"
           id="login-submit-btn"
+          data-testid="login-submit"
           className={`btn-primary${loginLoading ? ' loading' : ''}`}
           disabled={loginLoading}
         >
@@ -233,7 +240,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
         </button>
 
         {loginMessage && (
-          <div className={`message ${loginMessage.type}`} role="alert" aria-live="polite">
+          <div data-testid={`login-message-${loginMessage.type}`} className={`message ${loginMessage.type}`} role="alert" aria-live="polite">
             {loginMessage.type === 'error'
               ? <AlertCircle size={16} aria-hidden="true" />
               : <CheckCircle2 size={16} aria-hidden="true" />}
@@ -250,7 +257,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       </div>
 
       {googleError && (
-        <div className="message error" role="alert" style={{ marginBottom: '1rem' }}>
+        <div data-testid="login-google-error" className="message error" role="alert" style={{ marginBottom: '1rem' }}>
           <AlertCircle size={16} /> {googleError}
         </div>
       )}
@@ -258,6 +265,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
       <button
         type="button"
         id="google-login-btn"
+        data-testid="login-google"
         className="btn-social"
         onClick={handleGoogleLogin}
         disabled={googleLoading}
@@ -273,7 +281,7 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
       <p className="auth-footer">
         ¿No tienes cuenta?{' '}
-        <Link to="/register" id="go-register-link">
+        <Link data-testid="login-register-link" to="/register" id="go-register-link">
           Regístrate
         </Link>
       </p>
@@ -333,7 +341,7 @@ const GoogleUsernameModal: React.FC<GoogleUsernameModalProps> = ({
         <div className="form-group" style={{ marginTop: '0.75rem' }}>
           <label className="form-label" htmlFor="modal-ubicacion-input">Ubicación preferida <span style={{color:'var(--error)'}}>*</span></label>
           <Autocomplete
-            apiKey={import.meta.env.VITE_GOOGLE_API_KEY}
+            apiKey={env.googleApiKey}
             onPlaceSelected={(place) => {
               if (place?.formatted_address) {
                 setNewUbicacion(place.formatted_address);
@@ -412,7 +420,7 @@ const ServerConfigModal: React.FC<ServerConfigModalProps> = ({ isOpen, onClose }
             style={{ width: '100%' }}
           />
           <p style={{ color: 'var(--text-muted)', marginTop: '0.5rem', fontSize: '0.75rem' }}>
-            Valor por defecto: <code style={{ wordBreak: 'break-all' }}>{import.meta.env.VITE_API_URL || `${window.location.origin}/api`}</code>
+            Valor por defecto: <code style={{ wordBreak: 'break-all' }}>{env.apiUrl || `${window.location.origin}/api`}</code>
           </p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1.5rem' }}>

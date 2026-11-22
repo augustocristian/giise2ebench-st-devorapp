@@ -41,7 +41,7 @@ branch to act on.
 
 ## Dataset
 
-`gplaces_mock/data/places.json` holds 12 searchable fixture places across Gijón, Oviedo and
+`gplaces_mock/data/places.json` holds 13 searchable fixture places across Gijón, Oviedo and
 Avilés, chosen to cover the equivalence classes the Base-Choice suites need:
 
 - every `PRICE_LEVEL_*` value, plus one place with **no** price at all
@@ -49,8 +49,8 @@ Avilés, chosen to cover the equivalence classes the Base-Choice suites need:
 - open and closed places, for the `openNow` filter;
 - one place with no phone, no website and no photos, for the optional-field paths;
 - one pharmacy, which the backend must drop.
-- three `details_only` places (`_mock.details_only`) carrying the real Google IDs the
-  Selenium API suites hard-code for favourites and history. They answer
+- three `details_only` places (`_mock.details_only`) with the anonymised IDs
+  (`MOCK_PLACE_101`–`103`) that the Selenium and Cypress suites hard-code for favourites and history. They answer
   `GET /v1/places/{id}` but never appear in a search, so result counts are unaffected.
 
 Geocoding knows the three Asturian cities in the dataset plus a handful of other
@@ -77,12 +77,12 @@ curl -X PUT http://localhost:8002/__admin/behaviour \
 
 ## Running it
 
-Within the E2E stack, `docker-compose.dev.yml` starts it and repoints the
+Within the E2E stack, `docker-compose.dev.override.yml` starts it and repoints the
 backend, so nothing else is needed:
 
 ```bash
 cd sut
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up -d
 ```
 
 That sets three backend variables, all of which default to the real Google

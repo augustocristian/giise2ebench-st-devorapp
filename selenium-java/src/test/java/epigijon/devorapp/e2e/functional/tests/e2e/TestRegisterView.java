@@ -9,17 +9,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
-/**
- * Browser tests for the DevorApp registration flow.
- *
- * <p>Base-Choice coverage:
- * <ul>
- *   <li>BASE — successful registration with valid 9-char password (S7 happy path).</li>
- *   <li>S2–S10 — step-1 field validations (email, username, nombre, apellidos, password).</li>
- *   <li>S11–S16 — step-2 validations (location required, backend password policy: no-letter, no-number)
- *       plus successful registration with a 16-character password.</li>
- * </ul>
- */
+/** Browser tests for the registration flow (BASE, S2-S16). */
 class TestRegisterView extends BaseLoggedClass {
 
     private static final String BASE_PASSWORD  = "Segura123";
@@ -53,11 +43,11 @@ class TestRegisterView extends BaseLoggedClass {
         return reg.getErrorMessage();
     }
 
-    // ── 1. Registro Exitoso - Caso BASE (BASE) ─────────────────────────────────────
+    // BASE
 
     @Test
-    @DisplayName("debe registrarse correctamente con datos válidos y redirigir a verifica correo (BASE)")
-    void testRegistroExitosoBase() throws Exception {
+    @DisplayName("Registers with valid data and shows the verify-email screen (BASE)")
+    void testSuccessfulRegistrationBase() throws Exception {
         driver.get(sutUrl + "/register");
         RegisterPage reg = new RegisterPage(driver, waiter);
 
@@ -70,7 +60,7 @@ class TestRegisterView extends BaseLoggedClass {
                 email,
                 "regbase" + (ts % 100000),
                 password, BASE_NOMBRE, BASE_APELLIDOS);
-        injectAutocompleteMock(); // inject BEFORE step 2 mounts so the component finds window.google immediately
+        injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
 
         Assertions.assertTrue(reg.isOnStep2(), "Must advance to step 2");
@@ -86,20 +76,16 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(reg.isVerifyEmailVisible(), "Verification screen must be shown");
     }
 
-    // ── 2. Validaciones en Paso 1 (S2–S10) ───────────────────────────────────────────
-    //    Condensa: correo vacío (S4), correo inválido (S2), correo en uso (S3),
-    //              username vacío (S5), username en uso (S6),
-    //              nombre vacío (S7), apellidos vacíos (S8),
-    //              contraseña vacía (S9), contraseña corta (S10).
+    // S2-S10: step 1 validations
 
     @Test
-    @DisplayName("debe validar todos los campos obligatorios en el paso 1 (S2–S10)")
-    void testValidacionesPaso1() throws Exception {
+    @DisplayName("Validates all required fields in step 1 (S2-S10)")
+    void testStep1Validations() throws Exception {
         long ts = System.currentTimeMillis();
         String validEmail    = "valid" + ts + "@devorapp.test";
         String validUsername = "valid" + (ts % 100000);
 
-        // S4: Correo vacío
+        // S4: empty email
         driver.get(sutUrl + "/register");
         RegisterPage reg = new RegisterPage(driver, waiter);
         fillStep1(reg, "", validUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
@@ -109,7 +95,7 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(errS4.contains("email") ||
                               errS4.contains("obligatorio"), "S4: email error");
 
-        // S2: Correo inválido
+        // S2: invalid email
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, "correosinformato", validUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
@@ -119,7 +105,7 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(errS2.contains("email") ||
                               errS2.contains("válido"), "S2: invalid email error");
 
-        // S3: Correo en uso
+        // S3: email already in use
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, testEmail, validUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
@@ -129,7 +115,7 @@ class TestRegisterView extends BaseLoggedClass {
                 .until(d -> !finalReg1.getEmailError().isEmpty());
         Assertions.assertTrue(reg.getEmailError().contains("registrado"), "S3: email in use error");
 
-        // S5: Nombre de usuario vacío
+        // S5: empty username
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, validEmail, "", BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
@@ -139,7 +125,7 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(errS5.contains("usuario") ||
                               errS5.contains("obligatorio"), "S5: username error");
 
-        // S6: Nombre de usuario en uso
+        // S6: username already in use
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, validEmail, testUsername, BASE_PASSWORD, BASE_NOMBRE, BASE_APELLIDOS);
@@ -149,7 +135,7 @@ class TestRegisterView extends BaseLoggedClass {
                 .until(d -> !finalReg2.getUsernameError().isEmpty());
         Assertions.assertTrue(reg.getUsernameError().contains("uso"), "S6: username in use error");
 
-        // S7: Nombre vacío
+        // S7: empty nombre
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, validEmail, validUsername, BASE_PASSWORD, "", BASE_APELLIDOS);
@@ -158,17 +144,17 @@ class TestRegisterView extends BaseLoggedClass {
         String errS7 = getErrorMessageWithWait(reg);
         Assertions.assertTrue(errS7.contains("nombre"), "S7: nombre error");
 
-        // S8: Apellidos vacíos
+        // S8: empty apellidos
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, validEmail, validUsername, BASE_PASSWORD, BASE_NOMBRE, "");
         reg.clickContinue();
         Assertions.assertTrue(reg.isOnStep1(), "S8: must stay on step 1");
-        // The UI may say "apellidos", "obligatorio", "requerido", etc. — just check any error is shown
+        // Wording varies; only require that some error is shown
         String errS8 = getErrorMessageWithWait(reg);
         Assertions.assertFalse(errS8.isEmpty(), "S8: apellidos error must be shown");
 
-        // S9: Contraseña vacía
+        // S9: empty password
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, validEmail, validUsername, "", BASE_NOMBRE, BASE_APELLIDOS);
@@ -178,7 +164,7 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(errS9.contains("contraseña") ||
                               errS9.contains("obligatoria"), "S9: password empty error");
 
-        // S10: Contraseña corta (6 chars)
+        // S10: short password (6 chars)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, validEmail, validUsername, "Seg123", BASE_NOMBRE, BASE_APELLIDOS);
@@ -189,17 +175,14 @@ class TestRegisterView extends BaseLoggedClass {
                               errS10.contains("caracteres"), "S10: short password error");
     }
 
-    // ── 3. Validaciones de Paso 2 y Registro con Contraseña Larga (S11–S16) ──────────
-    //    Condensa: ubicación vacía (S16), ubicación manual (S15),
-    //              contraseña sin letras backend (S13), sin números backend (S12),
-    //              registro exitoso con contraseña larga (S11).
+    // S11-S16: step 2 validations and long password
 
     @Test
-    @DisplayName("debe validar ubicación, política de contraseña backend (S12, S13, S15, S16) y registro exitoso con contraseña larga (S11)")
-    void testValidacionesPaso2YPasswordLarga() throws Exception {
+    @DisplayName("Validates location (S15, S16), backend password policy (S12, S13) and registers with a long password (S11)")
+    void testStep2ValidationsAndLongPassword() throws Exception {
         long ts = System.currentTimeMillis();
 
-        // S16: Ubicación vacía
+        // S16: empty location
         driver.get(sutUrl + "/register");
         RegisterPage reg = new RegisterPage(driver, waiter);
         fillStep1(reg, "regloc1" + ts + "@devorapp.test", "reglocone" + (ts % 10000), "12345678", BASE_NOMBRE, BASE_APELLIDOS);
@@ -210,7 +193,7 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(errS16.contains("ubicación") ||
                               errS16.contains("lista"), "S16: location empty error");
 
-        // S15: Ubicación manual no seleccionada
+        // S15: manually typed location, not picked from the list
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, "regloc2" + ts + "@devorapp.test", "regloctwo" + (ts % 10000), "12345678", BASE_NOMBRE, BASE_APELLIDOS);
@@ -222,11 +205,11 @@ class TestRegisterView extends BaseLoggedClass {
         Assertions.assertTrue(errS15.contains("ubicación") ||
                               errS15.contains("lista"), "S15: manual location error");
 
-        // S13: Contraseña sin letras (error del backend)
+        // S13: password without letters (backend error)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, "regloc3" + ts + "@devorapp.test", "reglocthree" + (ts % 10000), "12345678", BASE_NOMBRE, BASE_APELLIDOS);
-        injectAutocompleteMock(); // inject BEFORE step 2 mounts so the component finds window.google immediately
+        injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
         reg.enterUbicacion("Gijón, España");
         triggerAutocompletePlaceChanged();
@@ -237,11 +220,11 @@ class TestRegisterView extends BaseLoggedClass {
                               errS13.toLowerCase().contains("password"),
                 "S13: no-letter password backend error");
 
-        // S12: Contraseña sin números (error del backend)
+        // S12: password without numbers (backend error)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         fillStep1(reg, "regloc4" + ts + "@devorapp.test", "reglocfour" + (ts % 10000), "PasswordNoNum", BASE_NOMBRE, BASE_APELLIDOS);
-        injectAutocompleteMock(); // inject BEFORE step 2 mounts
+        injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
         reg.enterUbicacion("Gijón, España");
         triggerAutocompletePlaceChanged();
@@ -253,7 +236,7 @@ class TestRegisterView extends BaseLoggedClass {
                               errS12.toLowerCase().contains("password"),
                 "S12: no-number password backend error");
 
-        // S11: Registro exitoso con contraseña larga (16 chars)
+        // S11: successful registration with a long password (16 chars)
         driver.get(sutUrl + "/register");
         reg = new RegisterPage(driver, waiter);
         long ts2 = System.currentTimeMillis();
@@ -265,7 +248,7 @@ class TestRegisterView extends BaseLoggedClass {
                 emailS11,
                 "reglong" + (ts2 % 100000),
                 passwordS11, BASE_NOMBRE, BASE_APELLIDOS);
-        injectAutocompleteMock(); // inject BEFORE step 2 mounts so the component finds window.google immediately
+        injectAutocompleteMock(); // before step 2 mounts so the component finds window.google
         reg.clickContinue().waitForStep2();
 
         Assertions.assertTrue(reg.isOnStep2(), "S11: must advance to step 2");

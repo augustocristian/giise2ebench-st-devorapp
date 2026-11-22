@@ -99,6 +99,7 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ isRated, onRate, onFavorite, onRech
     return (
         <div ref={ref} style={{ position: 'relative' }}>
             <button
+                data-testid="history-card-menu"
                 onClick={e => { e.stopPropagation(); setOpen(o => !o); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: '6px' }}
             >
@@ -113,19 +114,19 @@ const ItemMenu: React.FC<ItemMenuProps> = ({ isRated, onRate, onFavorite, onRech
                     overflow: 'hidden',
                     animation: 'fadeSlideIn 0.1s ease'
                 }}>
-                    <button onClick={() => { setOpen(false); onDetails(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.85rem' }}>
+                    <button data-testid="history-menu-details" onClick={() => { setOpen(false); onDetails(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.85rem' }}>
                         <Map size={14} /> Ver detalles
                     </button>
-                    <button onClick={() => { setOpen(false); onRechoose(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-light)', fontSize: '0.85rem' }}>
+                    <button data-testid="history-menu-rechoose" onClick={() => { setOpen(false); onRechoose(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--accent-light)', fontSize: '0.85rem' }}>
                         <UtensilsCrossed size={14} /> Volver a elegir
                     </button>
-                    <button onClick={() => { setOpen(false); onFavorite(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.85rem' }}>
+                    <button data-testid="history-menu-favorite" onClick={() => { setOpen(false); onFavorite(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text)', fontSize: '0.85rem' }}>
                         <Heart size={14} /> Añadir a favoritos
                     </button>
-                    <button onClick={() => { setOpen(false); onRate(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: isRated ? 'var(--text)' : 'var(--accent-light)', fontSize: '0.85rem' }}>
+                    <button data-testid="history-menu-rate" onClick={() => { setOpen(false); onRate(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: isRated ? 'var(--text)' : 'var(--accent-light)', fontSize: '0.85rem' }}>
                         {isRated ? <MessageSquare size={14} /> : <Star size={14} />} {isRated ? 'Editar reseña' : 'Valorar restaurante'}
                     </button>
-                    <button onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: '0.85rem', borderTop: '1px solid var(--border)' }}>
+                    <button data-testid="history-menu-delete" onClick={() => { setOpen(false); onDelete(); }} style={{ display: 'flex', alignItems: 'center', gap: 8, width: '100%', padding: '12px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--error)', fontSize: '0.85rem', borderTop: '1px solid var(--border)' }}>
                         <Trash2 size={14} /> Eliminar del historial
                     </button>
                 </div>
@@ -147,6 +148,7 @@ const AspectStarsRow: React.FC<AspectStarsRowProps> = ({ aspect, ratingVal, onSt
             {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                     key={star}
+                    data-testid={`rating-star-${aspect}-${star}`}
                     size={22}
                     fill={star <= (ratingVal as any)[aspect] ? "#ffb400" : "transparent"}
                     color={star <= (ratingVal as any)[aspect] ? "#ffb400" : "var(--muted)"}
@@ -234,6 +236,7 @@ const HistoryOverview: React.FC<HistoryOverviewProps> = ({
                 <div className="internal-search-box" style={{ flex: 1, marginBottom: 0 }}>
                     <Search className="search-icon" size={18} />
                     <input
+                        data-testid="history-search"
                         type="text"
                         placeholder="Buscar en historial..."
                         value={searchTerm}
@@ -241,6 +244,7 @@ const HistoryOverview: React.FC<HistoryOverviewProps> = ({
                     />
                 </div>
                 <button
+                    data-testid="history-filter"
                     className={`history-filter-btn ${statusFilter === 'all' ? '' : 'active'}`}
                     onClick={cycleFilter}
                 >
@@ -251,7 +255,7 @@ const HistoryOverview: React.FC<HistoryOverviewProps> = ({
 
             {loading ? (
                 <div style={{ textAlign: 'center', padding: '3rem' }}>
-                    <div className="loading-spinner" style={{ border: '4px solid var(--border)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: 30, height: 30, animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
+                    <div data-testid="history-loading" className="loading-spinner" style={{ border: '4px solid var(--border)', borderTop: '4px solid var(--accent)', borderRadius: '50%', width: 30, height: 30, animation: 'spin 1s linear infinite', margin: '0 auto 1rem' }} />
                     <p style={{ color: 'var(--muted)' }}>Cargando historial...</p>
                 </div>
             ) : error ? (
@@ -276,11 +280,12 @@ const HistoryOverview: React.FC<HistoryOverviewProps> = ({
                         return (
                             <div key={key}>
                                 <button
+                                    data-testid="history-group-header"
                                     className="history-group-header"
                                     onClick={() => toggleGroup(key)}
                                     style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                                 >
-                                    <span className="history-group-title">{group.label}</span>
+                                    <span data-testid="history-group-title" className="history-group-title">{group.label}</span>
                                     <div className="history-group-meta">
                                         <span>{group.entries.length} restaurantes</span>
                                         {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -315,7 +320,7 @@ const HistoryOverview: React.FC<HistoryOverviewProps> = ({
                                                     }
                                                 >
                                                     <div style={{ position: 'absolute', top: '10px', right: '35px', zIndex: 10 }}>
-                                                        <div className={`rating-status-badge ${isRated ? 'rated' : 'unrated'}`}>
+                                                        <div data-testid="history-rating-badge" className={`rating-status-badge ${isRated ? 'rated' : 'unrated'}`}>
                                                             {isRated ? 'Reseñado' : 'Sin reseñar'}
                                                         </div>
                                                     </div>
@@ -613,18 +618,18 @@ const HistoryPage: React.FC = () => {
         }
 
         return (
-            <div className="valuation-overlay">
+            <div className="valuation-overlay" data-testid="rating-overlay">
                 <TopBar
                     showMenu={false}
                     leftSlot={
-                        <button className="btn-nav-back" onClick={() => setIsRatingModalOpen(false)}>
+                        <button data-testid="rating-back" className="btn-nav-back" onClick={() => setIsRatingModalOpen(false)}>
                             <ChevronLeft size={20} />
                             <span>Volver</span>
                         </button>
                     }
                 />
 
-                <div className="valuation-content">
+                <div className="valuation-content" data-testid="rating-modal">
                     <div className="valuation-restaurant-info">
                         <div className="valuation-restaurant-icon">
                             <UtensilsCrossed size={28} />
@@ -641,7 +646,7 @@ const HistoryPage: React.FC = () => {
                             const IconComp = config.icon;
                             
                             return (
-                                <div key={aspect} className="aspect-row-premium">
+                                <div key={aspect} className="aspect-row-premium" data-testid={`rating-aspect-${aspect}`}>
                                     <div className="aspect-row-left">
                                         <div className={`aspect-icon-box ${config.class}`}>
                                             <IconComp size={20} />
@@ -680,6 +685,7 @@ const HistoryPage: React.FC = () => {
                         <label htmlFor="comment-textarea" className="comment-label-premium">Comentario (opcional)</label>
                         <textarea
                             id="comment-textarea"
+                            data-testid="rating-comment"
                             className="textarea-premium"
                             value={ratingComment}
                             onChange={(e) => setRatingComment(e.target.value)}
@@ -689,6 +695,7 @@ const HistoryPage: React.FC = () => {
                     </div>
 
                     <button
+                        data-testid="rating-submit"
                         onClick={handleRatingSubmit}
                         disabled={modalLoading || Object.values(ratingVal).includes(0)}
                         className={`btn-submit-valuation ${Object.values(ratingVal).includes(0) ? '' : 'active'}`}
@@ -746,13 +753,14 @@ const HistoryPage: React.FC = () => {
                                         autoFocus
                                         value={newListName}
                                         onChange={(e) => setNewListName(e.target.value)}
+                                        data-testid="history-fav-new-list-name"
                                         placeholder="Ej: Mis favoritos, Para cenar..."
                                         style={{ width: '100%', background: 'none', border: 'none', color: 'var(--text)', fontSize: '1rem', fontWeight: 600, padding: 0, outline: 'none' }}
                                     />
                                 </div>
                                 <div style={{ display: 'flex', gap: '0.75rem' }}>
                                     <button onClick={() => setIsCreatingList(false)} className="btn-detail-outline" style={{ flex: 1 }}>Atrás</button>
-                                    <button onClick={handleCreateAndAddToList} className="btn-primary" style={{ flex: 2 }}>Crear y añadir</button>
+                                    <button data-testid="history-fav-create" onClick={handleCreateAndAddToList} className="btn-primary" style={{ flex: 2 }}>Crear y añadir</button>
                                 </div>
                             </div>
                         ) : (
@@ -760,6 +768,7 @@ const HistoryPage: React.FC = () => {
                                 {favLists.map(list => (
                                     <button
                                         key={list.id}
+                                        data-testid="history-fav-list-option"
                                         onClick={() => confirmAddToFavorite(list.id)}
                                         className="restaurant-compact-card"
                                         style={{ width: '100%', padding: '0.75rem 1rem', background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)' }}

@@ -1,63 +1,45 @@
-// Mirrors selenium-java's pages/LoginPage.java.
-class LoginPage {
-  static SELECTORS = {
-    form: "#login-form",
-    identifier: "#identifier",
-    password: "#password",
-    submit: "#login-submit-btn",
-    googleBtn: "#google-login-btn",
-    registerLink: "#go-register-link",
-    errorMsg: ".message.error",
-  };
+import { TID } from "../testids";
 
+const L = TID.login;
+
+class LoginPage {
   visit() {
     cy.visit("/login");
-    cy.get(LoginPage.SELECTORS.form).should("be.visible");
+    cy.tid(L.form).should("be.visible");
     return this;
   }
 
   enterIdentifier(identifier) {
-    cy.get(LoginPage.SELECTORS.identifier).clear().type(identifier);
+    cy.tid(L.identifier).fill(identifier);
     return this;
   }
 
   enterPassword(password) {
-    cy.get(LoginPage.SELECTORS.password).clear().type(password);
+    cy.tid(L.password).fill(password);
     return this;
   }
 
-  /** Clicks submit and waits for the redirect to /home. */
+  /** Clicks submit without waiting for a particular outcome. */
+  submit() {
+    cy.tid(L.submit).click();
+    return this;
+  }
+
+  /** Submits valid credentials and waits for /home. */
   submitLogin() {
-    cy.get(LoginPage.SELECTORS.submit).click();
+    this.submit();
     cy.url().should("include", "/home");
     return this;
   }
 
-  /** Clicks submit expecting an error and waits for the error message. */
-  submitLoginExpectingFailure() {
-    cy.get(LoginPage.SELECTORS.submit).click();
-    cy.get(LoginPage.SELECTORS.errorMsg).should("be.visible");
+  expectError() {
+    cy.tid(L.messageError).should("be.visible");
     return this;
   }
 
-  goToRegister() {
-    cy.get(LoginPage.SELECTORS.registerLink).click();
+  expectOnLogin() {
+    cy.url().should("include", "/login");
     return this;
-  }
-
-  clickGoogleLogin() {
-    cy.get(LoginPage.SELECTORS.googleBtn).click();
-    return this;
-  }
-
-  /**
-   * Query methods that must yield a value (not just chain) end with
-   * `.then(cb)` at the call site, e.g.:
-   *   page.hasErrorMessage().then((has) => expect(has).to.be.true);
-   * This convention is followed consistently across all page objects.
-   */
-  hasErrorMessage() {
-    return cy.get("body").then(($body) => $body.find(LoginPage.SELECTORS.errorMsg).length > 0);
   }
 }
 

@@ -54,7 +54,7 @@ sut/
 │   └── pyproject.toml
 ├── keras-api/               # Standalone ML recommendation microservice (FastAPI, port 8001)
 ├── docker-compose.yml       # Production: db + backend:8000 + keras-api:8001 + frontend:80/443
-├── docker-compose.dev.yml   # Dev override: volumes + hot reload
+├── docker-compose.dev.override.yml   # Dev override: volumes + hot reload
 └── README.md                 # Full setup/run docs (Spanish)
 ```
 
@@ -176,7 +176,7 @@ poetry run alembic upgrade head
 ```bash
 cd sut
 docker compose up --build                                            # production
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up  # dev (hot reload)
+docker compose -f docker-compose.yml -f docker-compose.dev.override.yml up  # dev (hot reload)
 ```
 
 ### selenium-java

@@ -7,12 +7,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-/**
- * Base class for all DevorApp page objects.
- * Encapsulates the WebDriver and Waiter references and exposes low-level
- * helpers (fill, click, isVisible) so concrete pages never import Selenium
- * classes directly.
- */
+import java.util.List;
+
+/** Base class for page objects: low-level helpers so pages do not repeat Selenium plumbing. */
 public abstract class BasePage {
 
     protected final WebDriver driver;
@@ -35,5 +32,11 @@ public abstract class BasePage {
 
     protected boolean isVisible(By locator) {
         return !driver.findElements(locator).isEmpty();
+    }
+
+    /** Text of the first match, or empty string when absent. */
+    protected String textOf(By locator) {
+        List<WebElement> els = driver.findElements(locator);
+        return els.isEmpty() ? "" : els.get(0).getText();
     }
 }
