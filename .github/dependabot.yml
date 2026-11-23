@@ -349,40 +349,90 @@ updates:
         patterns:
           - "*"
 
-  # ─── Reserved · E2E suites not yet in the repository ───────────────────────
-  # Uncomment each block together with its (currently empty) CI stage.
-  #
-  # - package-ecosystem: nuget            # playwright-csharp/
-  #   directory: "/playwright-csharp"
-  #   schedule:
-  #     interval: weekly
-  #     day: "friday"
-  #     time: "00:40"
-  #     timezone: "Europe/Madrid"
-  #   assignees: ["augustocristian"]
-  #   labels: ["dependencies", "tests"]
-  #   rebase-strategy: "disabled"
-  #   open-pull-requests-limit: 20
-  #   groups:
-  #     # Playwright and the test framework ship as one train.
-  #     playwright:
-  #       patterns: ["Microsoft.Playwright*"]
-  #     playwright-csharp-misc:
-  #       patterns: ["*"]
-  #
-  # - package-ecosystem: pip              # puppeteer-python/
-  #   directory: "/puppeteer-python"
-  #   schedule:
-  #     interval: weekly
-  #     day: "friday"
-  #     time: "00:40"
-  #     timezone: "Europe/Madrid"
-  #   assignees: ["augustocristian"]
-  #   labels: ["dependencies", "tests"]
-  #   rebase-strategy: "disabled"
-  #   open-pull-requests-limit: 20
-  #   groups:
-  #     puppeteer:
-  #       patterns: ["pyppeteer*", "puppeteer*"]
-  #     puppeteer-python-misc:
-  #       patterns: ["*"]
+  # ─── Test suite · playwright-csharp (NuGet) ────────────────────────────────
+  - package-ecosystem: nuget
+    directory: "/playwright-csharp"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(playwright-csharp)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # Microsoft.Playwright and Microsoft.Playwright.NUnit ship as one train
+      # (same version in the .csproj).
+      playwright:
+        patterns:
+          - "Microsoft.Playwright*"
+      # Runner side: NUnit, its adapter and the test SDK.
+      test-runner:
+        patterns:
+          - "NUnit*"
+          - "Microsoft.NET.Test.Sdk"
+      playwright-csharp-misc:
+        patterns:
+          - "*"
+    ignore:
+      # The project targets net8.0 (LTS); NUnit 5 / SDK majors are bumped by hand.
+      - dependency-name: "NUnit"
+        update-types: ["version-update:semver-major"]
+
+  # ─── Test suite · puppeteer-python (pip) ───────────────────────────────────
+  - package-ecosystem: pip
+    directory: "/puppeteer-python"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(puppeteer-python)"
+    rebase-strategy: "disabled"
+    open-pull-requests-limit: 20
+    groups:
+      # pytest plugins are pinned against the pytest major.
+      testing:
+        patterns:
+          - "pytest"
+          - "pytest-*"
+      puppeteer-python-misc:
+        patterns:
+          - "*"
+
+  # ─── Test suite · puppeteer-python Node bridge (npm) ───────────────────────
+  # The Python suite drives Chrome through bridge/server.mjs (Puppeteer).
+  - package-ecosystem: npm
+    directory: "/puppeteer-python/bridge"
+    schedule:
+      interval: weekly
+      day: "friday"
+      time: "00:40"
+      timezone: "Europe/Madrid"
+    assignees:
+      - "augustocristian"
+    labels:
+      - "dependencies"
+      - "tests"
+    commit-message:
+      prefix: "deps(puppeteer-bridge)"
+    versioning-strategy: "increase"
+    rebase-strategy: "auto"
+    open-pull-requests-limit: 20
+    groups:
+      # One group per lock file (see header).
+      puppeteer-bridge:
+        patterns:
+          - "*"
