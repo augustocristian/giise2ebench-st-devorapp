@@ -58,6 +58,8 @@ updates:
     labels:
       - "dependencies"
       - "frontend"
+      - "sut"
+      - "javascript"
     commit-message:
       prefix: "deps(frontend)"
       prefix-development: "deps(frontend-dev)"
@@ -102,6 +104,8 @@ updates:
     labels:
       - "dependencies"
       - "backend"
+      - "sut"
+      - "python"
     commit-message:
       prefix: "deps(backend)"
     rebase-strategy: "auto"
@@ -135,6 +139,8 @@ updates:
     labels:
       - "dependencies"
       - "backend-ai"
+      - "sut"
+      - "python"
     commit-message:
       prefix: "deps(keras-api)"
     rebase-strategy: "auto"
@@ -170,6 +176,8 @@ updates:
     labels:
       - "dependencies"
       - "tests"
+      - "sut"
+      - "python"
     commit-message:
       prefix: "deps(gplaces-mock)"
     rebase-strategy: "disabled"
@@ -214,6 +222,7 @@ updates:
     labels:
       - "dependencies"
       - "docker"
+      - "sut"
     commit-message:
       prefix: "deps(docker)"
     rebase-strategy: "disabled"
@@ -255,6 +264,7 @@ updates:
     labels:
       - "dependencies"
       - "docker"
+      - "sut"
     commit-message:
       prefix: "deps(compose)"
     rebase-strategy: "disabled"
@@ -281,6 +291,9 @@ updates:
     labels:
       - "dependencies"
       - "tests"
+      - "e2e"
+      - "selenium"
+      - "java"
     commit-message:
       prefix: "deps(selenium-java)"
     rebase-strategy: "disabled"
@@ -338,6 +351,9 @@ updates:
     labels:
       - "dependencies"
       - "tests"
+      - "e2e"
+      - "cypress"
+      - "javascript"
     commit-message:
       prefix: "deps(cypress-js)"
     versioning-strategy: "increase"
@@ -362,6 +378,9 @@ updates:
     labels:
       - "dependencies"
       - "tests"
+      - "e2e"
+      - "playwright"
+      - "csharp"
     commit-message:
       prefix: "deps(playwright-csharp)"
     rebase-strategy: "disabled"
@@ -398,6 +417,9 @@ updates:
     labels:
       - "dependencies"
       - "tests"
+      - "e2e"
+      - "puppeteer"
+      - "python"
     commit-message:
       prefix: "deps(puppeteer-python)"
     rebase-strategy: "disabled"
@@ -426,6 +448,9 @@ updates:
     labels:
       - "dependencies"
       - "tests"
+      - "e2e"
+      - "puppeteer"
+      - "javascript"
     commit-message:
       prefix: "deps(puppeteer-bridge)"
     versioning-strategy: "increase"
