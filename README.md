@@ -1,5 +1,7 @@
 # giise2ebench-st-devorapp
 
+[![CI/CD Pipeline](https://github.com/augustocristian/giise2ebench-st-devorapp/actions/workflows/ci.yml/badge.svg)](https://github.com/augustocristian/giise2ebench-st-devorapp/actions/workflows/ci.yml) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=augustocristian_giise2ebench-st-devorapp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=augustocristian_giise2ebench-st-devorapp) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=augustocristian_giise2ebench-st-devorapp&metric=coverage)](https://sonarcloud.io/summary/new_code?id=augustocristian_giise2ebench-st-devorapp)
+
 <p align="center"><img src="img/hero-devorapp.svg" alt="DevorApp home screen (Inicio / Descubrimiento) on a desktop browser and a phone, showing a welcome message, a Buscar restaurantes button and a list of popular nearby restaurants" width="900"/></p>
 
 ## Structure
