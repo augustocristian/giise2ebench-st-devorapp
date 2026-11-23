@@ -1,0 +1,14 @@
+{
+  "name": "devorapp-puppeteer-bridge",
+  "version": "1.0.0",
+  "private": true,
+  "description": "JSON-RPC bridge that lets the Python test suite drive the current Puppeteer",
+  "type": "module",
+  "main": "server.mjs",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "puppeteer": "25.16.0"
+  }
+}

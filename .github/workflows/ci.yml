@@ -578,4 +578,48 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-images]
     steps:
-      - run: echo "::notice title=Puppeteer + Python::E2E stage reserved - no tests wired yet."
+      - uses: actions/checkout@v7
+
+      - name: Start DevorApp (own SUT instance)
+        uses: ./.github/actions/start-sut
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: puppeteer-python/pyproject.toml
+
+      - name: Install Python dependencies
+        working-directory: puppeteer-python
+        run: pip install .
+
+      # Puppeteer drives the Chrome preinstalled on the runner (channel "chrome"): no browser download.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: puppeteer-python/bridge/package-lock.json
+
+      - name: Install the Puppeteer bridge
+        working-directory: puppeteer-python/bridge
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: "true"
+        run: npm ci
+
+      - name: Run E2E & API tests
+        working-directory: puppeteer-python
+        run: python -m pytest tests --junitxml=results/junit.xml
+
+      - name: Test summary
+        if: always()
+        run: python3 .github/scripts/test_summary.py --title "Puppeteer + Python" --format junit 'puppeteer-python/results/*.xml'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: puppeteer-python-reports
+          path: |
+            puppeteer-python/results/
+            puppeteer-python/logs/
+          if-no-files-found: ignore
