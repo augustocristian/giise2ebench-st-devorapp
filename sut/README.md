@@ -1,7 +1,7 @@
 # DevorApp
 
-[![CI/CD Pipeline](https://github.com/UO294431/EPI-DevorApp/actions/workflows/ci.yml/badge.svg)](https://github.com/UO294431/EPI-DevorApp/actions)
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=UO294431_EPI-DevorApp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=UO294431_EPI-DevorApp)
+[![CI/CD Pipeline](https://github.com/augustocristian/giise2ebench-st-devorapp/actions/workflows/ci.yml/badge.svg)](https://github.com/augustocristian/giise2ebench-st-devorapp/actions)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=augustocristian_giise2ebench-st-devorapp&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=augustocristian_giise2ebench-st-devorapp)
 
 **DevorApp** is a personalized restaurant discovery and recommendation ecosystem. The system suggests places to eat based on the user's location, culinary preferences, time of day and consumption habits, combining a modern mobile/web interface with a powerful AI-based recommendation engine.
 
