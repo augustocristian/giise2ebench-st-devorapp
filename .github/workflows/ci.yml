@@ -247,7 +247,7 @@ jobs:
       - name: SonarQube Scan
         # sonar-project.properties lives in sut/ and its paths are relative to it.
         if: ${{ env.SONAR_TOKEN != '' }}
-        uses: SonarSource/sonarqube-scan-action@v8.5.0
+        uses: SonarSource/sonarqube-scan-action@v8.5.1
         with:
           projectBaseDir: sut
           args: >
